@@ -4,6 +4,9 @@ set -e
 
 cd "$(dirname "$0")/.."
 
+# Report every compile error: the compiler otherwise stops at 10 per package.
+export GOFLAGS="$GOFLAGS -gcflags=-e"
+
 echo "==> Running Go build"
 go build ./...
 

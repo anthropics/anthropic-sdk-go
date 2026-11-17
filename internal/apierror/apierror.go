@@ -514,6 +514,13 @@ const (
 	// details.
 	ErrorCodeUserProfileNotFound ErrorCode = "user_profile_not_found"
 
+	// The request sets `billing_policy.bill_to` to `"user_profile"` but names no user
+	// profile. Name the profile to bill in the `anthropic-user-profile-id` header.
+	//
+	// Returned with HTTP status 400 and [shared.UserProfileRequiredErrorDetails]
+	// details.
+	ErrorCodeUserProfileRequired ErrorCode = "user_profile_required"
+
 	// The workspace has reached its limit of active API keys.
 	//
 	// Returned with HTTP status 400 and
@@ -533,6 +540,22 @@ const (
 	// Returned with HTTP status 400 and [shared.WorkspacePolicyViolationErrorDetails]
 	// details.
 	ErrorCodeWorkspacePolicyViolation ErrorCode = "workspace_policy_violation"
+
+	// Anthropic cannot currently bill the organization linked to the request's user
+	// profile, for a reason that lies with that organization's own account. The
+	// response does not say what the reason is.
+	//
+	// Returned with HTTP status 402 and
+	// [shared.LinkedOrganizationBillingUnavailableErrorDetails] details.
+	ErrorCodeLinkedOrganizationBillingUnavailable ErrorCode = "linked_organization_billing_unavailable"
+
+	// The organization linked to the request's user profile has reached a spend limit
+	// that it set, or lacks credit for the request. The response does not say which
+	// applies.
+	//
+	// Returned with HTTP status 402 and
+	// [shared.LinkedOrganizationSpendLimitReachedErrorDetails] details.
+	ErrorCodeLinkedOrganizationSpendLimitReached ErrorCode = "linked_organization_spend_limit_reached"
 
 	// The API key lacks the scope the request needs: `read:claude_tag` for a read,
 	// `write:claude_tag` for a change.
@@ -617,6 +640,21 @@ const (
 	// Returned with HTTP status 403 and
 	// [shared.BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails] details.
 	ErrorCodeBetaSpendLimitsAdminAPIWritesNotEnabled ErrorCode = "spend_limits_admin_api_writes_not_enabled"
+
+	// The customer that the named user profile represents has not authorized the
+	// caller to bill them, or the authorization that the request's credential uses has
+	// ended. The response does not say which applies.
+	//
+	// Returned with HTTP status 403 and
+	// [shared.UserProfileBillingNotAuthorizedErrorDetails] details.
+	ErrorCodeUserProfileBillingNotAuthorized ErrorCode = "user_profile_billing_not_authorized"
+
+	// The caller is not allowed to bill the user profile that the request names. The
+	// response gives no more specific error code and does not say what the reason is.
+	//
+	// Returned with HTTP status 403 and [shared.UserProfileNotBillableErrorDetails]
+	// details.
+	ErrorCodeUserProfileNotBillable ErrorCode = "user_profile_not_billable"
 
 	// `settings.environment_id` names no Environment within the organization's reach.
 	//
@@ -708,6 +746,12 @@ const (
 	// Returned with HTTP status 413 and
 	// [shared.RequestBodyTooLargeAfterDecodingErrorDetails] details.
 	ErrorCodeRequestBodyTooLargeAfterDecoding ErrorCode = "request_body_too_large_after_decoding"
+
+	// The organization has reached the spend limit of its contract.
+	//
+	// Returned with HTTP status 429 and [shared.ContractSpendLimitReachedErrorDetails]
+	// details.
+	ErrorCodeContractSpendLimitReached ErrorCode = "contract_spend_limit_reached"
 
 	// The organization has crossed the monthly API usage threshold of its API tier.
 	//

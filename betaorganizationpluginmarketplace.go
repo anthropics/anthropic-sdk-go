@@ -473,7 +473,7 @@ const (
 	BetaPluginMarketplaceSyncStatusSuccess         BetaPluginMarketplaceSyncStatus = "success"
 )
 
-type BetaPluginMarketplaceValidationPluginError struct {
+type BetaPluginMarketplaceValidationPluginErrorObject struct {
 	// Why the plugin would be skipped by a synchronization.
 	Error string `json:"error" api:"required"`
 	// A stable identifier for the reason — the value to branch on.
@@ -491,8 +491,8 @@ type BetaPluginMarketplaceValidationPluginError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaPluginMarketplaceValidationPluginError) RawJSON() string { return r.JSON.raw }
-func (r *BetaPluginMarketplaceValidationPluginError) UnmarshalJSON(data []byte) error {
+func (r BetaPluginMarketplaceValidationPluginErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaPluginMarketplaceValidationPluginErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -550,7 +550,7 @@ type BetaPluginMarketplaceValidationReport struct {
 	ManifestErrorCode string `json:"manifest_error_code" api:"required"`
 	// One entry per plugin a synchronization would skip entirely, keyed by the
 	// plugin's name in marketplace.json.
-	PluginErrors []BetaPluginMarketplaceValidationPluginError `json:"plugin_errors" api:"required"`
+	PluginErrors []BetaPluginMarketplaceValidationPluginErrorObject `json:"plugin_errors" api:"required"`
 	// One entry per plugin that would synchronize with some of its contents left out,
 	// keyed by the plugin's name in marketplace.json.
 	PluginWarnings []BetaPluginMarketplaceValidationPluginWarnings `json:"plugin_warnings" api:"required"`
@@ -587,6 +587,10 @@ func (r BetaPluginMarketplaceValidationReport) RawJSON() string { return r.JSON.
 func (r *BetaPluginMarketplaceValidationReport) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Deprecated: BetaPluginMarketplaceValidationPluginError has been renamed to
+// BetaPluginMarketplaceValidationPluginErrorObject
+type BetaPluginMarketplaceValidationPluginError = BetaPluginMarketplaceValidationPluginErrorObject
 
 type BetaOrganizationPluginMarketplaceGetParams struct {
 	// For a `read:org_audit` or `read:compliance_org_data` key created for all of a

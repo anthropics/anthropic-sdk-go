@@ -39,12 +39,14 @@ func NewBetaEnvironmentWorkService(opts ...option.RequestOption) (r BetaEnvironm
 	return
 }
 
-// Note: these endpoints are called automatically by the pre-built environment
-// worker provided in the SDKs and CLI, for orchestrating sessions with self-hosted
-// sandbox environments. They are included here as a reference; you do not need to
-// invoke them directly.
-//
 // Retrieve detailed information about a specific work item.
+//
+// This endpoint accepts a Claude API key. It rejects the environment key and the
+// work item's `secret`. On
+// [Claude Platform on AWS](https://platform.claude.com/docs/en/build-with-claude/claude-platform-on-aws)
+// or
+// [Claude Models on Google Cloud (Anthropic managed)](https://platform.claude.com/docs/en/build-with-claude/claude-models-on-google-cloud/anthropic-managed),
+// use that platform's credentials instead.
 //
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
@@ -82,12 +84,14 @@ func (r *BetaEnvironmentWorkService) Get(ctx context.Context, workID string, par
 	return res, err
 }
 
-// Note: these endpoints are called automatically by the pre-built environment
-// worker provided in the SDKs and CLI, for orchestrating sessions with self-hosted
-// sandbox environments. They are included here as a reference; you do not need to
-// invoke them directly.
-//
 // Update work item metadata with merge semantics.
+//
+// This endpoint accepts a Claude API key. It rejects the environment key and the
+// work item's `secret`. On
+// [Claude Platform on AWS](https://platform.claude.com/docs/en/build-with-claude/claude-platform-on-aws)
+// or
+// [Claude Models on Google Cloud (Anthropic managed)](https://platform.claude.com/docs/en/build-with-claude/claude-models-on-google-cloud/anthropic-managed),
+// use that platform's credentials instead.
 //
 // When the returned error is an [*apierror.Error], compare the
 // [apierror.Error.ErrorCode] against these values.
@@ -126,12 +130,14 @@ func (r *BetaEnvironmentWorkService) Update(ctx context.Context, workID string, 
 	return res, err
 }
 
-// Note: these endpoints are called automatically by the pre-built environment
-// worker provided in the SDKs and CLI, for orchestrating sessions with self-hosted
-// sandbox environments. They are included here as a reference; you do not need to
-// invoke them directly.
-//
 // List work items in an environment.
+//
+// This endpoint accepts the environment key as a bearer token. It rejects a Claude
+// API key. On
+// [Claude Platform on AWS](https://platform.claude.com/docs/en/build-with-claude/claude-platform-on-aws)
+// or
+// [Claude Models on Google Cloud (Anthropic managed)](https://platform.claude.com/docs/en/build-with-claude/claude-models-on-google-cloud/anthropic-managed),
+// use that platform's credentials instead.
 func (r *BetaEnvironmentWorkService) List(ctx context.Context, environmentID string, params BetaEnvironmentWorkListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaSelfHostedWork], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -165,12 +171,14 @@ func (r *BetaEnvironmentWorkService) List(ctx context.Context, environmentID str
 	return res, nil
 }
 
-// Note: these endpoints are called automatically by the pre-built environment
-// worker provided in the SDKs and CLI, for orchestrating sessions with self-hosted
-// sandbox environments. They are included here as a reference; you do not need to
-// invoke them directly.
-//
 // List work items in an environment.
+//
+// This endpoint accepts the environment key as a bearer token. It rejects a Claude
+// API key. On
+// [Claude Platform on AWS](https://platform.claude.com/docs/en/build-with-claude/claude-platform-on-aws)
+// or
+// [Claude Models on Google Cloud (Anthropic managed)](https://platform.claude.com/docs/en/build-with-claude/claude-models-on-google-cloud/anthropic-managed),
+// use that platform's credentials instead.
 func (r *BetaEnvironmentWorkService) ListAutoPaging(ctx context.Context, environmentID string, params BetaEnvironmentWorkListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaSelfHostedWork] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, environmentID, params, opts...))
 }
@@ -316,11 +324,6 @@ func (r *BetaEnvironmentWorkService) Stats(ctx context.Context, environmentID st
 	return res, err
 }
 
-// Note: these endpoints are called automatically by the pre-built environment
-// worker provided in the SDKs and CLI, for orchestrating sessions with self-hosted
-// sandbox environments. They are included here as a reference; you do not need to
-// invoke them directly.
-//
 // Stop a work item, initiating graceful or forced shutdown.
 //
 // When the returned error is an [*apierror.Error], compare the

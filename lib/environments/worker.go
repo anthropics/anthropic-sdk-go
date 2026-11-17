@@ -94,10 +94,10 @@ type EnvironmentWorkerOptions struct {
 	// disables memory download and sync entirely, silently.
 	// Memory stores are only touched for work items whose secret carries a
 	// sessions token, because the memory endpoints reject the environment
-	// key. Without a token, a work item whose session has stores attached
-	// fails — its memory cannot be mounted — unless the interval is
-	// negative, in which case the session quietly runs without memory:
-	// disabling sync is the operator's explicit choice.
+	// key. Without a token, a work item whose session has stores attached and
+	// has not terminated fails — its memory cannot be mounted — unless the
+	// interval is negative, in which case the session quietly runs without
+	// memory: disabling sync is the operator's explicit choice.
 	//
 	// A store the worker cannot materialise on disk fails the work item too:
 	// see [SessionMemoryStores.Download].
@@ -133,7 +133,8 @@ type EnvironmentWorkerOptions struct {
 // force-stops the work item (unless the lease was lost, in which case the item
 // is left to whoever holds it now) and loops to the next one. The lease
 // heartbeat reports state "stopping"/"stopped" or a lost lease back into the
-// run by cancelling the session runner.
+// run by cancelling the session runner. The work item of a session that has
+// already terminated is force-stopped without running any tools.
 //
 // [EnvironmentWorker.Run] drives the poll loop. [EnvironmentWorker.HandleItem]
 // exposes the per-item flow for callers that already hold a claimed work item
@@ -314,7 +315,9 @@ type HandleItemOptions struct {
 // do memory stores that cannot be mounted: the work item carried no sessions
 // token for a session that has stores attached, or a store failed to
 // download (a [SessionMemoryError]). A negative MemorySyncInterval is the
-// exception — the item runs without its memory.
+// exception — the item runs without its memory. For a session that has already
+// terminated, HandleItem runs no tools and returns nil, whatever is attached to
+// the session.
 func (w *EnvironmentWorker) HandleItem(ctx context.Context, opts HandleItemOptions) error {
 	if err := w.checkOptions(); err != nil {
 		return fmt.Errorf("EnvironmentWorker.HandleItem: %w", err)
@@ -376,7 +379,8 @@ func checkItemCredential(environmentKey, workSecret string) error {
 // and [EnvironmentWorker.HandleItem]: build the per-session [agenttoolset.AgentToolContext],
 // download the session agent's skills, run a SessionToolRunner WHILE
 // heartbeating the work-item lease in parallel, and force-stop the work item on
-// exit unless the lease was lost. A non-session work item is only force-stopped.
+// exit unless the lease was lost. A non-session work item, or one whose session
+// has already terminated, is only force-stopped.
 //
 // The per-session calls — heartbeat, force-stop, skill download, and the
 // SessionToolRunner's stream/list/send — are authorized by the sessions token
@@ -513,6 +517,12 @@ func (w *EnvironmentWorker) handleItem(ctx context.Context, work *anthropic.Beta
 		err = fmt.Errorf("retrieve session %s: %w", sessionID, err)
 		log.Warn("session lookup failed", slog.Any("error", err))
 		return false, err
+	}
+	// A terminated session, which includes an archived one, accepts no tool
+	// result, so there is nothing to run.
+	if session.Status == anthropic.BetaManagedAgentsSessionStatusTerminated {
+		log.Info("skipping the work item of a terminated session")
+		return false, nil
 	}
 	if err := env.SetupSkillsFromSession(sessCtx, w.client, session, hbStopOpts...); err != nil {
 		log.Warn("skill setup failed", slog.Any("error", err))

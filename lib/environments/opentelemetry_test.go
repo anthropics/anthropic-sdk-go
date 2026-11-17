@@ -192,6 +192,16 @@ func TestEnvironmentWorker_WorkSpanStatus(t *testing.T) {
 			wantStatus:    codes.Error,
 			wantErrorType: "not_found_error",
 		},
+		// Its memory store can't be mounted, which fails a live session's item.
+		"terminated session": {
+			script: func(server *fakeWorkServer) {
+				server.HandleSessionGet = func(w http.ResponseWriter, _ *http.Request) {
+					w.Header().Set("Content-Type", "application/json")
+					_, _ = w.Write([]byte(`{"status":"terminated","agent":{"skills":[]},"resources":[{"type":"memory_store","memory_store_id":"memstore_1","name":"Notes"}]}`))
+				}
+			},
+			wantStatus: codes.Ok,
+		},
 		// The item is another worker's now: it was neither finished with nor failed.
 		"lost lease": {
 			script: func(server *fakeWorkServer) {

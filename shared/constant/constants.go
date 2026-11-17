@@ -92,6 +92,7 @@ type BashCodeExecutionToolResultError string                   // Always "bash_c
 type Batch string                                              // Always "batch"
 type BetweenTools string                                       // Always "between_tools"
 type BillingError string                                       // Always "billing_error"
+type BillingPolicy string                                      // Always "billing_policy"
 type Branch string                                             // Always "branch"
 type Browser string                                            // Always "browser"
 type BrowserState string                                       // Always "browser_state"
@@ -173,6 +174,7 @@ type ContentBlockStop string                                   // Always "conten
 type ContentDelta string                                       // Always "content_delta"
 type ContentSha256 string                                      // Always "content_sha256"
 type Continue string                                           // Always "continue"
+type ContractSpendLimitReachedErrorCode string                 // Always "contract_spend_limit_reached"
 type Coordinate string                                         // Always "coordinate"
 type Coordinator string                                        // Always "coordinator"
 type Create string                                             // Always "create"
@@ -243,6 +245,8 @@ type ExternalKeyInWorkspacePolicyErrorCode string              // Always "extern
 type ExternalKeyValidation string                              // Always "external_key_validation"
 type ExternalKeyValidationFailedErrorCode string               // Always "external_key_validation_failed"
 type ExternalKeyValidationTimedOutErrorCode string             // Always "external_key_validation_timed_out"
+type ExternalKeyFailed string                                  // Always "external_key.failed"
+type ExternalKeyRecovered string                               // Always "external_key.recovered"
 type Failure string                                            // Always "failure"
 type Fallback string                                           // Always "fallback"
 type FallbackMessage string                                    // Always "fallback_message"
@@ -291,6 +295,8 @@ type LeftMouseDown string                                      // Always "left_m
 type LeftMouseUp string                                        // Always "left_mouse_up"
 type Limit string                                              // Always "limit"
 type Limited string                                            // Always "limited"
+type LinkedOrganizationBillingUnavailableErrorCode string      // Always "linked_organization_billing_unavailable"
+type LinkedOrganizationSpendLimitReachedErrorCode string       // Always "linked_organization_spend_limit_reached"
 type ListTabs string                                           // Always "list_tabs"
 type Low string                                                // Always "low"
 type Manual string                                             // Always "manual"
@@ -572,8 +578,11 @@ type UserActor string                                          // Always "user_a
 type UserDeleted string                                        // Always "user_deleted"
 type UserProfile string                                        // Always "user_profile"
 type UserProfileActionURL string                               // Always "user_profile_action_url"
+type UserProfileBillingNotAuthorizedErrorCode string           // Always "user_profile_billing_not_authorized"
 type UserProfileDeleted string                                 // Always "user_profile_deleted"
+type UserProfileNotBillableErrorCode string                    // Always "user_profile_not_billable"
 type UserProfileNotFoundErrorCode string                       // Always "user_profile_not_found"
+type UserProfileRequiredErrorCode string                       // Always "user_profile_required"
 type UserProfileEnforcementActionOpened string                 // Always "user_profile.enforcement_action_opened"
 type UserProfileEnforcementActionResolved string               // Always "user_profile.enforcement_action_resolved"
 type UserProfileProgramStatusUpdated string                    // Always "user_profile.program_status_updated"
@@ -717,6 +726,7 @@ func (c BashCodeExecutionToolResultError) Default() BashCodeExecutionToolResultE
 func (c Batch) Default() Batch                                   { return "batch" }
 func (c BetweenTools) Default() BetweenTools                     { return "between_tools" }
 func (c BillingError) Default() BillingError                     { return "billing_error" }
+func (c BillingPolicy) Default() BillingPolicy                   { return "billing_policy" }
 func (c Branch) Default() Branch                                 { return "branch" }
 func (c Browser) Default() Browser                               { return "browser" }
 func (c BrowserState) Default() BrowserState                     { return "browser_state" }
@@ -858,10 +868,13 @@ func (c ContentBlockStop) Default() ContentBlockStop         { return "content_b
 func (c ContentDelta) Default() ContentDelta                 { return "content_delta" }
 func (c ContentSha256) Default() ContentSha256               { return "content_sha256" }
 func (c Continue) Default() Continue                         { return "continue" }
-func (c Coordinate) Default() Coordinate                     { return "coordinate" }
-func (c Coordinator) Default() Coordinator                   { return "coordinator" }
-func (c Create) Default() Create                             { return "create" }
-func (c CreateNew) Default() CreateNew                       { return "create_new" }
+func (c ContractSpendLimitReachedErrorCode) Default() ContractSpendLimitReachedErrorCode {
+	return "contract_spend_limit_reached"
+}
+func (c Coordinate) Default() Coordinate   { return "coordinate" }
+func (c Coordinator) Default() Coordinator { return "coordinator" }
+func (c Create) Default() Create           { return "create" }
+func (c CreateNew) Default() CreateNew     { return "create_new" }
 func (c CredentialHostUnreachableError) Default() CredentialHostUnreachableError {
 	return "credential_host_unreachable_error"
 }
@@ -958,12 +971,14 @@ func (c ExternalKeyValidationFailedErrorCode) Default() ExternalKeyValidationFai
 func (c ExternalKeyValidationTimedOutErrorCode) Default() ExternalKeyValidationTimedOutErrorCode {
 	return "external_key_validation_timed_out"
 }
-func (c Failure) Default() Failure                   { return "failure" }
-func (c Fallback) Default() Fallback                 { return "fallback" }
-func (c FallbackMessage) Default() FallbackMessage   { return "fallback_message" }
-func (c FederatedActor) Default() FederatedActor     { return "federated_actor" }
-func (c FederationIssuer) Default() FederationIssuer { return "federation_issuer" }
-func (c FederationRule) Default() FederationRule     { return "federation_rule" }
+func (c ExternalKeyFailed) Default() ExternalKeyFailed       { return "external_key.failed" }
+func (c ExternalKeyRecovered) Default() ExternalKeyRecovered { return "external_key.recovered" }
+func (c Failure) Default() Failure                           { return "failure" }
+func (c Fallback) Default() Fallback                         { return "fallback" }
+func (c FallbackMessage) Default() FallbackMessage           { return "fallback_message" }
+func (c FederatedActor) Default() FederatedActor             { return "federated_actor" }
+func (c FederationIssuer) Default() FederationIssuer         { return "federation_issuer" }
+func (c FederationRule) Default() FederationRule             { return "federation_rule" }
 func (c FederationRuleWorkspace) Default() FederationRuleWorkspace {
 	return "federation_rule_workspace"
 }
@@ -1016,12 +1031,18 @@ func (c Key) Default() Key                       { return "key" }
 func (c KeyProfileMismatchErrorCode) Default() KeyProfileMismatchErrorCode {
 	return "key_profile_mismatch"
 }
-func (c LeftClick) Default() LeftClick                       { return "left_click" }
-func (c LeftClickDrag) Default() LeftClickDrag               { return "left_click_drag" }
-func (c LeftMouseDown) Default() LeftMouseDown               { return "left_mouse_down" }
-func (c LeftMouseUp) Default() LeftMouseUp                   { return "left_mouse_up" }
-func (c Limit) Default() Limit                               { return "limit" }
-func (c Limited) Default() Limited                           { return "limited" }
+func (c LeftClick) Default() LeftClick         { return "left_click" }
+func (c LeftClickDrag) Default() LeftClickDrag { return "left_click_drag" }
+func (c LeftMouseDown) Default() LeftMouseDown { return "left_mouse_down" }
+func (c LeftMouseUp) Default() LeftMouseUp     { return "left_mouse_up" }
+func (c Limit) Default() Limit                 { return "limit" }
+func (c Limited) Default() Limited             { return "limited" }
+func (c LinkedOrganizationBillingUnavailableErrorCode) Default() LinkedOrganizationBillingUnavailableErrorCode {
+	return "linked_organization_billing_unavailable"
+}
+func (c LinkedOrganizationSpendLimitReachedErrorCode) Default() LinkedOrganizationSpendLimitReachedErrorCode {
+	return "linked_organization_spend_limit_reached"
+}
 func (c ListTabs) Default() ListTabs                         { return "list_tabs" }
 func (c Low) Default() Low                                   { return "low" }
 func (c Manual) Default() Manual                             { return "manual" }
@@ -1457,9 +1478,18 @@ func (c UserActor) Default() UserActor                       { return "user_acto
 func (c UserDeleted) Default() UserDeleted                   { return "user_deleted" }
 func (c UserProfile) Default() UserProfile                   { return "user_profile" }
 func (c UserProfileActionURL) Default() UserProfileActionURL { return "user_profile_action_url" }
-func (c UserProfileDeleted) Default() UserProfileDeleted     { return "user_profile_deleted" }
+func (c UserProfileBillingNotAuthorizedErrorCode) Default() UserProfileBillingNotAuthorizedErrorCode {
+	return "user_profile_billing_not_authorized"
+}
+func (c UserProfileDeleted) Default() UserProfileDeleted { return "user_profile_deleted" }
+func (c UserProfileNotBillableErrorCode) Default() UserProfileNotBillableErrorCode {
+	return "user_profile_not_billable"
+}
 func (c UserProfileNotFoundErrorCode) Default() UserProfileNotFoundErrorCode {
 	return "user_profile_not_found"
+}
+func (c UserProfileRequiredErrorCode) Default() UserProfileRequiredErrorCode {
+	return "user_profile_required"
 }
 func (c UserProfileEnforcementActionOpened) Default() UserProfileEnforcementActionOpened {
 	return "user_profile.enforcement_action_opened"
@@ -1618,6 +1648,7 @@ func (c BashCodeExecutionToolResultError) MarshalJSON() ([]byte, error)     { re
 func (c Batch) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c BetweenTools) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c BillingError) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c BillingPolicy) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c Branch) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Browser) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c BrowserState) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
@@ -1721,6 +1752,7 @@ func (c ContentBlockStop) MarshalJSON() ([]byte, error)                    { ret
 func (c ContentDelta) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c ContentSha256) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Continue) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c ContractSpendLimitReachedErrorCode) MarshalJSON() ([]byte, error)  { return marshalString(c) }
 func (c Coordinate) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c Coordinator) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c Create) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
@@ -1797,6 +1829,8 @@ func (c ExternalKeyValidationFailedErrorCode) MarshalJSON() ([]byte, error)  { r
 func (c ExternalKeyValidationTimedOutErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }
+func (c ExternalKeyFailed) MarshalJSON() ([]byte, error)              { return marshalString(c) }
+func (c ExternalKeyRecovered) MarshalJSON() ([]byte, error)           { return marshalString(c) }
 func (c Failure) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c Fallback) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c FallbackMessage) MarshalJSON() ([]byte, error)                { return marshalString(c) }
@@ -1847,64 +1881,70 @@ func (c LeftMouseDown) MarshalJSON() ([]byte, error)                        { re
 func (c LeftMouseUp) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c Limit) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c Limited) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
-func (c ListTabs) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
-func (c Low) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
-func (c Manual) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
-func (c Max) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
-func (c MaxWorkflowRunsError) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
-func (c MCPAuthenticationFailedError) MarshalJSON() ([]byte, error)         { return marshalString(c) }
-func (c MCPConnectionFailedError) MarshalJSON() ([]byte, error)             { return marshalString(c) }
-func (c MCPEgressBlockedError) MarshalJSON() ([]byte, error)                { return marshalString(c) }
-func (c MCPOAuth) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
-func (c MCPToolListing) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
-func (c MCPToolReference) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
-func (c MCPToolResult) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
-func (c MCPToolUse) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
-func (c MCPToolset) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
-func (c MCPToolsetReference) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
-func (c Medium) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
-func (c Memory) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
-func (c Memory20250818) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
-func (c MemoryDeleted) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
-func (c MemoryPathConflictError) MarshalJSON() ([]byte, error)              { return marshalString(c) }
-func (c MemoryPreconditionFailedError) MarshalJSON() ([]byte, error)        { return marshalString(c) }
-func (c MemoryPrefix) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
-func (c MemoryStore) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
-func (c MemoryStoreArchivedError) MarshalJSON() ([]byte, error)             { return marshalString(c) }
-func (c MemoryStoreDeletedResponseType) MarshalJSON() ([]byte, error)       { return marshalString(c) }
-func (c MemoryStoreArchived) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
-func (c MemoryStoreCreated) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
-func (c MemoryStoreDeleted) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
-func (c MemoryVersion) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
-func (c MentionOnly) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
-func (c Message) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
-func (c MessageBatch) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
-func (c MessageBatchDeleted) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
-func (c MessageDelta) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
-func (c MessageStart) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
-func (c MessageStop) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
-func (c MessagesChanged) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
-func (c MiddleClick) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
-func (c Model) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
-func (c ModelChanged) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
-func (c ModelGroup) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
-func (c ModelOverloadedError) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
-func (c ModelRateLimitedError) MarshalJSON() ([]byte, error)                { return marshalString(c) }
-func (c ModelRequestFailedError) MarshalJSON() ([]byte, error)              { return marshalString(c) }
-func (c MouseMove) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
-func (c Multiagent20261001) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
-func (c Navigate) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
-func (c NewTab) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
-func (c None) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
-func (c NotApplied) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
-func (c NotFoundError) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
-func (c Object) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
-func (c OIDC) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
-func (c Only) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
-func (c OrgAPIKeyLimitExceededErrorCode) MarshalJSON() ([]byte, error)      { return marshalString(c) }
-func (c OrgMemberLimitExceededErrorCode) MarshalJSON() ([]byte, error)      { return marshalString(c) }
-func (c Organization) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
-func (c OrganizationDisabledError) MarshalJSON() ([]byte, error)            { return marshalString(c) }
+func (c LinkedOrganizationBillingUnavailableErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c LinkedOrganizationSpendLimitReachedErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c ListTabs) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c Low) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
+func (c Manual) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c Max) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
+func (c MaxWorkflowRunsError) MarshalJSON() ([]byte, error)            { return marshalString(c) }
+func (c MCPAuthenticationFailedError) MarshalJSON() ([]byte, error)    { return marshalString(c) }
+func (c MCPConnectionFailedError) MarshalJSON() ([]byte, error)        { return marshalString(c) }
+func (c MCPEgressBlockedError) MarshalJSON() ([]byte, error)           { return marshalString(c) }
+func (c MCPOAuth) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c MCPToolListing) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c MCPToolReference) MarshalJSON() ([]byte, error)                { return marshalString(c) }
+func (c MCPToolResult) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
+func (c MCPToolUse) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c MCPToolset) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c MCPToolsetReference) MarshalJSON() ([]byte, error)             { return marshalString(c) }
+func (c Medium) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c Memory) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c Memory20250818) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c MemoryDeleted) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
+func (c MemoryPathConflictError) MarshalJSON() ([]byte, error)         { return marshalString(c) }
+func (c MemoryPreconditionFailedError) MarshalJSON() ([]byte, error)   { return marshalString(c) }
+func (c MemoryPrefix) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c MemoryStore) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c MemoryStoreArchivedError) MarshalJSON() ([]byte, error)        { return marshalString(c) }
+func (c MemoryStoreDeletedResponseType) MarshalJSON() ([]byte, error)  { return marshalString(c) }
+func (c MemoryStoreArchived) MarshalJSON() ([]byte, error)             { return marshalString(c) }
+func (c MemoryStoreCreated) MarshalJSON() ([]byte, error)              { return marshalString(c) }
+func (c MemoryStoreDeleted) MarshalJSON() ([]byte, error)              { return marshalString(c) }
+func (c MemoryVersion) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
+func (c MentionOnly) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c Message) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c MessageBatch) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c MessageBatchDeleted) MarshalJSON() ([]byte, error)             { return marshalString(c) }
+func (c MessageDelta) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c MessageStart) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c MessageStop) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c MessagesChanged) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c MiddleClick) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c Model) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
+func (c ModelChanged) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c ModelGroup) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c ModelOverloadedError) MarshalJSON() ([]byte, error)            { return marshalString(c) }
+func (c ModelRateLimitedError) MarshalJSON() ([]byte, error)           { return marshalString(c) }
+func (c ModelRequestFailedError) MarshalJSON() ([]byte, error)         { return marshalString(c) }
+func (c MouseMove) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c Multiagent20261001) MarshalJSON() ([]byte, error)              { return marshalString(c) }
+func (c Navigate) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c NewTab) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c None) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c NotApplied) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c NotFoundError) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
+func (c Object) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c OIDC) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c Only) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c OrgAPIKeyLimitExceededErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
+func (c OrgMemberLimitExceededErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
+func (c Organization) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c OrganizationDisabledError) MarshalJSON() ([]byte, error)       { return marshalString(c) }
 func (c BetaOrganizationLevelScopedAPIKeyRequiredErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }
@@ -2100,60 +2140,65 @@ func (c TextEditorCodeExecutionToolResult) MarshalJSON() ([]byte, error) { retur
 func (c TextEditorCodeExecutionToolResultError) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }
-func (c TextEditorCodeExecutionViewResult) MarshalJSON() ([]byte, error)     { return marshalString(c) }
-func (c TextPlain) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
-func (c Thinking) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
-func (c ThinkingDelta) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
-func (c ThinkingDropped) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
-func (c ThinkingMismatchAllowed) MarshalJSON() ([]byte, error)               { return marshalString(c) }
-func (c ThinkingTurns) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
-func (c Thread) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
-func (c ThreadAlreadyContinuedErrorCode) MarshalJSON() ([]byte, error)       { return marshalString(c) }
-func (c ThreadContinueInFlightErrorCode) MarshalJSON() ([]byte, error)       { return marshalString(c) }
-func (c ThreadFingerprintMismatchErrorCode) MarshalJSON() ([]byte, error)    { return marshalString(c) }
-func (c ThreadLimitError) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
-func (c ThreadNotFoundErrorCode) MarshalJSON() ([]byte, error)               { return marshalString(c) }
-func (c ThreadUnsupportedRequestErrorCode) MarshalJSON() ([]byte, error)     { return marshalString(c) }
-func (c TimeoutError) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
-func (c TokenCount) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
-func (c Tokens) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
-func (c Tool) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
-func (c ToolAddition) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
-func (c ToolDefinition) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
-func (c ToolNameConflictErrorCode) MarshalJSON() ([]byte, error)             { return marshalString(c) }
-func (c ToolReference) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
-func (c ToolReferenceUnresolvedErrorCode) MarshalJSON() ([]byte, error)      { return marshalString(c) }
-func (c ToolRemoval) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
-func (c ToolResult) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
-func (c ToolSearchToolBm25) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
-func (c ToolSearchToolRegex) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
-func (c ToolSearchToolResult) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
-func (c ToolSearchToolResultError) MarshalJSON() ([]byte, error)             { return marshalString(c) }
-func (c ToolSearchToolSearchResult) MarshalJSON() ([]byte, error)            { return marshalString(c) }
-func (c ToolUse) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
-func (c ToolUseLimitReachedError) MarshalJSON() ([]byte, error)              { return marshalString(c) }
-func (c ToolUses) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
-func (c ToolsChanged) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
-func (c TripleClick) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
-func (c Tunnel) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
-func (c TunnelCertificate) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
-func (c TunnelToken) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
-func (c Type) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
-func (c Unattached) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
-func (c Unavailable) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
-func (c UnknownError) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
-func (c Unrestricted) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
-func (c BetaUnsupportedCharsetErrorCode) MarshalJSON() ([]byte, error)       { return marshalString(c) }
-func (c UpdateExisting) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
-func (c URL) MarshalJSON() ([]byte, error)                                   { return marshalString(c) }
-func (c UsageTier) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
-func (c User) MarshalJSON() ([]byte, error)                                  { return marshalString(c) }
-func (c UserActor) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
-func (c UserDeleted) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
-func (c UserProfile) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
-func (c UserProfileActionURL) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c TextEditorCodeExecutionViewResult) MarshalJSON() ([]byte, error)  { return marshalString(c) }
+func (c TextPlain) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c Thinking) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
+func (c ThinkingDelta) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c ThinkingDropped) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c ThinkingMismatchAllowed) MarshalJSON() ([]byte, error)            { return marshalString(c) }
+func (c ThinkingTurns) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c Thread) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
+func (c ThreadAlreadyContinuedErrorCode) MarshalJSON() ([]byte, error)    { return marshalString(c) }
+func (c ThreadContinueInFlightErrorCode) MarshalJSON() ([]byte, error)    { return marshalString(c) }
+func (c ThreadFingerprintMismatchErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
+func (c ThreadLimitError) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
+func (c ThreadNotFoundErrorCode) MarshalJSON() ([]byte, error)            { return marshalString(c) }
+func (c ThreadUnsupportedRequestErrorCode) MarshalJSON() ([]byte, error)  { return marshalString(c) }
+func (c TimeoutError) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c TokenCount) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c Tokens) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
+func (c Tool) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
+func (c ToolAddition) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c ToolDefinition) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c ToolNameConflictErrorCode) MarshalJSON() ([]byte, error)          { return marshalString(c) }
+func (c ToolReference) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c ToolReferenceUnresolvedErrorCode) MarshalJSON() ([]byte, error)   { return marshalString(c) }
+func (c ToolRemoval) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c ToolResult) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c ToolSearchToolBm25) MarshalJSON() ([]byte, error)                 { return marshalString(c) }
+func (c ToolSearchToolRegex) MarshalJSON() ([]byte, error)                { return marshalString(c) }
+func (c ToolSearchToolResult) MarshalJSON() ([]byte, error)               { return marshalString(c) }
+func (c ToolSearchToolResultError) MarshalJSON() ([]byte, error)          { return marshalString(c) }
+func (c ToolSearchToolSearchResult) MarshalJSON() ([]byte, error)         { return marshalString(c) }
+func (c ToolUse) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c ToolUseLimitReachedError) MarshalJSON() ([]byte, error)           { return marshalString(c) }
+func (c ToolUses) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
+func (c ToolsChanged) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c TripleClick) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c Tunnel) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
+func (c TunnelCertificate) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
+func (c TunnelToken) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c Type) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
+func (c Unattached) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
+func (c Unavailable) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c UnknownError) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c Unrestricted) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c BetaUnsupportedCharsetErrorCode) MarshalJSON() ([]byte, error)    { return marshalString(c) }
+func (c UpdateExisting) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
+func (c URL) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
+func (c UsageTier) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c User) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
+func (c UserActor) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
+func (c UserDeleted) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c UserProfile) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c UserProfileActionURL) MarshalJSON() ([]byte, error)               { return marshalString(c) }
+func (c UserProfileBillingNotAuthorizedErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
 func (c UserProfileDeleted) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
+func (c UserProfileNotBillableErrorCode) MarshalJSON() ([]byte, error)       { return marshalString(c) }
 func (c UserProfileNotFoundErrorCode) MarshalJSON() ([]byte, error)          { return marshalString(c) }
+func (c UserProfileRequiredErrorCode) MarshalJSON() ([]byte, error)          { return marshalString(c) }
 func (c UserProfileEnforcementActionOpened) MarshalJSON() ([]byte, error)    { return marshalString(c) }
 func (c UserProfileEnforcementActionResolved) MarshalJSON() ([]byte, error)  { return marshalString(c) }
 func (c UserProfileProgramStatusUpdated) MarshalJSON() ([]byte, error)       { return marshalString(c) }

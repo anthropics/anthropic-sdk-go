@@ -372,6 +372,13 @@ const ErrorCodeBetaUnsupportedCharset = apierror.ErrorCodeBetaUnsupportedCharset
 // details.
 const ErrorCodeUserProfileNotFound = apierror.ErrorCodeUserProfileNotFound
 
+// The request sets `billing_policy.bill_to` to `"user_profile"` but names no user
+// profile. Name the profile to bill in the `anthropic-user-profile-id` header.
+//
+// Returned with HTTP status 400 and [shared.UserProfileRequiredErrorDetails]
+// details.
+const ErrorCodeUserProfileRequired = apierror.ErrorCodeUserProfileRequired
+
 // The workspace has reached its limit of active API keys.
 //
 // Returned with HTTP status 400 and
@@ -391,6 +398,22 @@ const ErrorCodeWorkspaceMemberLimitExceeded = apierror.ErrorCodeWorkspaceMemberL
 // Returned with HTTP status 400 and [shared.WorkspacePolicyViolationErrorDetails]
 // details.
 const ErrorCodeWorkspacePolicyViolation = apierror.ErrorCodeWorkspacePolicyViolation
+
+// Anthropic cannot currently bill the organization linked to the request's user
+// profile, for a reason that lies with that organization's own account. The
+// response does not say what the reason is.
+//
+// Returned with HTTP status 402 and
+// [shared.LinkedOrganizationBillingUnavailableErrorDetails] details.
+const ErrorCodeLinkedOrganizationBillingUnavailable = apierror.ErrorCodeLinkedOrganizationBillingUnavailable
+
+// The organization linked to the request's user profile has reached a spend limit
+// that it set, or lacks credit for the request. The response does not say which
+// applies.
+//
+// Returned with HTTP status 402 and
+// [shared.LinkedOrganizationSpendLimitReachedErrorDetails] details.
+const ErrorCodeLinkedOrganizationSpendLimitReached = apierror.ErrorCodeLinkedOrganizationSpendLimitReached
 
 // The API key lacks the scope the request needs: `read:claude_tag` for a read,
 // `write:claude_tag` for a change.
@@ -475,6 +498,21 @@ const ErrorCodeSandboxEgressRestricted = apierror.ErrorCodeSandboxEgressRestrict
 // Returned with HTTP status 403 and
 // [shared.BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails] details.
 const ErrorCodeBetaSpendLimitsAdminAPIWritesNotEnabled = apierror.ErrorCodeBetaSpendLimitsAdminAPIWritesNotEnabled
+
+// The customer that the named user profile represents has not authorized the
+// caller to bill them, or the authorization that the request's credential uses has
+// ended. The response does not say which applies.
+//
+// Returned with HTTP status 403 and
+// [shared.UserProfileBillingNotAuthorizedErrorDetails] details.
+const ErrorCodeUserProfileBillingNotAuthorized = apierror.ErrorCodeUserProfileBillingNotAuthorized
+
+// The caller is not allowed to bill the user profile that the request names. The
+// response gives no more specific error code and does not say what the reason is.
+//
+// Returned with HTTP status 403 and [shared.UserProfileNotBillableErrorDetails]
+// details.
+const ErrorCodeUserProfileNotBillable = apierror.ErrorCodeUserProfileNotBillable
 
 // `settings.environment_id` names no Environment within the organization's reach.
 //
@@ -567,6 +605,12 @@ const ErrorCodeBetaHeartbeatPreconditionFailed = apierror.ErrorCodeBetaHeartbeat
 // [shared.RequestBodyTooLargeAfterDecodingErrorDetails] details.
 const ErrorCodeRequestBodyTooLargeAfterDecoding = apierror.ErrorCodeRequestBodyTooLargeAfterDecoding
 
+// The organization has reached the spend limit of its contract.
+//
+// Returned with HTTP status 429 and [shared.ContractSpendLimitReachedErrorDetails]
+// details.
+const ErrorCodeContractSpendLimitReached = apierror.ErrorCodeContractSpendLimitReached
+
 // The organization has crossed the monthly API usage threshold of its API tier.
 //
 // Returned with HTTP status 429 and [shared.EnforcedSpendLimitReachedErrorDetails]
@@ -613,10 +657,10 @@ const ErrorCodeCompactionUnavailable = apierror.ErrorCodeCompactionUnavailable
 type APIErrorObject = shared.APIErrorObject
 
 // This is an alias to an internal type.
-type AuthenticationError = shared.AuthenticationError
+type AuthenticationErrorObject = shared.AuthenticationErrorObject
 
 // This is an alias to an internal type.
-type BillingError = shared.BillingError
+type BillingErrorObject = shared.BillingErrorObject
 
 // The API key belongs to the Claude Code workspace, and the user who created it is
 // no longer a member of the organization or of that workspace.
@@ -654,6 +698,11 @@ type CMEKKeyNetworkBlockedErrorDetails = shared.CMEKKeyNetworkBlockedErrorDetail
 //
 // This is an alias to an internal type.
 type CMEKKeyUnreachableErrorDetails = shared.CMEKKeyUnreachableErrorDetails
+
+// The organization has reached the spend limit of its contract.
+//
+// This is an alias to an internal type.
+type ContractSpendLimitReachedErrorDetails = shared.ContractSpendLimitReachedErrorDetails
 
 // The organization has crossed the monthly API usage threshold of its API tier.
 //
@@ -709,13 +758,27 @@ const ErrorTypeMemoryPathConflictError = shared.ErrorTypeMemoryPathConflictError
 const ErrorTypeConflictError = shared.ErrorTypeConflictError
 
 // This is an alias to an internal type.
-type GatewayTimeoutError = shared.GatewayTimeoutError
+type GatewayTimeoutErrorObject = shared.GatewayTimeoutErrorObject
 
 // This is an alias to an internal type.
-type InvalidRequestError = shared.InvalidRequestError
+type InvalidRequestErrorObject = shared.InvalidRequestErrorObject
+
+// Anthropic cannot currently bill the organization linked to the request's user
+// profile, for a reason that lies with that organization's own account. The
+// response does not say what the reason is.
+//
+// This is an alias to an internal type.
+type LinkedOrganizationBillingUnavailableErrorDetails = shared.LinkedOrganizationBillingUnavailableErrorDetails
+
+// The organization linked to the request's user profile has reached a spend limit
+// that it set, or lacks credit for the request. The response does not say which
+// applies.
+//
+// This is an alias to an internal type.
+type LinkedOrganizationSpendLimitReachedErrorDetails = shared.LinkedOrganizationSpendLimitReachedErrorDetails
 
 // This is an alias to an internal type.
-type NotFoundError = shared.NotFoundError
+type NotFoundErrorObject = shared.NotFoundErrorObject
 
 // Anthropic has disabled the organization for trust and safety reasons. An
 // organization disabled for any other reason, such as billing, does not get this
@@ -731,7 +794,7 @@ type OrganizationOnHoldErrorDetails = shared.OrganizationOnHoldErrorDetails
 type OrganizationTypeNotSupportedErrorDetails = shared.OrganizationTypeNotSupportedErrorDetails
 
 // This is an alias to an internal type.
-type OverloadedError = shared.OverloadedError
+type OverloadedErrorObject = shared.OverloadedErrorObject
 
 // The endpoint serves only organizations that belong to a parent organization, and
 // this organization belongs to none.
@@ -740,7 +803,7 @@ type OverloadedError = shared.OverloadedError
 type ParentOrganizationRequiredErrorDetails = shared.ParentOrganizationRequiredErrorDetails
 
 // This is an alias to an internal type.
-type PermissionError = shared.PermissionError
+type PermissionErrorObject = shared.PermissionErrorObject
 
 // The request would exceed a ramp limit, which caps how fast usage can grow. Retry
 // after the time in the `retry-after` header.
@@ -749,7 +812,7 @@ type PermissionError = shared.PermissionError
 type RampLimitExceededErrorDetails = shared.RampLimitExceededErrorDetails
 
 // This is an alias to an internal type.
-type RateLimitError = shared.RateLimitError
+type RateLimitErrorObject = shared.RateLimitErrorObject
 
 // The request body is not valid for its `Content-Encoding`.
 //
@@ -885,6 +948,25 @@ type ToolNameConflictErrorDetails = shared.ToolNameConflictErrorDetails
 //
 // This is an alias to an internal type.
 type ToolReferenceUnresolvedErrorDetails = shared.ToolReferenceUnresolvedErrorDetails
+
+// The request sets `billing_policy.bill_to` to `"user_profile"` but names no user
+// profile. Name the profile to bill in the `anthropic-user-profile-id` header.
+//
+// This is an alias to an internal type.
+type UserProfileRequiredErrorDetails = shared.UserProfileRequiredErrorDetails
+
+// The customer that the named user profile represents has not authorized the
+// caller to bill them, or the authorization that the request's credential uses has
+// ended. The response does not say which applies.
+//
+// This is an alias to an internal type.
+type UserProfileBillingNotAuthorizedErrorDetails = shared.UserProfileBillingNotAuthorizedErrorDetails
+
+// The caller is not allowed to bill the user profile that the request names. The
+// response gives no more specific error code and does not say what the reason is.
+//
+// This is an alias to an internal type.
+type UserProfileNotBillableErrorDetails = shared.UserProfileNotBillableErrorDetails
 
 // No usable Thread state was found for `previous_message_id`. Replay the full
 // conversation with `thread: {"type": "create"}` to start a new Thread.
@@ -1250,6 +1332,46 @@ type BetaBundleAttachmentNotSupportedErrorDetails = shared.BetaBundleAttachmentN
 //
 // This is an alias to an internal type.
 type BetaBundleOnCallErrorDetails = shared.BetaBundleOnCallErrorDetails
+
+// Deprecated: AuthenticationError has been renamed to AuthenticationErrorObject
+//
+// This is an alias to an internal type.
+type AuthenticationError = shared.AuthenticationError
+
+// Deprecated: InvalidRequestError has been renamed to InvalidRequestErrorObject
+//
+// This is an alias to an internal type.
+type InvalidRequestError = shared.InvalidRequestError
+
+// Deprecated: BillingError has been renamed to BillingErrorObject
+//
+// This is an alias to an internal type.
+type BillingError = shared.BillingError
+
+// Deprecated: GatewayTimeoutError has been renamed to GatewayTimeoutErrorObject
+//
+// This is an alias to an internal type.
+type GatewayTimeoutError = shared.GatewayTimeoutError
+
+// Deprecated: NotFoundError has been renamed to NotFoundErrorObject
+//
+// This is an alias to an internal type.
+type NotFoundError = shared.NotFoundError
+
+// Deprecated: OverloadedError has been renamed to OverloadedErrorObject
+//
+// This is an alias to an internal type.
+type OverloadedError = shared.OverloadedError
+
+// Deprecated: PermissionError has been renamed to PermissionErrorObject
+//
+// This is an alias to an internal type.
+type PermissionError = shared.PermissionError
+
+// Deprecated: RateLimitError has been renamed to RateLimitErrorObject
+//
+// This is an alias to an internal type.
+type RateLimitError = shared.RateLimitError
 
 // Backward-compatible type aliases for renamed types.
 // These ensure existing code continues to compile after

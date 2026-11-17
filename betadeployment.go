@@ -273,7 +273,7 @@ func (r *BetaDeploymentService) Unpause(ctx context.Context, deploymentID string
 }
 
 // The deployment's agent was archived.
-type BetaManagedAgentsAgentArchivedDeploymentPausedReasonError struct {
+type BetaManagedAgentsAgentArchivedDeploymentPausedReasonErrorObject struct {
 	Type constant.AgentArchivedError `json:"type" default:"agent_archived_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -284,10 +284,10 @@ type BetaManagedAgentsAgentArchivedDeploymentPausedReasonError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsAgentArchivedDeploymentPausedReasonError) RawJSON() string {
+func (r BetaManagedAgentsAgentArchivedDeploymentPausedReasonErrorObject) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *BetaManagedAgentsAgentArchivedDeploymentPausedReasonError) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsAgentArchivedDeploymentPausedReasonErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -624,7 +624,7 @@ type BetaManagedAgentsDeploymentPausedReasonUnion struct {
 	// Any of "manual", "error".
 	Type string `json:"type"`
 	// This field is from variant [BetaManagedAgentsErrorDeploymentPausedReason].
-	Error BetaManagedAgentsDeploymentPausedReasonErrorUnion `json:"error"`
+	Error BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion `json:"error"`
 	JSON  struct {
 		Type  respjson.Field
 		Error respjson.Field
@@ -679,28 +679,28 @@ func (r *BetaManagedAgentsDeploymentPausedReasonUnion) UnmarshalJSON(data []byte
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// BetaManagedAgentsDeploymentPausedReasonErrorUnion contains all possible
+// BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion contains all possible
 // properties and values from
-// [BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonError],
-// [BetaManagedAgentsAgentArchivedDeploymentPausedReasonError],
-// [BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonError],
-// [BetaManagedAgentsVaultNotFoundDeploymentPausedReasonError],
-// [BetaManagedAgentsFileNotFoundDeploymentPausedReasonError],
-// [BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonError],
-// [BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonError],
-// [BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonError],
-// [BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonError],
-// [BetaManagedAgentsSkillNotFoundDeploymentPausedReasonError],
-// [BetaManagedAgentsVaultArchivedDeploymentPausedReasonError],
-// [BetaManagedAgentsUnknownDeploymentPausedReasonError],
-// [BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonError],
-// [BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonError].
+// [BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonErrorObject],
+// [BetaManagedAgentsAgentArchivedDeploymentPausedReasonErrorObject],
+// [BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonErrorObject],
+// [BetaManagedAgentsVaultNotFoundDeploymentPausedReasonErrorObject],
+// [BetaManagedAgentsFileNotFoundDeploymentPausedReasonErrorObject],
+// [BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonErrorObject],
+// [BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonErrorObject],
+// [BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonErrorObject],
+// [BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonErrorObject],
+// [BetaManagedAgentsSkillNotFoundDeploymentPausedReasonErrorObject],
+// [BetaManagedAgentsVaultArchivedDeploymentPausedReasonErrorObject],
+// [BetaManagedAgentsUnknownDeploymentPausedReasonErrorObject],
+// [BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonErrorObject],
+// [BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonErrorObject].
 //
-// Use the [BetaManagedAgentsDeploymentPausedReasonErrorUnion.AsAny] method to
-// switch on the variant.
+// Use the [BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion.AsAny] method
+// to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaManagedAgentsDeploymentPausedReasonErrorUnion struct {
+type BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion struct {
 	// Any of "environment_archived_error", "agent_archived_error",
 	// "environment_not_found_error", "vault_not_found_error", "file_not_found_error",
 	// "session_resource_not_found_error", "workspace_archived_error",
@@ -714,63 +714,64 @@ type BetaManagedAgentsDeploymentPausedReasonErrorUnion struct {
 	} `json:"-"`
 }
 
-// anyBetaManagedAgentsDeploymentPausedReasonError is implemented by each variant
-// of [BetaManagedAgentsDeploymentPausedReasonErrorUnion] to add type safety for
-// the return type of [BetaManagedAgentsDeploymentPausedReasonErrorUnion.AsAny]
-type anyBetaManagedAgentsDeploymentPausedReasonError interface {
-	implBetaManagedAgentsDeploymentPausedReasonErrorUnion()
+// anyBetaManagedAgentsDeploymentPausedReasonErrorObject is implemented by each
+// variant of [BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion] to add type
+// safety for the return type of
+// [BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion.AsAny]
+type anyBetaManagedAgentsDeploymentPausedReasonErrorObject interface {
+	implBetaManagedAgentsDeploymentPausedReasonErrorObjectUnion()
 }
 
-func (BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonError) implBetaManagedAgentsDeploymentPausedReasonErrorUnion() {
+func (BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonErrorObject) implBetaManagedAgentsDeploymentPausedReasonErrorObjectUnion() {
 }
-func (BetaManagedAgentsAgentArchivedDeploymentPausedReasonError) implBetaManagedAgentsDeploymentPausedReasonErrorUnion() {
+func (BetaManagedAgentsAgentArchivedDeploymentPausedReasonErrorObject) implBetaManagedAgentsDeploymentPausedReasonErrorObjectUnion() {
 }
-func (BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonError) implBetaManagedAgentsDeploymentPausedReasonErrorUnion() {
+func (BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonErrorObject) implBetaManagedAgentsDeploymentPausedReasonErrorObjectUnion() {
 }
-func (BetaManagedAgentsVaultNotFoundDeploymentPausedReasonError) implBetaManagedAgentsDeploymentPausedReasonErrorUnion() {
+func (BetaManagedAgentsVaultNotFoundDeploymentPausedReasonErrorObject) implBetaManagedAgentsDeploymentPausedReasonErrorObjectUnion() {
 }
-func (BetaManagedAgentsFileNotFoundDeploymentPausedReasonError) implBetaManagedAgentsDeploymentPausedReasonErrorUnion() {
+func (BetaManagedAgentsFileNotFoundDeploymentPausedReasonErrorObject) implBetaManagedAgentsDeploymentPausedReasonErrorObjectUnion() {
 }
-func (BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonError) implBetaManagedAgentsDeploymentPausedReasonErrorUnion() {
+func (BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonErrorObject) implBetaManagedAgentsDeploymentPausedReasonErrorObjectUnion() {
 }
-func (BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonError) implBetaManagedAgentsDeploymentPausedReasonErrorUnion() {
+func (BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonErrorObject) implBetaManagedAgentsDeploymentPausedReasonErrorObjectUnion() {
 }
-func (BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonError) implBetaManagedAgentsDeploymentPausedReasonErrorUnion() {
+func (BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonErrorObject) implBetaManagedAgentsDeploymentPausedReasonErrorObjectUnion() {
 }
-func (BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonError) implBetaManagedAgentsDeploymentPausedReasonErrorUnion() {
+func (BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonErrorObject) implBetaManagedAgentsDeploymentPausedReasonErrorObjectUnion() {
 }
-func (BetaManagedAgentsSkillNotFoundDeploymentPausedReasonError) implBetaManagedAgentsDeploymentPausedReasonErrorUnion() {
+func (BetaManagedAgentsSkillNotFoundDeploymentPausedReasonErrorObject) implBetaManagedAgentsDeploymentPausedReasonErrorObjectUnion() {
 }
-func (BetaManagedAgentsVaultArchivedDeploymentPausedReasonError) implBetaManagedAgentsDeploymentPausedReasonErrorUnion() {
+func (BetaManagedAgentsVaultArchivedDeploymentPausedReasonErrorObject) implBetaManagedAgentsDeploymentPausedReasonErrorObjectUnion() {
 }
-func (BetaManagedAgentsUnknownDeploymentPausedReasonError) implBetaManagedAgentsDeploymentPausedReasonErrorUnion() {
+func (BetaManagedAgentsUnknownDeploymentPausedReasonErrorObject) implBetaManagedAgentsDeploymentPausedReasonErrorObjectUnion() {
 }
-func (BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonError) implBetaManagedAgentsDeploymentPausedReasonErrorUnion() {
+func (BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonErrorObject) implBetaManagedAgentsDeploymentPausedReasonErrorObjectUnion() {
 }
-func (BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonError) implBetaManagedAgentsDeploymentPausedReasonErrorUnion() {
+func (BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonErrorObject) implBetaManagedAgentsDeploymentPausedReasonErrorObjectUnion() {
 }
 
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := BetaManagedAgentsDeploymentPausedReasonErrorUnion.AsAny().(type) {
-//	case anthropic.BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonError:
-//	case anthropic.BetaManagedAgentsAgentArchivedDeploymentPausedReasonError:
-//	case anthropic.BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonError:
-//	case anthropic.BetaManagedAgentsVaultNotFoundDeploymentPausedReasonError:
-//	case anthropic.BetaManagedAgentsFileNotFoundDeploymentPausedReasonError:
-//	case anthropic.BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonError:
-//	case anthropic.BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonError:
-//	case anthropic.BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonError:
-//	case anthropic.BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonError:
-//	case anthropic.BetaManagedAgentsSkillNotFoundDeploymentPausedReasonError:
-//	case anthropic.BetaManagedAgentsVaultArchivedDeploymentPausedReasonError:
-//	case anthropic.BetaManagedAgentsUnknownDeploymentPausedReasonError:
-//	case anthropic.BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonError:
-//	case anthropic.BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonError:
+//	switch variant := BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonErrorObject:
+//	case anthropic.BetaManagedAgentsAgentArchivedDeploymentPausedReasonErrorObject:
+//	case anthropic.BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonErrorObject:
+//	case anthropic.BetaManagedAgentsVaultNotFoundDeploymentPausedReasonErrorObject:
+//	case anthropic.BetaManagedAgentsFileNotFoundDeploymentPausedReasonErrorObject:
+//	case anthropic.BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonErrorObject:
+//	case anthropic.BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonErrorObject:
+//	case anthropic.BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonErrorObject:
+//	case anthropic.BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonErrorObject:
+//	case anthropic.BetaManagedAgentsSkillNotFoundDeploymentPausedReasonErrorObject:
+//	case anthropic.BetaManagedAgentsVaultArchivedDeploymentPausedReasonErrorObject:
+//	case anthropic.BetaManagedAgentsUnknownDeploymentPausedReasonErrorObject:
+//	case anthropic.BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonErrorObject:
+//	case anthropic.BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonErrorObject:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaManagedAgentsDeploymentPausedReasonErrorUnion) AsAny() anyBetaManagedAgentsDeploymentPausedReasonError {
+func (u BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion) AsAny() anyBetaManagedAgentsDeploymentPausedReasonErrorObject {
 	switch u.Type {
 	case "environment_archived_error":
 		return u.AsEnvironmentArchivedError()
@@ -804,80 +805,80 @@ func (u BetaManagedAgentsDeploymentPausedReasonErrorUnion) AsAny() anyBetaManage
 	return nil
 }
 
-func (u BetaManagedAgentsDeploymentPausedReasonErrorUnion) AsEnvironmentArchivedError() (v BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonError) {
+func (u BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion) AsEnvironmentArchivedError() (v BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentPausedReasonErrorUnion) AsAgentArchivedError() (v BetaManagedAgentsAgentArchivedDeploymentPausedReasonError) {
+func (u BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion) AsAgentArchivedError() (v BetaManagedAgentsAgentArchivedDeploymentPausedReasonErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentPausedReasonErrorUnion) AsEnvironmentNotFoundError() (v BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonError) {
+func (u BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion) AsEnvironmentNotFoundError() (v BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentPausedReasonErrorUnion) AsVaultNotFoundError() (v BetaManagedAgentsVaultNotFoundDeploymentPausedReasonError) {
+func (u BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion) AsVaultNotFoundError() (v BetaManagedAgentsVaultNotFoundDeploymentPausedReasonErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentPausedReasonErrorUnion) AsFileNotFoundError() (v BetaManagedAgentsFileNotFoundDeploymentPausedReasonError) {
+func (u BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion) AsFileNotFoundError() (v BetaManagedAgentsFileNotFoundDeploymentPausedReasonErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentPausedReasonErrorUnion) AsSessionResourceNotFoundError() (v BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonError) {
+func (u BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion) AsSessionResourceNotFoundError() (v BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentPausedReasonErrorUnion) AsWorkspaceArchivedError() (v BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonError) {
+func (u BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion) AsWorkspaceArchivedError() (v BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentPausedReasonErrorUnion) AsOrganizationDisabledError() (v BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonError) {
+func (u BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion) AsOrganizationDisabledError() (v BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentPausedReasonErrorUnion) AsMemoryStoreArchivedError() (v BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonError) {
+func (u BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion) AsMemoryStoreArchivedError() (v BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentPausedReasonErrorUnion) AsSkillNotFoundError() (v BetaManagedAgentsSkillNotFoundDeploymentPausedReasonError) {
+func (u BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion) AsSkillNotFoundError() (v BetaManagedAgentsSkillNotFoundDeploymentPausedReasonErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentPausedReasonErrorUnion) AsVaultArchivedError() (v BetaManagedAgentsVaultArchivedDeploymentPausedReasonError) {
+func (u BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion) AsVaultArchivedError() (v BetaManagedAgentsVaultArchivedDeploymentPausedReasonErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentPausedReasonErrorUnion) AsUnknownError() (v BetaManagedAgentsUnknownDeploymentPausedReasonError) {
+func (u BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion) AsUnknownError() (v BetaManagedAgentsUnknownDeploymentPausedReasonErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentPausedReasonErrorUnion) AsSelfHostedResourcesUnsupportedError() (v BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonError) {
+func (u BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion) AsSelfHostedResourcesUnsupportedError() (v BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsDeploymentPausedReasonErrorUnion) AsMCPEgressBlockedError() (v BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonError) {
+func (u BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion) AsMCPEgressBlockedError() (v BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u BetaManagedAgentsDeploymentPausedReasonErrorUnion) RawJSON() string { return u.JSON.raw }
+func (u BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion) RawJSON() string { return u.JSON.raw }
 
-func (r *BetaManagedAgentsDeploymentPausedReasonErrorUnion) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1157,7 +1158,7 @@ func (r *BetaManagedAgentsDeploymentUserMessageEventContentUnionSource) Unmarsha
 }
 
 // The deployment's environment was archived.
-type BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonError struct {
+type BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonErrorObject struct {
 	Type constant.EnvironmentArchivedError `json:"type" default:"environment_archived_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1168,15 +1169,15 @@ type BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonError) RawJSON() string {
+func (r BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonErrorObject) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonError) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The deployment's environment no longer exists.
-type BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonError struct {
+type BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonErrorObject struct {
 	Type constant.EnvironmentNotFoundError `json:"type" default:"environment_not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1187,18 +1188,18 @@ type BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonError) RawJSON() string {
+func (r BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonErrorObject) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonError) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // A scheduled fire recorded a failed run whose error auto-pauses the deployment.
 type BetaManagedAgentsErrorDeploymentPausedReason struct {
 	// The failed run's error.
-	Error BetaManagedAgentsDeploymentPausedReasonErrorUnion `json:"error" api:"required"`
-	Type  constant.Error                                    `json:"type" default:"error"`
+	Error BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion `json:"error" api:"required"`
+	Type  constant.Error                                          `json:"type" default:"error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Error       respjson.Field
@@ -1215,7 +1216,7 @@ func (r *BetaManagedAgentsErrorDeploymentPausedReason) UnmarshalJSON(data []byte
 }
 
 // A file resource referenced by the deployment no longer exists.
-type BetaManagedAgentsFileNotFoundDeploymentPausedReasonError struct {
+type BetaManagedAgentsFileNotFoundDeploymentPausedReasonErrorObject struct {
 	Type constant.FileNotFoundError `json:"type" default:"file_not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1226,8 +1227,10 @@ type BetaManagedAgentsFileNotFoundDeploymentPausedReasonError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsFileNotFoundDeploymentPausedReasonError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsFileNotFoundDeploymentPausedReasonError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsFileNotFoundDeploymentPausedReasonErrorObject) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *BetaManagedAgentsFileNotFoundDeploymentPausedReasonErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1373,7 +1376,7 @@ func (r *BetaManagedAgentsManualDeploymentPausedReason) UnmarshalJSON(data []byt
 
 // An MCP server host used by the deployment's agent is blocked by the
 // environment's network policy.
-type BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonError struct {
+type BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonErrorObject struct {
 	Type constant.MCPEgressBlockedError `json:"type" default:"mcp_egress_blocked_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1384,15 +1387,15 @@ type BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonError) RawJSON() string {
+func (r BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonErrorObject) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonError) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // A memory store referenced by the deployment is archived.
-type BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonError struct {
+type BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonErrorObject struct {
 	Type constant.MemoryStoreArchivedError `json:"type" default:"memory_store_archived_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1403,10 +1406,10 @@ type BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonError) RawJSON() string {
+func (r BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonErrorObject) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonError) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1451,7 +1454,7 @@ const (
 )
 
 // The deployment's organization is disabled.
-type BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonError struct {
+type BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonErrorObject struct {
 	Type constant.OrganizationDisabledError `json:"type" default:"organization_disabled_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1462,10 +1465,10 @@ type BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonError) RawJSON() string {
+func (r BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonErrorObject) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonError) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1536,7 +1539,7 @@ func (r *BetaManagedAgentsScheduleParams) UnmarshalJSON(data []byte) error {
 
 // The deployment configures resources, but its environment is self-hosted and
 // cannot mount them.
-type BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonError struct {
+type BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonErrorObject struct {
 	Type constant.SelfHostedResourcesUnsupportedError `json:"type" default:"self_hosted_resources_unsupported_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1547,10 +1550,10 @@ type BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonError 
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonError) RawJSON() string {
+func (r BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonErrorObject) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonError) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1648,7 +1651,7 @@ func (r *BetaManagedAgentsSessionResourceConfigUnion) UnmarshalJSON(data []byte)
 }
 
 // A referenced resource no longer exists and its kind was not reported.
-type BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonError struct {
+type BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonErrorObject struct {
 	Type constant.SessionResourceNotFoundError `json:"type" default:"session_resource_not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1659,15 +1662,15 @@ type BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonError struct 
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonError) RawJSON() string {
+func (r BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonErrorObject) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonError) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // A skill referenced by the deployment's agent no longer exists.
-type BetaManagedAgentsSkillNotFoundDeploymentPausedReasonError struct {
+type BetaManagedAgentsSkillNotFoundDeploymentPausedReasonErrorObject struct {
 	Type constant.SkillNotFoundError `json:"type" default:"skill_not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1678,16 +1681,16 @@ type BetaManagedAgentsSkillNotFoundDeploymentPausedReasonError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsSkillNotFoundDeploymentPausedReasonError) RawJSON() string {
+func (r BetaManagedAgentsSkillNotFoundDeploymentPausedReasonErrorObject) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *BetaManagedAgentsSkillNotFoundDeploymentPausedReasonError) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsSkillNotFoundDeploymentPausedReasonErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // An unrecognized error auto-paused the deployment. A fallback variant; matches a
 // run whose `error.type` is `unknown_error`.
-type BetaManagedAgentsUnknownDeploymentPausedReasonError struct {
+type BetaManagedAgentsUnknownDeploymentPausedReasonErrorObject struct {
 	Type constant.UnknownError `json:"type" default:"unknown_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1698,13 +1701,15 @@ type BetaManagedAgentsUnknownDeploymentPausedReasonError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsUnknownDeploymentPausedReasonError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsUnknownDeploymentPausedReasonError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsUnknownDeploymentPausedReasonErrorObject) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *BetaManagedAgentsUnknownDeploymentPausedReasonErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // A vault referenced by the deployment is archived.
-type BetaManagedAgentsVaultArchivedDeploymentPausedReasonError struct {
+type BetaManagedAgentsVaultArchivedDeploymentPausedReasonErrorObject struct {
 	Type constant.VaultArchivedError `json:"type" default:"vault_archived_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1715,15 +1720,15 @@ type BetaManagedAgentsVaultArchivedDeploymentPausedReasonError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsVaultArchivedDeploymentPausedReasonError) RawJSON() string {
+func (r BetaManagedAgentsVaultArchivedDeploymentPausedReasonErrorObject) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *BetaManagedAgentsVaultArchivedDeploymentPausedReasonError) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsVaultArchivedDeploymentPausedReasonErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // A vault referenced by the deployment no longer exists.
-type BetaManagedAgentsVaultNotFoundDeploymentPausedReasonError struct {
+type BetaManagedAgentsVaultNotFoundDeploymentPausedReasonErrorObject struct {
 	Type constant.VaultNotFoundError `json:"type" default:"vault_not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1734,15 +1739,15 @@ type BetaManagedAgentsVaultNotFoundDeploymentPausedReasonError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsVaultNotFoundDeploymentPausedReasonError) RawJSON() string {
+func (r BetaManagedAgentsVaultNotFoundDeploymentPausedReasonErrorObject) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *BetaManagedAgentsVaultNotFoundDeploymentPausedReasonError) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsVaultNotFoundDeploymentPausedReasonErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The deployment's workspace was archived.
-type BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonError struct {
+type BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonErrorObject struct {
 	Type constant.WorkspaceArchivedError `json:"type" default:"workspace_archived_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -1753,12 +1758,81 @@ type BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonError) RawJSON() string {
+func (r BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonErrorObject) RawJSON() string {
 	return r.JSON.raw
 }
-func (r *BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonError) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Deprecated: BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonError has
+// been renamed to
+// BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonErrorObject
+type BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonError = BetaManagedAgentsEnvironmentArchivedDeploymentPausedReasonErrorObject
+
+// Deprecated: BetaManagedAgentsAgentArchivedDeploymentPausedReasonError has been
+// renamed to BetaManagedAgentsAgentArchivedDeploymentPausedReasonErrorObject
+type BetaManagedAgentsAgentArchivedDeploymentPausedReasonError = BetaManagedAgentsAgentArchivedDeploymentPausedReasonErrorObject
+
+// Deprecated: BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonError has
+// been renamed to
+// BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonErrorObject
+type BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonError = BetaManagedAgentsEnvironmentNotFoundDeploymentPausedReasonErrorObject
+
+// Deprecated:
+// BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonError has
+// been renamed to
+// BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonErrorObject
+type BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonError = BetaManagedAgentsSelfHostedResourcesUnsupportedDeploymentPausedReasonErrorObject
+
+// Deprecated: BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonError has
+// been renamed to
+// BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonErrorObject
+type BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonError = BetaManagedAgentsMCPEgressBlockedDeploymentPausedReasonErrorObject
+
+// Deprecated: BetaManagedAgentsVaultNotFoundDeploymentPausedReasonError has been
+// renamed to BetaManagedAgentsVaultNotFoundDeploymentPausedReasonErrorObject
+type BetaManagedAgentsVaultNotFoundDeploymentPausedReasonError = BetaManagedAgentsVaultNotFoundDeploymentPausedReasonErrorObject
+
+// Deprecated: BetaManagedAgentsFileNotFoundDeploymentPausedReasonError has been
+// renamed to BetaManagedAgentsFileNotFoundDeploymentPausedReasonErrorObject
+type BetaManagedAgentsFileNotFoundDeploymentPausedReasonError = BetaManagedAgentsFileNotFoundDeploymentPausedReasonErrorObject
+
+// Deprecated: BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonError
+// has been renamed to
+// BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonErrorObject
+type BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonError = BetaManagedAgentsSessionResourceNotFoundDeploymentPausedReasonErrorObject
+
+// Deprecated: BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonError has
+// been renamed to
+// BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonErrorObject
+type BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonError = BetaManagedAgentsWorkspaceArchivedDeploymentPausedReasonErrorObject
+
+// Deprecated: BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonError has
+// been renamed to
+// BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonErrorObject
+type BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonError = BetaManagedAgentsOrganizationDisabledDeploymentPausedReasonErrorObject
+
+// Deprecated: BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonError has
+// been renamed to
+// BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonErrorObject
+type BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonError = BetaManagedAgentsMemoryStoreArchivedDeploymentPausedReasonErrorObject
+
+// Deprecated: BetaManagedAgentsSkillNotFoundDeploymentPausedReasonError has been
+// renamed to BetaManagedAgentsSkillNotFoundDeploymentPausedReasonErrorObject
+type BetaManagedAgentsSkillNotFoundDeploymentPausedReasonError = BetaManagedAgentsSkillNotFoundDeploymentPausedReasonErrorObject
+
+// Deprecated: BetaManagedAgentsVaultArchivedDeploymentPausedReasonError has been
+// renamed to BetaManagedAgentsVaultArchivedDeploymentPausedReasonErrorObject
+type BetaManagedAgentsVaultArchivedDeploymentPausedReasonError = BetaManagedAgentsVaultArchivedDeploymentPausedReasonErrorObject
+
+// Deprecated: BetaManagedAgentsUnknownDeploymentPausedReasonError has been renamed
+// to BetaManagedAgentsUnknownDeploymentPausedReasonErrorObject
+type BetaManagedAgentsUnknownDeploymentPausedReasonError = BetaManagedAgentsUnknownDeploymentPausedReasonErrorObject
+
+// Deprecated: BetaManagedAgentsDeploymentPausedReasonErrorUnion has been renamed
+// to BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion
+type BetaManagedAgentsDeploymentPausedReasonErrorUnion = BetaManagedAgentsDeploymentPausedReasonErrorObjectUnion
 
 type BetaDeploymentNewParams struct {
 	// Agent to deploy. Accepts the `agent` ID string, which pins the latest version,

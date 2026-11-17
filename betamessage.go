@@ -74,9 +74,15 @@ func NewBetaMessageService(opts ...option.RequestOption) (r BetaMessageService) 
 //   - [ErrorCodeThreadUnsupportedRequest] (HTTP 400)
 //   - [ErrorCodeToolNameConflict] (HTTP 400)
 //   - [ErrorCodeToolReferenceUnresolved] (HTTP 400)
+//   - [ErrorCodeUserProfileRequired] (HTTP 400)
+//   - [ErrorCodeLinkedOrganizationBillingUnavailable] (HTTP 402)
+//   - [ErrorCodeLinkedOrganizationSpendLimitReached] (HTTP 402)
+//   - [ErrorCodeUserProfileBillingNotAuthorized] (HTTP 403)
+//   - [ErrorCodeUserProfileNotBillable] (HTTP 403)
 //   - [ErrorCodeThreadNotFound] (HTTP 404)
 //   - [ErrorCodeSkillReadBlockedUndecryptable] (HTTP 409)
 //   - [ErrorCodeRequestBodyTooLargeAfterDecoding] (HTTP 413)
+//   - [ErrorCodeContractSpendLimitReached] (HTTP 429)
 //   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429)
 //   - [ErrorCodeRampLimitExceeded] (HTTP 429)
 //   - [ErrorCodeCMEKKeyUnreachable] (HTTP 503)
@@ -161,9 +167,15 @@ func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParam
 //   - [ErrorCodeThreadUnsupportedRequest] (HTTP 400)
 //   - [ErrorCodeToolNameConflict] (HTTP 400)
 //   - [ErrorCodeToolReferenceUnresolved] (HTTP 400)
+//   - [ErrorCodeUserProfileRequired] (HTTP 400)
+//   - [ErrorCodeLinkedOrganizationBillingUnavailable] (HTTP 402)
+//   - [ErrorCodeLinkedOrganizationSpendLimitReached] (HTTP 402)
+//   - [ErrorCodeUserProfileBillingNotAuthorized] (HTTP 403)
+//   - [ErrorCodeUserProfileNotBillable] (HTTP 403)
 //   - [ErrorCodeThreadNotFound] (HTTP 404)
 //   - [ErrorCodeSkillReadBlockedUndecryptable] (HTTP 409)
 //   - [ErrorCodeRequestBodyTooLargeAfterDecoding] (HTTP 413)
+//   - [ErrorCodeContractSpendLimitReached] (HTTP 429)
 //   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429)
 //   - [ErrorCodeRampLimitExceeded] (HTTP 429)
 //   - [ErrorCodeCMEKKeyUnreachable] (HTTP 503)
@@ -515,15 +527,15 @@ func (r *BetaAdvisorToolResultBlock) UnmarshalJSON(data []byte) error {
 }
 
 // BetaAdvisorToolResultBlockContentUnion contains all possible properties and
-// values from [BetaAdvisorToolResultError], [BetaAdvisorResultBlock],
+// values from [BetaAdvisorToolResultErrorObject], [BetaAdvisorResultBlock],
 // [BetaAdvisorRedactedResultBlock].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaAdvisorToolResultBlockContentUnion struct {
-	// This field is from variant [BetaAdvisorToolResultError].
-	ErrorCode  BetaAdvisorToolResultErrorErrorCode `json:"error_code"`
-	Type       string                              `json:"type"`
-	StopReason string                              `json:"stop_reason"`
+	// This field is from variant [BetaAdvisorToolResultErrorObject].
+	ErrorCode  BetaAdvisorToolResultErrorObjectErrorCode `json:"error_code"`
+	Type       string                                    `json:"type"`
+	StopReason string                                    `json:"stop_reason"`
 	// This field is from variant [BetaAdvisorResultBlock].
 	Text string `json:"text"`
 	// This field is from variant [BetaAdvisorRedactedResultBlock].
@@ -538,7 +550,7 @@ type BetaAdvisorToolResultBlockContentUnion struct {
 	} `json:"-"`
 }
 
-func (u BetaAdvisorToolResultBlockContentUnion) AsResponseAdvisorToolResultError() (v BetaAdvisorToolResultError) {
+func (u BetaAdvisorToolResultBlockContentUnion) AsResponseAdvisorToolResultError() (v BetaAdvisorToolResultErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -654,11 +666,11 @@ func (u BetaAdvisorToolResultBlockParamContentUnion) GetStopReason() *string {
 	return nil
 }
 
-type BetaAdvisorToolResultError struct {
+type BetaAdvisorToolResultErrorObject struct {
 	// Any of "max_uses_exceeded", "prompt_too_long", "too_many_requests",
 	// "overloaded", "unavailable", "execution_time_exceeded", "model_not_found".
-	ErrorCode BetaAdvisorToolResultErrorErrorCode `json:"error_code" api:"required"`
-	Type      constant.AdvisorToolResultError     `json:"type" default:"advisor_tool_result_error"`
+	ErrorCode BetaAdvisorToolResultErrorObjectErrorCode `json:"error_code" api:"required"`
+	Type      constant.AdvisorToolResultError           `json:"type" default:"advisor_tool_result_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ErrorCode   respjson.Field
@@ -669,21 +681,21 @@ type BetaAdvisorToolResultError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaAdvisorToolResultError) RawJSON() string { return r.JSON.raw }
-func (r *BetaAdvisorToolResultError) UnmarshalJSON(data []byte) error {
+func (r BetaAdvisorToolResultErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaAdvisorToolResultErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaAdvisorToolResultErrorErrorCode string
+type BetaAdvisorToolResultErrorObjectErrorCode string
 
 const (
-	BetaAdvisorToolResultErrorErrorCodeMaxUsesExceeded       BetaAdvisorToolResultErrorErrorCode = "max_uses_exceeded"
-	BetaAdvisorToolResultErrorErrorCodePromptTooLong         BetaAdvisorToolResultErrorErrorCode = "prompt_too_long"
-	BetaAdvisorToolResultErrorErrorCodeTooManyRequests       BetaAdvisorToolResultErrorErrorCode = "too_many_requests"
-	BetaAdvisorToolResultErrorErrorCodeOverloaded            BetaAdvisorToolResultErrorErrorCode = "overloaded"
-	BetaAdvisorToolResultErrorErrorCodeUnavailable           BetaAdvisorToolResultErrorErrorCode = "unavailable"
-	BetaAdvisorToolResultErrorErrorCodeExecutionTimeExceeded BetaAdvisorToolResultErrorErrorCode = "execution_time_exceeded"
-	BetaAdvisorToolResultErrorErrorCodeModelNotFound         BetaAdvisorToolResultErrorErrorCode = "model_not_found"
+	BetaAdvisorToolResultErrorObjectErrorCodeMaxUsesExceeded       BetaAdvisorToolResultErrorObjectErrorCode = "max_uses_exceeded"
+	BetaAdvisorToolResultErrorObjectErrorCodePromptTooLong         BetaAdvisorToolResultErrorObjectErrorCode = "prompt_too_long"
+	BetaAdvisorToolResultErrorObjectErrorCodeTooManyRequests       BetaAdvisorToolResultErrorObjectErrorCode = "too_many_requests"
+	BetaAdvisorToolResultErrorObjectErrorCodeOverloaded            BetaAdvisorToolResultErrorObjectErrorCode = "overloaded"
+	BetaAdvisorToolResultErrorObjectErrorCodeUnavailable           BetaAdvisorToolResultErrorObjectErrorCode = "unavailable"
+	BetaAdvisorToolResultErrorObjectErrorCodeExecutionTimeExceeded BetaAdvisorToolResultErrorObjectErrorCode = "execution_time_exceeded"
+	BetaAdvisorToolResultErrorObjectErrorCodeModelNotFound         BetaAdvisorToolResultErrorObjectErrorCode = "model_not_found"
 )
 
 // The properties ErrorCode, Type are required.
@@ -928,14 +940,14 @@ func (r *BetaBashCodeExecutionToolResultBlock) UnmarshalJSON(data []byte) error 
 }
 
 // BetaBashCodeExecutionToolResultBlockContentUnion contains all possible
-// properties and values from [BetaBashCodeExecutionToolResultError],
+// properties and values from [BetaBashCodeExecutionToolResultErrorObject],
 // [BetaBashCodeExecutionResultBlock].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaBashCodeExecutionToolResultBlockContentUnion struct {
-	// This field is from variant [BetaBashCodeExecutionToolResultError].
-	ErrorCode BetaBashCodeExecutionToolResultErrorErrorCode `json:"error_code"`
-	Type      string                                        `json:"type"`
+	// This field is from variant [BetaBashCodeExecutionToolResultErrorObject].
+	ErrorCode BetaBashCodeExecutionToolResultErrorObjectErrorCode `json:"error_code"`
+	Type      string                                              `json:"type"`
 	// This field is from variant [BetaBashCodeExecutionResultBlock].
 	Content []BetaBashCodeExecutionOutputBlock `json:"content"`
 	// This field is from variant [BetaBashCodeExecutionResultBlock].
@@ -955,7 +967,7 @@ type BetaBashCodeExecutionToolResultBlockContentUnion struct {
 	} `json:"-"`
 }
 
-func (u BetaBashCodeExecutionToolResultBlockContentUnion) AsResponseBashCodeExecutionToolResultError() (v BetaBashCodeExecutionToolResultError) {
+func (u BetaBashCodeExecutionToolResultBlockContentUnion) AsResponseBashCodeExecutionToolResultError() (v BetaBashCodeExecutionToolResultErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1067,11 +1079,11 @@ func (u BetaBashCodeExecutionToolResultBlockParamContentUnion) GetType() *string
 	return nil
 }
 
-type BetaBashCodeExecutionToolResultError struct {
+type BetaBashCodeExecutionToolResultErrorObject struct {
 	// Any of "invalid_tool_input", "unavailable", "too_many_requests",
 	// "execution_time_exceeded", "output_file_too_large".
-	ErrorCode BetaBashCodeExecutionToolResultErrorErrorCode `json:"error_code" api:"required"`
-	Type      constant.BashCodeExecutionToolResultError     `json:"type" default:"bash_code_execution_tool_result_error"`
+	ErrorCode BetaBashCodeExecutionToolResultErrorObjectErrorCode `json:"error_code" api:"required"`
+	Type      constant.BashCodeExecutionToolResultError           `json:"type" default:"bash_code_execution_tool_result_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ErrorCode   respjson.Field
@@ -1082,19 +1094,19 @@ type BetaBashCodeExecutionToolResultError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaBashCodeExecutionToolResultError) RawJSON() string { return r.JSON.raw }
-func (r *BetaBashCodeExecutionToolResultError) UnmarshalJSON(data []byte) error {
+func (r BetaBashCodeExecutionToolResultErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaBashCodeExecutionToolResultErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaBashCodeExecutionToolResultErrorErrorCode string
+type BetaBashCodeExecutionToolResultErrorObjectErrorCode string
 
 const (
-	BetaBashCodeExecutionToolResultErrorErrorCodeInvalidToolInput      BetaBashCodeExecutionToolResultErrorErrorCode = "invalid_tool_input"
-	BetaBashCodeExecutionToolResultErrorErrorCodeUnavailable           BetaBashCodeExecutionToolResultErrorErrorCode = "unavailable"
-	BetaBashCodeExecutionToolResultErrorErrorCodeTooManyRequests       BetaBashCodeExecutionToolResultErrorErrorCode = "too_many_requests"
-	BetaBashCodeExecutionToolResultErrorErrorCodeExecutionTimeExceeded BetaBashCodeExecutionToolResultErrorErrorCode = "execution_time_exceeded"
-	BetaBashCodeExecutionToolResultErrorErrorCodeOutputFileTooLarge    BetaBashCodeExecutionToolResultErrorErrorCode = "output_file_too_large"
+	BetaBashCodeExecutionToolResultErrorObjectErrorCodeInvalidToolInput      BetaBashCodeExecutionToolResultErrorObjectErrorCode = "invalid_tool_input"
+	BetaBashCodeExecutionToolResultErrorObjectErrorCodeUnavailable           BetaBashCodeExecutionToolResultErrorObjectErrorCode = "unavailable"
+	BetaBashCodeExecutionToolResultErrorObjectErrorCodeTooManyRequests       BetaBashCodeExecutionToolResultErrorObjectErrorCode = "too_many_requests"
+	BetaBashCodeExecutionToolResultErrorObjectErrorCodeExecutionTimeExceeded BetaBashCodeExecutionToolResultErrorObjectErrorCode = "execution_time_exceeded"
+	BetaBashCodeExecutionToolResultErrorObjectErrorCodeOutputFileTooLarge    BetaBashCodeExecutionToolResultErrorObjectErrorCode = "output_file_too_large"
 )
 
 // The properties ErrorCode, Type are required.
@@ -1125,6 +1137,39 @@ const (
 	BetaBashCodeExecutionToolResultErrorParamErrorCodeExecutionTimeExceeded BetaBashCodeExecutionToolResultErrorParamErrorCode = "execution_time_exceeded"
 	BetaBashCodeExecutionToolResultErrorParamErrorCodeOutputFileTooLarge    BetaBashCodeExecutionToolResultErrorParamErrorCode = "output_file_too_large"
 )
+
+// Who is billed for a request.
+type BetaBillTo string
+
+const (
+	BetaBillToSelf        BetaBillTo = "self"
+	BetaBillToUserProfile BetaBillTo = "user_profile"
+)
+
+// Declares which organization is billed for the request.
+//
+// The property Type is required.
+type BetaBillingPolicyParam struct {
+	// Who is billed. `self`, the default, bills your organization, as if
+	// `billing_policy` were omitted. `user_profile` bills the customer behind the user
+	// profile the request names; if that customer has not linked an Anthropic
+	// organization to the profile, or has not allowed your organization to bill it,
+	// the request is rejected rather than billed to you.
+	//
+	// Any of "self", "user_profile".
+	BillTo BetaBillTo `json:"bill_to,omitzero"`
+	// This field can be elided, and will marshal its zero value as "billing_policy".
+	Type constant.BillingPolicy `json:"type" default:"billing_policy"`
+	paramObj
+}
+
+func (r BetaBillingPolicyParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaBillingPolicyParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *BetaBillingPolicyParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 // BetaBrowserClickTargetUnion contains all possible properties and values from
 // [BetaBrowserCoordinateTarget], [BetaBrowserRefTarget].
@@ -7147,12 +7192,12 @@ func (r *BetaCodeExecutionToolResultBlock) UnmarshalJSON(data []byte) error {
 }
 
 // BetaCodeExecutionToolResultBlockContentUnion contains all possible properties
-// and values from [BetaCodeExecutionToolResultError],
+// and values from [BetaCodeExecutionToolResultErrorObject],
 // [BetaCodeExecutionResultBlock], [BetaEncryptedCodeExecutionResultBlock].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaCodeExecutionToolResultBlockContentUnion struct {
-	// This field is from variant [BetaCodeExecutionToolResultError].
+	// This field is from variant [BetaCodeExecutionToolResultErrorObject].
 	ErrorCode  BetaCodeExecutionToolResultErrorCode `json:"error_code"`
 	Type       string                               `json:"type"`
 	Content    []BetaCodeExecutionOutputBlock       `json:"content"`
@@ -7174,7 +7219,7 @@ type BetaCodeExecutionToolResultBlockContentUnion struct {
 	} `json:"-"`
 }
 
-func (u BetaCodeExecutionToolResultBlockContentUnion) AsResponseCodeExecutionToolResultError() (v BetaCodeExecutionToolResultError) {
+func (u BetaCodeExecutionToolResultBlockContentUnion) AsResponseCodeExecutionToolResultError() (v BetaCodeExecutionToolResultErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -7316,7 +7361,16 @@ func (u BetaCodeExecutionToolResultBlockParamContentUnion) GetContent() []BetaCo
 	return nil
 }
 
-type BetaCodeExecutionToolResultError struct {
+type BetaCodeExecutionToolResultErrorCode string
+
+const (
+	BetaCodeExecutionToolResultErrorCodeInvalidToolInput      BetaCodeExecutionToolResultErrorCode = "invalid_tool_input"
+	BetaCodeExecutionToolResultErrorCodeUnavailable           BetaCodeExecutionToolResultErrorCode = "unavailable"
+	BetaCodeExecutionToolResultErrorCodeTooManyRequests       BetaCodeExecutionToolResultErrorCode = "too_many_requests"
+	BetaCodeExecutionToolResultErrorCodeExecutionTimeExceeded BetaCodeExecutionToolResultErrorCode = "execution_time_exceeded"
+)
+
+type BetaCodeExecutionToolResultErrorObject struct {
 	// Any of "invalid_tool_input", "unavailable", "too_many_requests",
 	// "execution_time_exceeded".
 	ErrorCode BetaCodeExecutionToolResultErrorCode  `json:"error_code" api:"required"`
@@ -7331,19 +7385,10 @@ type BetaCodeExecutionToolResultError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaCodeExecutionToolResultError) RawJSON() string { return r.JSON.raw }
-func (r *BetaCodeExecutionToolResultError) UnmarshalJSON(data []byte) error {
+func (r BetaCodeExecutionToolResultErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaCodeExecutionToolResultErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BetaCodeExecutionToolResultErrorCode string
-
-const (
-	BetaCodeExecutionToolResultErrorCodeInvalidToolInput      BetaCodeExecutionToolResultErrorCode = "invalid_tool_input"
-	BetaCodeExecutionToolResultErrorCodeUnavailable           BetaCodeExecutionToolResultErrorCode = "unavailable"
-	BetaCodeExecutionToolResultErrorCodeTooManyRequests       BetaCodeExecutionToolResultErrorCode = "too_many_requests"
-	BetaCodeExecutionToolResultErrorCodeExecutionTimeExceeded BetaCodeExecutionToolResultErrorCode = "execution_time_exceeded"
-)
 
 // The properties ErrorCode, Type are required.
 type BetaCodeExecutionToolResultErrorParam struct {
@@ -10673,13 +10718,13 @@ func NewBetaServerToolUseBlock(id string, input any, name BetaServerToolUseBlock
 }
 
 func NewBetaWebSearchToolResultBlock[
-	T []BetaWebSearchResultBlockParam | BetaWebSearchToolRequestErrorParam,
+	T []BetaWebSearchResultBlockParam | BetaWebSearchToolRequestErrorObjectParam,
 ](content T, toolUseID string) BetaContentBlockParamUnion {
 	var webSearchToolResult BetaWebSearchToolResultBlockParam
 	switch v := any(content).(type) {
 	case []BetaWebSearchResultBlockParam:
 		webSearchToolResult.Content.OfResultBlock = v
-	case BetaWebSearchToolRequestErrorParam:
+	case BetaWebSearchToolRequestErrorObjectParam:
 		webSearchToolResult.Content.OfError = &v
 	}
 	webSearchToolResult.ToolUseID = toolUseID
@@ -18556,16 +18601,16 @@ func (r *BetaTextEditorCodeExecutionToolResultBlock) UnmarshalJSON(data []byte) 
 }
 
 // BetaTextEditorCodeExecutionToolResultBlockContentUnion contains all possible
-// properties and values from [BetaTextEditorCodeExecutionToolResultError],
+// properties and values from [BetaTextEditorCodeExecutionToolResultErrorObject],
 // [BetaTextEditorCodeExecutionViewResultBlock],
 // [BetaTextEditorCodeExecutionCreateResultBlock],
 // [BetaTextEditorCodeExecutionStrReplaceResultBlock].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaTextEditorCodeExecutionToolResultBlockContentUnion struct {
-	// This field is from variant [BetaTextEditorCodeExecutionToolResultError].
-	ErrorCode BetaTextEditorCodeExecutionToolResultErrorErrorCode `json:"error_code"`
-	// This field is from variant [BetaTextEditorCodeExecutionToolResultError].
+	// This field is from variant [BetaTextEditorCodeExecutionToolResultErrorObject].
+	ErrorCode BetaTextEditorCodeExecutionToolResultErrorObjectErrorCode `json:"error_code"`
+	// This field is from variant [BetaTextEditorCodeExecutionToolResultErrorObject].
 	ErrorMessage string `json:"error_message"`
 	Type         string `json:"type"`
 	// This field is from variant [BetaTextEditorCodeExecutionViewResultBlock].
@@ -18609,7 +18654,7 @@ type BetaTextEditorCodeExecutionToolResultBlockContentUnion struct {
 	} `json:"-"`
 }
 
-func (u BetaTextEditorCodeExecutionToolResultBlockContentUnion) AsResponseTextEditorCodeExecutionToolResultError() (v BetaTextEditorCodeExecutionToolResultError) {
+func (u BetaTextEditorCodeExecutionToolResultBlockContentUnion) AsResponseTextEditorCodeExecutionToolResultError() (v BetaTextEditorCodeExecutionToolResultErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -18805,12 +18850,12 @@ func (u BetaTextEditorCodeExecutionToolResultBlockParamContentUnion) GetType() *
 	return nil
 }
 
-type BetaTextEditorCodeExecutionToolResultError struct {
+type BetaTextEditorCodeExecutionToolResultErrorObject struct {
 	// Any of "invalid_tool_input", "unavailable", "too_many_requests",
 	// "execution_time_exceeded", "file_not_found".
-	ErrorCode    BetaTextEditorCodeExecutionToolResultErrorErrorCode `json:"error_code" api:"required"`
-	ErrorMessage string                                              `json:"error_message" api:"required"`
-	Type         constant.TextEditorCodeExecutionToolResultError     `json:"type" default:"text_editor_code_execution_tool_result_error"`
+	ErrorCode    BetaTextEditorCodeExecutionToolResultErrorObjectErrorCode `json:"error_code" api:"required"`
+	ErrorMessage string                                                    `json:"error_message" api:"required"`
+	Type         constant.TextEditorCodeExecutionToolResultError           `json:"type" default:"text_editor_code_execution_tool_result_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ErrorCode    respjson.Field
@@ -18822,19 +18867,19 @@ type BetaTextEditorCodeExecutionToolResultError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaTextEditorCodeExecutionToolResultError) RawJSON() string { return r.JSON.raw }
-func (r *BetaTextEditorCodeExecutionToolResultError) UnmarshalJSON(data []byte) error {
+func (r BetaTextEditorCodeExecutionToolResultErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaTextEditorCodeExecutionToolResultErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaTextEditorCodeExecutionToolResultErrorErrorCode string
+type BetaTextEditorCodeExecutionToolResultErrorObjectErrorCode string
 
 const (
-	BetaTextEditorCodeExecutionToolResultErrorErrorCodeInvalidToolInput      BetaTextEditorCodeExecutionToolResultErrorErrorCode = "invalid_tool_input"
-	BetaTextEditorCodeExecutionToolResultErrorErrorCodeUnavailable           BetaTextEditorCodeExecutionToolResultErrorErrorCode = "unavailable"
-	BetaTextEditorCodeExecutionToolResultErrorErrorCodeTooManyRequests       BetaTextEditorCodeExecutionToolResultErrorErrorCode = "too_many_requests"
-	BetaTextEditorCodeExecutionToolResultErrorErrorCodeExecutionTimeExceeded BetaTextEditorCodeExecutionToolResultErrorErrorCode = "execution_time_exceeded"
-	BetaTextEditorCodeExecutionToolResultErrorErrorCodeFileNotFound          BetaTextEditorCodeExecutionToolResultErrorErrorCode = "file_not_found"
+	BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeInvalidToolInput      BetaTextEditorCodeExecutionToolResultErrorObjectErrorCode = "invalid_tool_input"
+	BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeUnavailable           BetaTextEditorCodeExecutionToolResultErrorObjectErrorCode = "unavailable"
+	BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeTooManyRequests       BetaTextEditorCodeExecutionToolResultErrorObjectErrorCode = "too_many_requests"
+	BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeExecutionTimeExceeded BetaTextEditorCodeExecutionToolResultErrorObjectErrorCode = "execution_time_exceeded"
+	BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeFileNotFound          BetaTextEditorCodeExecutionToolResultErrorObjectErrorCode = "file_not_found"
 )
 
 // The properties ErrorCode, Type are required.
@@ -20824,14 +20869,14 @@ func (r *BetaToolSearchToolResultBlock) UnmarshalJSON(data []byte) error {
 }
 
 // BetaToolSearchToolResultBlockContentUnion contains all possible properties and
-// values from [BetaToolSearchToolResultError],
+// values from [BetaToolSearchToolResultErrorObject],
 // [BetaToolSearchToolSearchResultBlock].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaToolSearchToolResultBlockContentUnion struct {
-	// This field is from variant [BetaToolSearchToolResultError].
-	ErrorCode BetaToolSearchToolResultErrorErrorCode `json:"error_code"`
-	// This field is from variant [BetaToolSearchToolResultError].
+	// This field is from variant [BetaToolSearchToolResultErrorObject].
+	ErrorCode BetaToolSearchToolResultErrorObjectErrorCode `json:"error_code"`
+	// This field is from variant [BetaToolSearchToolResultErrorObject].
 	ErrorMessage string `json:"error_message"`
 	Type         string `json:"type"`
 	// This field is from variant [BetaToolSearchToolSearchResultBlock].
@@ -20845,7 +20890,7 @@ type BetaToolSearchToolResultBlockContentUnion struct {
 	} `json:"-"`
 }
 
-func (u BetaToolSearchToolResultBlockContentUnion) AsResponseToolSearchToolResultError() (v BetaToolSearchToolResultError) {
+func (u BetaToolSearchToolResultBlockContentUnion) AsResponseToolSearchToolResultError() (v BetaToolSearchToolResultErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -20941,12 +20986,12 @@ func (u BetaToolSearchToolResultBlockParamContentUnion) GetType() *string {
 	return nil
 }
 
-type BetaToolSearchToolResultError struct {
+type BetaToolSearchToolResultErrorObject struct {
 	// Any of "invalid_tool_input", "unavailable", "too_many_requests",
 	// "execution_time_exceeded".
-	ErrorCode    BetaToolSearchToolResultErrorErrorCode `json:"error_code" api:"required"`
-	ErrorMessage string                                 `json:"error_message" api:"required"`
-	Type         constant.ToolSearchToolResultError     `json:"type" default:"tool_search_tool_result_error"`
+	ErrorCode    BetaToolSearchToolResultErrorObjectErrorCode `json:"error_code" api:"required"`
+	ErrorMessage string                                       `json:"error_message" api:"required"`
+	Type         constant.ToolSearchToolResultError           `json:"type" default:"tool_search_tool_result_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ErrorCode    respjson.Field
@@ -20958,18 +21003,18 @@ type BetaToolSearchToolResultError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaToolSearchToolResultError) RawJSON() string { return r.JSON.raw }
-func (r *BetaToolSearchToolResultError) UnmarshalJSON(data []byte) error {
+func (r BetaToolSearchToolResultErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaToolSearchToolResultErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaToolSearchToolResultErrorErrorCode string
+type BetaToolSearchToolResultErrorObjectErrorCode string
 
 const (
-	BetaToolSearchToolResultErrorErrorCodeInvalidToolInput      BetaToolSearchToolResultErrorErrorCode = "invalid_tool_input"
-	BetaToolSearchToolResultErrorErrorCodeUnavailable           BetaToolSearchToolResultErrorErrorCode = "unavailable"
-	BetaToolSearchToolResultErrorErrorCodeTooManyRequests       BetaToolSearchToolResultErrorErrorCode = "too_many_requests"
-	BetaToolSearchToolResultErrorErrorCodeExecutionTimeExceeded BetaToolSearchToolResultErrorErrorCode = "execution_time_exceeded"
+	BetaToolSearchToolResultErrorObjectErrorCodeInvalidToolInput      BetaToolSearchToolResultErrorObjectErrorCode = "invalid_tool_input"
+	BetaToolSearchToolResultErrorObjectErrorCodeUnavailable           BetaToolSearchToolResultErrorObjectErrorCode = "unavailable"
+	BetaToolSearchToolResultErrorObjectErrorCodeTooManyRequests       BetaToolSearchToolResultErrorObjectErrorCode = "too_many_requests"
+	BetaToolSearchToolResultErrorObjectErrorCodeExecutionTimeExceeded BetaToolSearchToolResultErrorObjectErrorCode = "execution_time_exceeded"
 )
 
 // The properties ErrorCode, Type are required.
@@ -25849,7 +25894,7 @@ func (r *BetaWebSearchTool20260318Param) UnmarshalJSON(data []byte) error {
 }
 
 // The properties ErrorCode, Type are required.
-type BetaWebSearchToolRequestErrorParam struct {
+type BetaWebSearchToolRequestErrorObjectParam struct {
 	// Any of "invalid_tool_input", "unavailable", "max_uses_exceeded",
 	// "too_many_requests", "query_too_long", "request_too_large".
 	ErrorCode BetaWebSearchToolResultErrorCode `json:"error_code,omitzero" api:"required"`
@@ -25859,11 +25904,11 @@ type BetaWebSearchToolRequestErrorParam struct {
 	paramObj
 }
 
-func (r BetaWebSearchToolRequestErrorParam) MarshalJSON() (data []byte, err error) {
-	type shadow BetaWebSearchToolRequestErrorParam
+func (r BetaWebSearchToolRequestErrorObjectParam) MarshalJSON() (data []byte, err error) {
+	type shadow BetaWebSearchToolRequestErrorObjectParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *BetaWebSearchToolRequestErrorParam) UnmarshalJSON(data []byte) error {
+func (r *BetaWebSearchToolRequestErrorObjectParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -25963,7 +26008,7 @@ func (r *BetaWebSearchToolResultBlockCallerUnion) UnmarshalJSON(data []byte) err
 }
 
 // BetaWebSearchToolResultBlockContentUnion contains all possible properties and
-// values from [BetaWebSearchToolResultError], [[]BetaWebSearchResultBlock].
+// values from [BetaWebSearchToolResultErrorObject], [[]BetaWebSearchResultBlock].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 //
@@ -25973,9 +26018,9 @@ type BetaWebSearchToolResultBlockContentUnion struct {
 	// This field will be present if the value is a [[]BetaWebSearchResultBlock]
 	// instead of an object.
 	OfBetaWebSearchResultBlockArray []BetaWebSearchResultBlock `json:",inline"`
-	// This field is from variant [BetaWebSearchToolResultError].
+	// This field is from variant [BetaWebSearchToolResultErrorObject].
 	ErrorCode BetaWebSearchToolResultErrorCode `json:"error_code"`
-	// This field is from variant [BetaWebSearchToolResultError].
+	// This field is from variant [BetaWebSearchToolResultErrorObject].
 	Type constant.WebSearchToolResultError `json:"type"`
 	JSON struct {
 		OfBetaWebSearchResultBlockArray respjson.Field
@@ -25985,7 +26030,7 @@ type BetaWebSearchToolResultBlockContentUnion struct {
 	} `json:"-"`
 }
 
-func (u BetaWebSearchToolResultBlockContentUnion) AsResponseWebSearchToolResultError() (v BetaWebSearchToolResultError) {
+func (u BetaWebSearchToolResultBlockContentUnion) AsResponseWebSearchToolResultError() (v BetaWebSearchToolResultErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -26083,7 +26128,7 @@ func init() {
 }
 
 func BetaNewWebSearchToolRequestError(errorCode BetaWebSearchToolResultErrorCode) BetaWebSearchToolResultBlockParamContentUnion {
-	var variant BetaWebSearchToolRequestErrorParam
+	var variant BetaWebSearchToolRequestErrorObjectParam
 	variant.ErrorCode = errorCode
 	return BetaWebSearchToolResultBlockParamContentUnion{OfError: &variant}
 }
@@ -26092,8 +26137,8 @@ func BetaNewWebSearchToolRequestError(errorCode BetaWebSearchToolResultErrorCode
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type BetaWebSearchToolResultBlockParamContentUnion struct {
-	OfResultBlock []BetaWebSearchResultBlockParam     `json:",omitzero,inline"`
-	OfError       *BetaWebSearchToolRequestErrorParam `json:",omitzero,inline"`
+	OfResultBlock []BetaWebSearchResultBlockParam           `json:",omitzero,inline"`
+	OfError       *BetaWebSearchToolRequestErrorObjectParam `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -26113,7 +26158,18 @@ func (u *BetaWebSearchToolResultBlockParamContentUnion) asAny() any {
 	return nil
 }
 
-type BetaWebSearchToolResultError struct {
+type BetaWebSearchToolResultErrorCode string
+
+const (
+	BetaWebSearchToolResultErrorCodeInvalidToolInput BetaWebSearchToolResultErrorCode = "invalid_tool_input"
+	BetaWebSearchToolResultErrorCodeUnavailable      BetaWebSearchToolResultErrorCode = "unavailable"
+	BetaWebSearchToolResultErrorCodeMaxUsesExceeded  BetaWebSearchToolResultErrorCode = "max_uses_exceeded"
+	BetaWebSearchToolResultErrorCodeTooManyRequests  BetaWebSearchToolResultErrorCode = "too_many_requests"
+	BetaWebSearchToolResultErrorCodeQueryTooLong     BetaWebSearchToolResultErrorCode = "query_too_long"
+	BetaWebSearchToolResultErrorCodeRequestTooLarge  BetaWebSearchToolResultErrorCode = "request_too_large"
+)
+
+type BetaWebSearchToolResultErrorObject struct {
 	// Any of "invalid_tool_input", "unavailable", "max_uses_exceeded",
 	// "too_many_requests", "query_too_long", "request_too_large".
 	ErrorCode BetaWebSearchToolResultErrorCode  `json:"error_code" api:"required"`
@@ -26128,21 +26184,148 @@ type BetaWebSearchToolResultError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaWebSearchToolResultError) RawJSON() string { return r.JSON.raw }
-func (r *BetaWebSearchToolResultError) UnmarshalJSON(data []byte) error {
+func (r BetaWebSearchToolResultErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaWebSearchToolResultErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaWebSearchToolResultErrorCode string
+// Deprecated: BetaWebSearchToolResultError has been renamed to
+// BetaWebSearchToolResultErrorObject
+type BetaWebSearchToolResultError = BetaWebSearchToolResultErrorObject
 
-const (
-	BetaWebSearchToolResultErrorCodeInvalidToolInput BetaWebSearchToolResultErrorCode = "invalid_tool_input"
-	BetaWebSearchToolResultErrorCodeUnavailable      BetaWebSearchToolResultErrorCode = "unavailable"
-	BetaWebSearchToolResultErrorCodeMaxUsesExceeded  BetaWebSearchToolResultErrorCode = "max_uses_exceeded"
-	BetaWebSearchToolResultErrorCodeTooManyRequests  BetaWebSearchToolResultErrorCode = "too_many_requests"
-	BetaWebSearchToolResultErrorCodeQueryTooLong     BetaWebSearchToolResultErrorCode = "query_too_long"
-	BetaWebSearchToolResultErrorCodeRequestTooLarge  BetaWebSearchToolResultErrorCode = "request_too_large"
-)
+// Deprecated: BetaWebSearchToolRequestErrorParam has been renamed to
+// BetaWebSearchToolRequestErrorObjectParam
+type BetaWebSearchToolRequestErrorParam = BetaWebSearchToolRequestErrorObjectParam
+
+// Deprecated: BetaCodeExecutionToolResultError has been renamed to
+// BetaCodeExecutionToolResultErrorObject
+type BetaCodeExecutionToolResultError = BetaCodeExecutionToolResultErrorObject
+
+// Deprecated: BetaBashCodeExecutionToolResultError has been renamed to
+// BetaBashCodeExecutionToolResultErrorObject
+type BetaBashCodeExecutionToolResultError = BetaBashCodeExecutionToolResultErrorObject
+
+// Deprecated: BetaBashCodeExecutionToolResultErrorErrorCode has been renamed to
+// BetaBashCodeExecutionToolResultErrorObjectErrorCode
+type BetaBashCodeExecutionToolResultErrorErrorCode = BetaBashCodeExecutionToolResultErrorObjectErrorCode
+
+// Deprecated: BetaBashCodeExecutionToolResultErrorErrorCodeInvalidToolInput has
+// been renamed to
+// BetaBashCodeExecutionToolResultErrorObjectErrorCodeInvalidToolInput
+const BetaBashCodeExecutionToolResultErrorErrorCodeInvalidToolInput = BetaBashCodeExecutionToolResultErrorObjectErrorCodeInvalidToolInput
+
+// Deprecated: BetaBashCodeExecutionToolResultErrorErrorCodeUnavailable has been
+// renamed to BetaBashCodeExecutionToolResultErrorObjectErrorCodeUnavailable
+const BetaBashCodeExecutionToolResultErrorErrorCodeUnavailable = BetaBashCodeExecutionToolResultErrorObjectErrorCodeUnavailable
+
+// Deprecated: BetaBashCodeExecutionToolResultErrorErrorCodeTooManyRequests has
+// been renamed to
+// BetaBashCodeExecutionToolResultErrorObjectErrorCodeTooManyRequests
+const BetaBashCodeExecutionToolResultErrorErrorCodeTooManyRequests = BetaBashCodeExecutionToolResultErrorObjectErrorCodeTooManyRequests
+
+// Deprecated: BetaBashCodeExecutionToolResultErrorErrorCodeExecutionTimeExceeded
+// has been renamed to
+// BetaBashCodeExecutionToolResultErrorObjectErrorCodeExecutionTimeExceeded
+const BetaBashCodeExecutionToolResultErrorErrorCodeExecutionTimeExceeded = BetaBashCodeExecutionToolResultErrorObjectErrorCodeExecutionTimeExceeded
+
+// Deprecated: BetaBashCodeExecutionToolResultErrorErrorCodeOutputFileTooLarge has
+// been renamed to
+// BetaBashCodeExecutionToolResultErrorObjectErrorCodeOutputFileTooLarge
+const BetaBashCodeExecutionToolResultErrorErrorCodeOutputFileTooLarge = BetaBashCodeExecutionToolResultErrorObjectErrorCodeOutputFileTooLarge
+
+// Deprecated: BetaTextEditorCodeExecutionToolResultError has been renamed to
+// BetaTextEditorCodeExecutionToolResultErrorObject
+type BetaTextEditorCodeExecutionToolResultError = BetaTextEditorCodeExecutionToolResultErrorObject
+
+// Deprecated: BetaTextEditorCodeExecutionToolResultErrorErrorCode has been renamed
+// to BetaTextEditorCodeExecutionToolResultErrorObjectErrorCode
+type BetaTextEditorCodeExecutionToolResultErrorErrorCode = BetaTextEditorCodeExecutionToolResultErrorObjectErrorCode
+
+// Deprecated: BetaTextEditorCodeExecutionToolResultErrorErrorCodeInvalidToolInput
+// has been renamed to
+// BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeInvalidToolInput
+const BetaTextEditorCodeExecutionToolResultErrorErrorCodeInvalidToolInput = BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeInvalidToolInput
+
+// Deprecated: BetaTextEditorCodeExecutionToolResultErrorErrorCodeUnavailable has
+// been renamed to
+// BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeUnavailable
+const BetaTextEditorCodeExecutionToolResultErrorErrorCodeUnavailable = BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeUnavailable
+
+// Deprecated: BetaTextEditorCodeExecutionToolResultErrorErrorCodeTooManyRequests
+// has been renamed to
+// BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeTooManyRequests
+const BetaTextEditorCodeExecutionToolResultErrorErrorCodeTooManyRequests = BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeTooManyRequests
+
+// Deprecated:
+// BetaTextEditorCodeExecutionToolResultErrorErrorCodeExecutionTimeExceeded has
+// been renamed to
+// BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeExecutionTimeExceeded
+const BetaTextEditorCodeExecutionToolResultErrorErrorCodeExecutionTimeExceeded = BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeExecutionTimeExceeded
+
+// Deprecated: BetaTextEditorCodeExecutionToolResultErrorErrorCodeFileNotFound has
+// been renamed to
+// BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeFileNotFound
+const BetaTextEditorCodeExecutionToolResultErrorErrorCodeFileNotFound = BetaTextEditorCodeExecutionToolResultErrorObjectErrorCodeFileNotFound
+
+// Deprecated: BetaToolSearchToolResultError has been renamed to
+// BetaToolSearchToolResultErrorObject
+type BetaToolSearchToolResultError = BetaToolSearchToolResultErrorObject
+
+// Deprecated: BetaToolSearchToolResultErrorErrorCode has been renamed to
+// BetaToolSearchToolResultErrorObjectErrorCode
+type BetaToolSearchToolResultErrorErrorCode = BetaToolSearchToolResultErrorObjectErrorCode
+
+// Deprecated: BetaToolSearchToolResultErrorErrorCodeInvalidToolInput has been
+// renamed to BetaToolSearchToolResultErrorObjectErrorCodeInvalidToolInput
+const BetaToolSearchToolResultErrorErrorCodeInvalidToolInput = BetaToolSearchToolResultErrorObjectErrorCodeInvalidToolInput
+
+// Deprecated: BetaToolSearchToolResultErrorErrorCodeUnavailable has been renamed
+// to BetaToolSearchToolResultErrorObjectErrorCodeUnavailable
+const BetaToolSearchToolResultErrorErrorCodeUnavailable = BetaToolSearchToolResultErrorObjectErrorCodeUnavailable
+
+// Deprecated: BetaToolSearchToolResultErrorErrorCodeTooManyRequests has been
+// renamed to BetaToolSearchToolResultErrorObjectErrorCodeTooManyRequests
+const BetaToolSearchToolResultErrorErrorCodeTooManyRequests = BetaToolSearchToolResultErrorObjectErrorCodeTooManyRequests
+
+// Deprecated: BetaToolSearchToolResultErrorErrorCodeExecutionTimeExceeded has been
+// renamed to BetaToolSearchToolResultErrorObjectErrorCodeExecutionTimeExceeded
+const BetaToolSearchToolResultErrorErrorCodeExecutionTimeExceeded = BetaToolSearchToolResultErrorObjectErrorCodeExecutionTimeExceeded
+
+// Deprecated: BetaAdvisorToolResultError has been renamed to
+// BetaAdvisorToolResultErrorObject
+type BetaAdvisorToolResultError = BetaAdvisorToolResultErrorObject
+
+// Deprecated: BetaAdvisorToolResultErrorErrorCode has been renamed to
+// BetaAdvisorToolResultErrorObjectErrorCode
+type BetaAdvisorToolResultErrorErrorCode = BetaAdvisorToolResultErrorObjectErrorCode
+
+// Deprecated: BetaAdvisorToolResultErrorErrorCodeMaxUsesExceeded has been renamed
+// to BetaAdvisorToolResultErrorObjectErrorCodeMaxUsesExceeded
+const BetaAdvisorToolResultErrorErrorCodeMaxUsesExceeded = BetaAdvisorToolResultErrorObjectErrorCodeMaxUsesExceeded
+
+// Deprecated: BetaAdvisorToolResultErrorErrorCodePromptTooLong has been renamed to
+// BetaAdvisorToolResultErrorObjectErrorCodePromptTooLong
+const BetaAdvisorToolResultErrorErrorCodePromptTooLong = BetaAdvisorToolResultErrorObjectErrorCodePromptTooLong
+
+// Deprecated: BetaAdvisorToolResultErrorErrorCodeTooManyRequests has been renamed
+// to BetaAdvisorToolResultErrorObjectErrorCodeTooManyRequests
+const BetaAdvisorToolResultErrorErrorCodeTooManyRequests = BetaAdvisorToolResultErrorObjectErrorCodeTooManyRequests
+
+// Deprecated: BetaAdvisorToolResultErrorErrorCodeOverloaded has been renamed to
+// BetaAdvisorToolResultErrorObjectErrorCodeOverloaded
+const BetaAdvisorToolResultErrorErrorCodeOverloaded = BetaAdvisorToolResultErrorObjectErrorCodeOverloaded
+
+// Deprecated: BetaAdvisorToolResultErrorErrorCodeUnavailable has been renamed to
+// BetaAdvisorToolResultErrorObjectErrorCodeUnavailable
+const BetaAdvisorToolResultErrorErrorCodeUnavailable = BetaAdvisorToolResultErrorObjectErrorCodeUnavailable
+
+// Deprecated: BetaAdvisorToolResultErrorErrorCodeExecutionTimeExceeded has been
+// renamed to BetaAdvisorToolResultErrorObjectErrorCodeExecutionTimeExceeded
+const BetaAdvisorToolResultErrorErrorCodeExecutionTimeExceeded = BetaAdvisorToolResultErrorObjectErrorCodeExecutionTimeExceeded
+
+// Deprecated: BetaAdvisorToolResultErrorErrorCodeModelNotFound has been renamed to
+// BetaAdvisorToolResultErrorObjectErrorCodeModelNotFound
+const BetaAdvisorToolResultErrorErrorCodeModelNotFound = BetaAdvisorToolResultErrorObjectErrorCodeModelNotFound
 
 type BetaMessageNewParams struct {
 	// The maximum number of tokens to generate before stopping.
@@ -26293,6 +26476,14 @@ type BetaMessageNewParams struct {
 	// response so only the new turn's messages are sent. The response shape is
 	// unchanged.
 	Thread BetaMessageThreadParamUnion `json:"thread,omitzero"`
+	// Declares which organization is billed for this request.
+	// `{"type": "billing_policy", "bill_to": "user_profile"}` bills the customer
+	// behind the user profile named in the `anthropic-user-profile-id` header, instead
+	// of your organization. If that customer has not linked an Anthropic organization
+	// to the profile, or has not allowed your organization to bill it, the request is
+	// rejected rather than billed to you. Omit the field, or send `"bill_to": "self"`
+	// (the default), to be billed as usual.
+	BillingPolicy BetaBillingPolicyParam `json:"billing_policy,omitzero"`
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`
@@ -26630,6 +26821,11 @@ type BetaMessageCountTokensParams struct {
 	//
 	// Any of "standard", "fast".
 	Speed BetaMessageCountTokensParamsSpeed `json:"speed,omitzero"`
+	// Declares which organization is billed when this body is sent to `/v1/messages`.
+	// Accepted here so that you can count the tokens of the exact body you will send,
+	// and otherwise ignored: counting tokens bills nobody, so no user profile is
+	// required.
+	BillingPolicy BetaBillingPolicyParam `json:"billing_policy,omitzero"`
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.
 	CacheControl BetaCacheControlEphemeralParam `json:"cache_control,omitzero"`

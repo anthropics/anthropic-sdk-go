@@ -38,7 +38,7 @@ func (r *APIErrorObject) UnmarshalJSON(data []byte) error {
 
 func (APIErrorObject) ImplErrorObjectUnion() {}
 
-type AuthenticationError struct {
+type AuthenticationErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -54,14 +54,14 @@ type AuthenticationError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r AuthenticationError) RawJSON() string { return r.JSON.raw }
-func (r *AuthenticationError) UnmarshalJSON(data []byte) error {
+func (r AuthenticationErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *AuthenticationErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (AuthenticationError) ImplErrorObjectUnion() {}
+func (AuthenticationErrorObject) ImplErrorObjectUnion() {}
 
-type BillingError struct {
+type BillingErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -77,12 +77,12 @@ type BillingError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BillingError) RawJSON() string { return r.JSON.raw }
-func (r *BillingError) UnmarshalJSON(data []byte) error {
+func (r BillingErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BillingErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (BillingError) ImplErrorObjectUnion() {}
+func (BillingErrorObject) ImplErrorObjectUnion() {}
 
 // The API key belongs to the Claude Code workspace, and the user who created it is
 // no longer a member of the organization or of that workspace.
@@ -205,6 +205,25 @@ func (r *CMEKKeyUnreachableErrorDetails) UnmarshalJSON(data []byte) error {
 
 func (CMEKKeyUnreachableErrorDetails) ImplErrorDetailsUnion() {}
 
+// The organization has reached the spend limit of its contract.
+type ContractSpendLimitReachedErrorDetails struct {
+	ErrorCode constant.ContractSpendLimitReachedErrorCode `json:"error_code" default:"contract_spend_limit_reached"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ContractSpendLimitReachedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ContractSpendLimitReachedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (ContractSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
+
 // The organization has crossed the monthly API usage threshold of its API tier.
 type EnforcedSpendLimitReachedErrorDetails struct {
 	ErrorCode constant.EnforcedSpendLimitReachedErrorCode `json:"error_code" default:"enforced_spend_limit_reached"`
@@ -240,8 +259,14 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [ThreadAlreadyContinuedErrorDetails], [ThreadContinueInFlightErrorDetails],
 // [ThreadFingerprintMismatchErrorDetails], [ThreadUnsupportedRequestErrorDetails],
 // [ToolNameConflictErrorDetails], [ToolReferenceUnresolvedErrorDetails],
-// [ThreadNotFoundErrorDetails], [SkillReadBlockedUndecryptableErrorDetails],
+// [UserProfileRequiredErrorDetails],
+// [LinkedOrganizationBillingUnavailableErrorDetails],
+// [LinkedOrganizationSpendLimitReachedErrorDetails],
+// [UserProfileBillingNotAuthorizedErrorDetails],
+// [UserProfileNotBillableErrorDetails], [ThreadNotFoundErrorDetails],
+// [SkillReadBlockedUndecryptableErrorDetails],
 // [RequestBodyTooLargeAfterDecodingErrorDetails],
+// [ContractSpendLimitReachedErrorDetails],
 // [EnforcedSpendLimitReachedErrorDetails], [RampLimitExceededErrorDetails],
 // [CMEKKeyUnreachableErrorDetails], [CompactionUnavailableErrorDetails],
 // [StorageQuotaExceededErrorDetails], [FileNotDownloadableErrorDetails],
@@ -301,11 +326,14 @@ type ErrorDetailsUnion struct {
 	// "request_body_encoding_unsupported", "thread_already_continued",
 	// "thread_continue_in_flight", "thread_fingerprint_mismatch",
 	// "thread_unsupported_request", "tool_name_conflict", "tool_reference_unresolved",
+	// "user_profile_required", "linked_organization_billing_unavailable",
+	// "linked_organization_spend_limit_reached",
+	// "user_profile_billing_not_authorized", "user_profile_not_billable",
 	// "thread_not_found", "skill_read_blocked_undecryptable",
-	// "request_body_too_large_after_decoding", "enforced_spend_limit_reached",
-	// "ramp_limit_exceeded", "cmek_key_unreachable", "compaction_unavailable",
-	// "storage_quota_exceeded", "file_not_downloadable", "file_expired",
-	// "cmek_context_unavailable", "org_api_key_limit_exceeded",
+	// "request_body_too_large_after_decoding", "contract_spend_limit_reached",
+	// "enforced_spend_limit_reached", "ramp_limit_exceeded", "cmek_key_unreachable",
+	// "compaction_unavailable", "storage_quota_exceeded", "file_not_downloadable",
+	// "file_expired", "cmek_context_unavailable", "org_api_key_limit_exceeded",
 	// "workspace_api_key_limit_exceeded", "sandbox_egress_restricted",
 	// "user_profile_not_found", "external_key_in_workspace_policy", "already_member",
 	// "cannot_invite_emails_with_unverified_domains", "email_domain_not_allowed",
@@ -391,9 +419,15 @@ type anyErrorDetails interface {
 //	case shared.ThreadUnsupportedRequestErrorDetails:
 //	case shared.ToolNameConflictErrorDetails:
 //	case shared.ToolReferenceUnresolvedErrorDetails:
+//	case shared.UserProfileRequiredErrorDetails:
+//	case shared.LinkedOrganizationBillingUnavailableErrorDetails:
+//	case shared.LinkedOrganizationSpendLimitReachedErrorDetails:
+//	case shared.UserProfileBillingNotAuthorizedErrorDetails:
+//	case shared.UserProfileNotBillableErrorDetails:
 //	case shared.ThreadNotFoundErrorDetails:
 //	case shared.SkillReadBlockedUndecryptableErrorDetails:
 //	case shared.RequestBodyTooLargeAfterDecodingErrorDetails:
+//	case shared.ContractSpendLimitReachedErrorDetails:
 //	case shared.EnforcedSpendLimitReachedErrorDetails:
 //	case shared.RampLimitExceededErrorDetails:
 //	case shared.CMEKKeyUnreachableErrorDetails:
@@ -504,12 +538,24 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsToolNameConflict()
 	case "tool_reference_unresolved":
 		return u.AsToolReferenceUnresolved()
+	case "user_profile_required":
+		return u.AsUserProfileRequired()
+	case "linked_organization_billing_unavailable":
+		return u.AsLinkedOrganizationBillingUnavailable()
+	case "linked_organization_spend_limit_reached":
+		return u.AsLinkedOrganizationSpendLimitReached()
+	case "user_profile_billing_not_authorized":
+		return u.AsUserProfileBillingNotAuthorized()
+	case "user_profile_not_billable":
+		return u.AsUserProfileNotBillable()
 	case "thread_not_found":
 		return u.AsThreadNotFound()
 	case "skill_read_blocked_undecryptable":
 		return u.AsSkillReadBlockedUndecryptable()
 	case "request_body_too_large_after_decoding":
 		return u.AsRequestBodyTooLargeAfterDecoding()
+	case "contract_spend_limit_reached":
+		return u.AsContractSpendLimitReached()
 	case "enforced_spend_limit_reached":
 		return u.AsEnforcedSpendLimitReached()
 	case "ramp_limit_exceeded":
@@ -746,6 +792,31 @@ func (u ErrorDetailsUnion) AsToolReferenceUnresolved() (v ToolReferenceUnresolve
 	return
 }
 
+func (u ErrorDetailsUnion) AsUserProfileRequired() (v UserProfileRequiredErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsLinkedOrganizationBillingUnavailable() (v LinkedOrganizationBillingUnavailableErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsLinkedOrganizationSpendLimitReached() (v LinkedOrganizationSpendLimitReachedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsUserProfileBillingNotAuthorized() (v UserProfileBillingNotAuthorizedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsUserProfileNotBillable() (v UserProfileNotBillableErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 func (u ErrorDetailsUnion) AsThreadNotFound() (v ThreadNotFoundErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
@@ -757,6 +828,11 @@ func (u ErrorDetailsUnion) AsSkillReadBlockedUndecryptable() (v SkillReadBlocked
 }
 
 func (u ErrorDetailsUnion) AsRequestBodyTooLargeAfterDecoding() (v RequestBodyTooLargeAfterDecodingErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsContractSpendLimitReached() (v ContractSpendLimitReachedErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1074,9 +1150,9 @@ func (r *ErrorDetailsUnion) UnmarshalJSON(data []byte) error {
 }
 
 // ErrorObjectUnion contains all possible properties and values from
-// [InvalidRequestError], [AuthenticationError], [BillingError], [PermissionError],
-// [NotFoundError], [RateLimitError], [GatewayTimeoutError], [APIErrorObject],
-// [OverloadedError].
+// [InvalidRequestErrorObject], [AuthenticationErrorObject], [BillingErrorObject],
+// [PermissionErrorObject], [NotFoundErrorObject], [RateLimitErrorObject],
+// [GatewayTimeoutErrorObject], [APIErrorObject], [OverloadedErrorObject].
 //
 // Use the [ErrorObjectUnion.AsAny] method to switch on the variant.
 //
@@ -1103,15 +1179,15 @@ type anyErrorObject interface {
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := ErrorObjectUnion.AsAny().(type) {
-//	case shared.InvalidRequestError:
-//	case shared.AuthenticationError:
-//	case shared.BillingError:
-//	case shared.PermissionError:
-//	case shared.NotFoundError:
-//	case shared.RateLimitError:
-//	case shared.GatewayTimeoutError:
+//	case shared.InvalidRequestErrorObject:
+//	case shared.AuthenticationErrorObject:
+//	case shared.BillingErrorObject:
+//	case shared.PermissionErrorObject:
+//	case shared.NotFoundErrorObject:
+//	case shared.RateLimitErrorObject:
+//	case shared.GatewayTimeoutErrorObject:
 //	case shared.APIErrorObject:
-//	case shared.OverloadedError:
+//	case shared.OverloadedErrorObject:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -1139,37 +1215,37 @@ func (u ErrorObjectUnion) AsAny() anyErrorObject {
 	return nil
 }
 
-func (u ErrorObjectUnion) AsInvalidRequestError() (v InvalidRequestError) {
+func (u ErrorObjectUnion) AsInvalidRequestError() (v InvalidRequestErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ErrorObjectUnion) AsAuthenticationError() (v AuthenticationError) {
+func (u ErrorObjectUnion) AsAuthenticationError() (v AuthenticationErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ErrorObjectUnion) AsBillingError() (v BillingError) {
+func (u ErrorObjectUnion) AsBillingError() (v BillingErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ErrorObjectUnion) AsPermissionError() (v PermissionError) {
+func (u ErrorObjectUnion) AsPermissionError() (v PermissionErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ErrorObjectUnion) AsNotFoundError() (v NotFoundError) {
+func (u ErrorObjectUnion) AsNotFoundError() (v NotFoundErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ErrorObjectUnion) AsRateLimitError() (v RateLimitError) {
+func (u ErrorObjectUnion) AsRateLimitError() (v RateLimitErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u ErrorObjectUnion) AsTimeoutError() (v GatewayTimeoutError) {
+func (u ErrorObjectUnion) AsTimeoutError() (v GatewayTimeoutErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1179,7 +1255,7 @@ func (u ErrorObjectUnion) AsAPIError() (v APIErrorObject) {
 	return
 }
 
-func (u ErrorObjectUnion) AsOverloadedError() (v OverloadedError) {
+func (u ErrorObjectUnion) AsOverloadedError() (v OverloadedErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1228,7 +1304,7 @@ const (
 	ErrorTypeConflictError                 ErrorType = "conflict_error"
 )
 
-type GatewayTimeoutError struct {
+type GatewayTimeoutErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -1244,14 +1320,14 @@ type GatewayTimeoutError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r GatewayTimeoutError) RawJSON() string { return r.JSON.raw }
-func (r *GatewayTimeoutError) UnmarshalJSON(data []byte) error {
+func (r GatewayTimeoutErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *GatewayTimeoutErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (GatewayTimeoutError) ImplErrorObjectUnion() {}
+func (GatewayTimeoutErrorObject) ImplErrorObjectUnion() {}
 
-type InvalidRequestError struct {
+type InvalidRequestErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -1267,14 +1343,56 @@ type InvalidRequestError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r InvalidRequestError) RawJSON() string { return r.JSON.raw }
-func (r *InvalidRequestError) UnmarshalJSON(data []byte) error {
+func (r InvalidRequestErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *InvalidRequestErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (InvalidRequestError) ImplErrorObjectUnion() {}
+func (InvalidRequestErrorObject) ImplErrorObjectUnion() {}
 
-type NotFoundError struct {
+// Anthropic cannot currently bill the organization linked to the request's user
+// profile, for a reason that lies with that organization's own account. The
+// response does not say what the reason is.
+type LinkedOrganizationBillingUnavailableErrorDetails struct {
+	ErrorCode constant.LinkedOrganizationBillingUnavailableErrorCode `json:"error_code" default:"linked_organization_billing_unavailable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r LinkedOrganizationBillingUnavailableErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *LinkedOrganizationBillingUnavailableErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (LinkedOrganizationBillingUnavailableErrorDetails) ImplErrorDetailsUnion() {}
+
+// The organization linked to the request's user profile has reached a spend limit
+// that it set, or lacks credit for the request. The response does not say which
+// applies.
+type LinkedOrganizationSpendLimitReachedErrorDetails struct {
+	ErrorCode constant.LinkedOrganizationSpendLimitReachedErrorCode `json:"error_code" default:"linked_organization_spend_limit_reached"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r LinkedOrganizationSpendLimitReachedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *LinkedOrganizationSpendLimitReachedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (LinkedOrganizationSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
+
+type NotFoundErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -1290,12 +1408,12 @@ type NotFoundError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r NotFoundError) RawJSON() string { return r.JSON.raw }
-func (r *NotFoundError) UnmarshalJSON(data []byte) error {
+func (r NotFoundErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *NotFoundErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (NotFoundError) ImplErrorObjectUnion() {}
+func (NotFoundErrorObject) ImplErrorObjectUnion() {}
 
 // Anthropic has disabled the organization for trust and safety reasons. An
 // organization disabled for any other reason, such as billing, does not get this
@@ -1340,7 +1458,7 @@ func (r *OrganizationTypeNotSupportedErrorDetails) UnmarshalJSON(data []byte) er
 
 func (OrganizationTypeNotSupportedErrorDetails) ImplErrorDetailsUnion() {}
 
-type OverloadedError struct {
+type OverloadedErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -1356,12 +1474,12 @@ type OverloadedError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r OverloadedError) RawJSON() string { return r.JSON.raw }
-func (r *OverloadedError) UnmarshalJSON(data []byte) error {
+func (r OverloadedErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *OverloadedErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (OverloadedError) ImplErrorObjectUnion() {}
+func (OverloadedErrorObject) ImplErrorObjectUnion() {}
 
 // The endpoint serves only organizations that belong to a parent organization, and
 // this organization belongs to none.
@@ -1383,7 +1501,7 @@ func (r *ParentOrganizationRequiredErrorDetails) UnmarshalJSON(data []byte) erro
 
 func (ParentOrganizationRequiredErrorDetails) ImplErrorDetailsUnion() {}
 
-type PermissionError struct {
+type PermissionErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -1399,12 +1517,12 @@ type PermissionError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r PermissionError) RawJSON() string { return r.JSON.raw }
-func (r *PermissionError) UnmarshalJSON(data []byte) error {
+func (r PermissionErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *PermissionErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (PermissionError) ImplErrorObjectUnion() {}
+func (PermissionErrorObject) ImplErrorObjectUnion() {}
 
 // The request would exceed a ramp limit, which caps how fast usage can grow. Retry
 // after the time in the `retry-after` header.
@@ -1426,7 +1544,7 @@ func (r *RampLimitExceededErrorDetails) UnmarshalJSON(data []byte) error {
 
 func (RampLimitExceededErrorDetails) ImplErrorDetailsUnion() {}
 
-type RateLimitError struct {
+type RateLimitErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -1442,12 +1560,12 @@ type RateLimitError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r RateLimitError) RawJSON() string { return r.JSON.raw }
-func (r *RateLimitError) UnmarshalJSON(data []byte) error {
+func (r RateLimitErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *RateLimitErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (RateLimitError) ImplErrorObjectUnion() {}
+func (RateLimitErrorObject) ImplErrorObjectUnion() {}
 
 // The request body is not valid for its `Content-Encoding`.
 type RequestBodyEncodingInvalidErrorDetails struct {
@@ -1844,6 +1962,67 @@ func (r *ToolReferenceUnresolvedErrorDetails) UnmarshalJSON(data []byte) error {
 }
 
 func (ToolReferenceUnresolvedErrorDetails) ImplErrorDetailsUnion() {}
+
+// The request sets `billing_policy.bill_to` to `"user_profile"` but names no user
+// profile. Name the profile to bill in the `anthropic-user-profile-id` header.
+type UserProfileRequiredErrorDetails struct {
+	ErrorCode constant.UserProfileRequiredErrorCode `json:"error_code" default:"user_profile_required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r UserProfileRequiredErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *UserProfileRequiredErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (UserProfileRequiredErrorDetails) ImplErrorDetailsUnion() {}
+
+// The customer that the named user profile represents has not authorized the
+// caller to bill them, or the authorization that the request's credential uses has
+// ended. The response does not say which applies.
+type UserProfileBillingNotAuthorizedErrorDetails struct {
+	ErrorCode constant.UserProfileBillingNotAuthorizedErrorCode `json:"error_code" default:"user_profile_billing_not_authorized"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r UserProfileBillingNotAuthorizedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *UserProfileBillingNotAuthorizedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (UserProfileBillingNotAuthorizedErrorDetails) ImplErrorDetailsUnion() {}
+
+// The caller is not allowed to bill the user profile that the request names. The
+// response gives no more specific error code and does not say what the reason is.
+type UserProfileNotBillableErrorDetails struct {
+	ErrorCode constant.UserProfileNotBillableErrorCode `json:"error_code" default:"user_profile_not_billable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r UserProfileNotBillableErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *UserProfileNotBillableErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (UserProfileNotBillableErrorDetails) ImplErrorDetailsUnion() {}
 
 // No usable Thread state was found for `previous_message_id`. Replay the full
 // conversation with `thread: {"type": "create"}` to start a new Thread.
@@ -3039,3 +3218,27 @@ func (r *BetaBundleOnCallErrorDetails) UnmarshalJSON(data []byte) error {
 }
 
 func (BetaBundleOnCallErrorDetails) ImplErrorDetailsUnion() {}
+
+// Deprecated: AuthenticationError has been renamed to AuthenticationErrorObject
+type AuthenticationError = AuthenticationErrorObject
+
+// Deprecated: InvalidRequestError has been renamed to InvalidRequestErrorObject
+type InvalidRequestError = InvalidRequestErrorObject
+
+// Deprecated: BillingError has been renamed to BillingErrorObject
+type BillingError = BillingErrorObject
+
+// Deprecated: GatewayTimeoutError has been renamed to GatewayTimeoutErrorObject
+type GatewayTimeoutError = GatewayTimeoutErrorObject
+
+// Deprecated: NotFoundError has been renamed to NotFoundErrorObject
+type NotFoundError = NotFoundErrorObject
+
+// Deprecated: OverloadedError has been renamed to OverloadedErrorObject
+type OverloadedError = OverloadedErrorObject
+
+// Deprecated: PermissionError has been renamed to PermissionErrorObject
+type PermissionError = PermissionErrorObject
+
+// Deprecated: RateLimitError has been renamed to RateLimitErrorObject
+type RateLimitError = RateLimitErrorObject

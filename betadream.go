@@ -260,7 +260,7 @@ type BetaDream struct {
 	// `null` if it is still `pending` or `running`.
 	EndedAt time.Time `json:"ended_at" api:"required" format:"date-time"`
 	// Why the dream failed, or `null` if `status` isn't `failed`.
-	Error BetaDreamError `json:"error" api:"required"`
+	Error BetaDreamErrorObject `json:"error" api:"required"`
 	// The sources that the dream reads, from the request that created it.
 	Inputs []BetaDreamInputUnion `json:"inputs" api:"required"`
 	// The guidance given when the dream was created, or `null` if none was given.
@@ -338,7 +338,7 @@ func (r *BetaDream) UnmarshalJSON(data []byte) error {
 }
 
 // Failure detail for a Dream whose `status` is `failed`.
-type BetaDreamError struct {
+type BetaDreamErrorObject struct {
 	// A human-readable explanation of why the dream failed.
 	Message string `json:"message" api:"required"`
 	// A code for why the dream failed, such as `timeout` or `internal_error`.
@@ -357,8 +357,8 @@ type BetaDreamError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaDreamError) RawJSON() string { return r.JSON.raw }
-func (r *BetaDreamError) UnmarshalJSON(data []byte) error {
+func (r BetaDreamErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaDreamErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1037,6 +1037,9 @@ func (r BetaOutputBehaviorUpdateExistingParam) MarshalJSON() (data []byte, err e
 func (r *BetaOutputBehaviorUpdateExistingParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Deprecated: BetaDreamError has been renamed to BetaDreamErrorObject
+type BetaDreamError = BetaDreamErrorObject
 
 type BetaDreamNewParams struct {
 	// The memory store and sessions for the dream to read, as exactly one

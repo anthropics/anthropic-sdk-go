@@ -1470,12 +1470,12 @@ func (r *BetaManagedAgentsBase64ImageSourceParam) UnmarshalJSON(data []byte) err
 // The caller's organization or workspace cannot make model requests — out of
 // credits or spend limit reached. Retrying with the same credentials will not
 // succeed; the caller must resolve the billing state.
-type BetaManagedAgentsBillingError struct {
+type BetaManagedAgentsBillingErrorObject struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// What the client should do next.
-	RetryStatus BetaManagedAgentsBillingErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	Type        constant.BillingError                         `json:"type" default:"billing_error"`
+	RetryStatus BetaManagedAgentsBillingErrorObjectRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.BillingError                               `json:"type" default:"billing_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -1487,20 +1487,20 @@ type BetaManagedAgentsBillingError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsBillingError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsBillingError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsBillingErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsBillingErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// BetaManagedAgentsBillingErrorRetryStatusUnion contains all possible properties
-// and values from [BetaManagedAgentsRetryStatusRetrying],
+// BetaManagedAgentsBillingErrorObjectRetryStatusUnion contains all possible
+// properties and values from [BetaManagedAgentsRetryStatusRetrying],
 // [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
 //
-// Use the [BetaManagedAgentsBillingErrorRetryStatusUnion.AsAny] method to switch
-// on the variant.
+// Use the [BetaManagedAgentsBillingErrorObjectRetryStatusUnion.AsAny] method to
+// switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaManagedAgentsBillingErrorRetryStatusUnion struct {
+type BetaManagedAgentsBillingErrorObjectRetryStatusUnion struct {
 	// Any of "retrying", "exhausted", "terminal".
 	Type string `json:"type"`
 	JSON struct {
@@ -1509,27 +1509,30 @@ type BetaManagedAgentsBillingErrorRetryStatusUnion struct {
 	} `json:"-"`
 }
 
-// anyBetaManagedAgentsBillingErrorRetryStatus is implemented by each variant of
-// [BetaManagedAgentsBillingErrorRetryStatusUnion] to add type safety for the
-// return type of [BetaManagedAgentsBillingErrorRetryStatusUnion.AsAny]
-type anyBetaManagedAgentsBillingErrorRetryStatus interface {
-	implBetaManagedAgentsBillingErrorRetryStatusUnion()
+// anyBetaManagedAgentsBillingErrorObjectRetryStatus is implemented by each variant
+// of [BetaManagedAgentsBillingErrorObjectRetryStatusUnion] to add type safety for
+// the return type of [BetaManagedAgentsBillingErrorObjectRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsBillingErrorObjectRetryStatus interface {
+	implBetaManagedAgentsBillingErrorObjectRetryStatusUnion()
 }
 
-func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsBillingErrorRetryStatusUnion()  {}
-func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsBillingErrorRetryStatusUnion() {}
-func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsBillingErrorRetryStatusUnion()  {}
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsBillingErrorObjectRetryStatusUnion() {
+}
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsBillingErrorObjectRetryStatusUnion() {
+}
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsBillingErrorObjectRetryStatusUnion() {
+}
 
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := BetaManagedAgentsBillingErrorRetryStatusUnion.AsAny().(type) {
+//	switch variant := BetaManagedAgentsBillingErrorObjectRetryStatusUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsRetryStatusRetrying:
 //	case anthropic.BetaManagedAgentsRetryStatusExhausted:
 //	case anthropic.BetaManagedAgentsRetryStatusTerminal:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaManagedAgentsBillingErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsBillingErrorRetryStatus {
+func (u BetaManagedAgentsBillingErrorObjectRetryStatusUnion) AsAny() anyBetaManagedAgentsBillingErrorObjectRetryStatus {
 	switch u.Type {
 	case "retrying":
 		return u.AsRetrying()
@@ -1541,25 +1544,25 @@ func (u BetaManagedAgentsBillingErrorRetryStatusUnion) AsAny() anyBetaManagedAge
 	return nil
 }
 
-func (u BetaManagedAgentsBillingErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+func (u BetaManagedAgentsBillingErrorObjectRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsBillingErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+func (u BetaManagedAgentsBillingErrorObjectRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsBillingErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+func (u BetaManagedAgentsBillingErrorObjectRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u BetaManagedAgentsBillingErrorRetryStatusUnion) RawJSON() string { return u.JSON.raw }
+func (u BetaManagedAgentsBillingErrorObjectRetryStatusUnion) RawJSON() string { return u.JSON.raw }
 
-func (r *BetaManagedAgentsBillingErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsBillingErrorObjectRetryStatusUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1567,12 +1570,12 @@ func (r *BetaManagedAgentsBillingErrorRetryStatusUnion) UnmarshalJSON(data []byt
 // in a row without the model producing a message or a tool call, not because a
 // request failed. The thread goes idle with `stop_reason: retries_exhausted` (a
 // child thread then terminates); the next `user.message` starts a new turn.
-type BetaManagedAgentsCompactionLimitReachedError struct {
+type BetaManagedAgentsCompactionLimitReachedErrorObject struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// What the client should do next.
-	RetryStatus BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	Type        constant.CompactionLimitReachedError                         `json:"type" default:"compaction_limit_reached_error"`
+	RetryStatus BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.CompactionLimitReachedError                               `json:"type" default:"compaction_limit_reached_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -1584,20 +1587,21 @@ type BetaManagedAgentsCompactionLimitReachedError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsCompactionLimitReachedError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsCompactionLimitReachedError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsCompactionLimitReachedErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsCompactionLimitReachedErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion contains all
+// BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion contains all
 // possible properties and values from [BetaManagedAgentsRetryStatusRetrying],
 // [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
 //
-// Use the [BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion.AsAny]
+// Use the
+// [BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion.AsAny]
 // method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion struct {
+type BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion struct {
 	// Any of "retrying", "exhausted", "terminal".
 	Type string `json:"type"`
 	JSON struct {
@@ -1606,31 +1610,32 @@ type BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion struct {
 	} `json:"-"`
 }
 
-// anyBetaManagedAgentsCompactionLimitReachedErrorRetryStatus is implemented by
-// each variant of [BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion]
-// to add type safety for the return type of
-// [BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion.AsAny]
-type anyBetaManagedAgentsCompactionLimitReachedErrorRetryStatus interface {
-	implBetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion()
+// anyBetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatus is implemented
+// by each variant of
+// [BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion] to add type
+// safety for the return type of
+// [BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatus interface {
+	implBetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion()
 }
 
-func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion() {
 }
 
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion.AsAny().(type) {
+//	switch variant := BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsRetryStatusRetrying:
 //	case anthropic.BetaManagedAgentsRetryStatusExhausted:
 //	case anthropic.BetaManagedAgentsRetryStatusTerminal:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsCompactionLimitReachedErrorRetryStatus {
+func (u BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion) AsAny() anyBetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatus {
 	switch u.Type {
 	case "retrying":
 		return u.AsRetrying()
@@ -1642,40 +1647,40 @@ func (u BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion) AsAny() an
 	return nil
 }
 
-func (u BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+func (u BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+func (u BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+func (u BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion) RawJSON() string {
+func (u BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion) RawJSON() string {
 	return u.JSON.raw
 }
 
-func (r *BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // An `environment_variable` credential's `auth.networking.allowed_hosts` includes
 // a host the environment's network policy does not permit.
-type BetaManagedAgentsCredentialHostUnreachableError struct {
+type BetaManagedAgentsCredentialHostUnreachableErrorObject struct {
 	// ID of the affected credential.
 	CredentialID string `json:"credential_id" api:"required"`
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// What the client should do next.
-	RetryStatus BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	Type        constant.CredentialHostUnreachableError                         `json:"type" default:"credential_host_unreachable_error"`
+	RetryStatus BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.CredentialHostUnreachableError                               `json:"type" default:"credential_host_unreachable_error"`
 	// ID of the vault containing the affected credential.
 	VaultID string `json:"vault_id" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -1691,20 +1696,21 @@ type BetaManagedAgentsCredentialHostUnreachableError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsCredentialHostUnreachableError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsCredentialHostUnreachableError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsCredentialHostUnreachableErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsCredentialHostUnreachableErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion contains all
-// possible properties and values from [BetaManagedAgentsRetryStatusRetrying],
+// BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion contains
+// all possible properties and values from [BetaManagedAgentsRetryStatusRetrying],
 // [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
 //
-// Use the [BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion.AsAny]
+// Use the
+// [BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion.AsAny]
 // method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion struct {
+type BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion struct {
 	// Any of "retrying", "exhausted", "terminal".
 	Type string `json:"type"`
 	JSON struct {
@@ -1713,32 +1719,32 @@ type BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion struct {
 	} `json:"-"`
 }
 
-// anyBetaManagedAgentsCredentialHostUnreachableErrorRetryStatus is implemented by
-// each variant of
-// [BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion] to add type
-// safety for the return type of
-// [BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion.AsAny]
-type anyBetaManagedAgentsCredentialHostUnreachableErrorRetryStatus interface {
-	implBetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion()
+// anyBetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatus is
+// implemented by each variant of
+// [BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion] to add
+// type safety for the return type of
+// [BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatus interface {
+	implBetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion()
 }
 
-func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion() {
 }
 
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion.AsAny().(type) {
+//	switch variant := BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsRetryStatusRetrying:
 //	case anthropic.BetaManagedAgentsRetryStatusExhausted:
 //	case anthropic.BetaManagedAgentsRetryStatusTerminal:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsCredentialHostUnreachableErrorRetryStatus {
+func (u BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion) AsAny() anyBetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatus {
 	switch u.Type {
 	case "retrying":
 		return u.AsRetrying()
@@ -1750,27 +1756,27 @@ func (u BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion) AsAny()
 	return nil
 }
 
-func (u BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+func (u BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+func (u BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+func (u BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion) RawJSON() string {
+func (u BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion) RawJSON() string {
 	return u.JSON.raw
 }
 
-func (r *BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -2604,7 +2610,7 @@ func init() {
 
 // No run was created, because the session was at its limit of open workflow runs,
 // which are runs that have not ended. Only `workflow_run.error` carries this type.
-type BetaManagedAgentsMaxWorkflowRunsWorkflowRunError struct {
+type BetaManagedAgentsMaxWorkflowRunsWorkflowRunErrorObject struct {
 	// Short explanation written by the server. It never contains content from the run
 	// or its agents.
 	Message string                        `json:"message" api:"required"`
@@ -2619,20 +2625,20 @@ type BetaManagedAgentsMaxWorkflowRunsWorkflowRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsMaxWorkflowRunsWorkflowRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsMaxWorkflowRunsWorkflowRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsMaxWorkflowRunsWorkflowRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsMaxWorkflowRunsWorkflowRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // Authentication to an MCP server failed.
-type BetaManagedAgentsMCPAuthenticationFailedError struct {
+type BetaManagedAgentsMCPAuthenticationFailedErrorObject struct {
 	// Name of the MCP server that failed authentication.
 	MCPServerName string `json:"mcp_server_name" api:"required"`
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// What the client should do next.
-	RetryStatus BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	Type        constant.MCPAuthenticationFailedError                         `json:"type" default:"mcp_authentication_failed_error"`
+	RetryStatus BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.MCPAuthenticationFailedError                               `json:"type" default:"mcp_authentication_failed_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		MCPServerName respjson.Field
@@ -2645,20 +2651,21 @@ type BetaManagedAgentsMCPAuthenticationFailedError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsMCPAuthenticationFailedError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsMCPAuthenticationFailedError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsMCPAuthenticationFailedErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsMCPAuthenticationFailedErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion contains all
+// BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion contains all
 // possible properties and values from [BetaManagedAgentsRetryStatusRetrying],
 // [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
 //
-// Use the [BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion.AsAny]
+// Use the
+// [BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion.AsAny]
 // method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion struct {
+type BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion struct {
 	// Any of "retrying", "exhausted", "terminal".
 	Type string `json:"type"`
 	JSON struct {
@@ -2667,31 +2674,32 @@ type BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion struct {
 	} `json:"-"`
 }
 
-// anyBetaManagedAgentsMCPAuthenticationFailedErrorRetryStatus is implemented by
-// each variant of [BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion]
-// to add type safety for the return type of
-// [BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion.AsAny]
-type anyBetaManagedAgentsMCPAuthenticationFailedErrorRetryStatus interface {
-	implBetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion()
+// anyBetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatus is implemented
+// by each variant of
+// [BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion] to add
+// type safety for the return type of
+// [BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatus interface {
+	implBetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion()
 }
 
-func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion() {
 }
 
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion.AsAny().(type) {
+//	switch variant := BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsRetryStatusRetrying:
 //	case anthropic.BetaManagedAgentsRetryStatusExhausted:
 //	case anthropic.BetaManagedAgentsRetryStatusTerminal:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsMCPAuthenticationFailedErrorRetryStatus {
+func (u BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion) AsAny() anyBetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatus {
 	switch u.Type {
 	case "retrying":
 		return u.AsRetrying()
@@ -2703,39 +2711,39 @@ func (u BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion) AsAny() a
 	return nil
 }
 
-func (u BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+func (u BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+func (u BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+func (u BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion) RawJSON() string {
+func (u BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion) RawJSON() string {
 	return u.JSON.raw
 }
 
-func (r *BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // Failed to connect to an MCP server.
-type BetaManagedAgentsMCPConnectionFailedError struct {
+type BetaManagedAgentsMCPConnectionFailedErrorObject struct {
 	// Name of the MCP server that failed to connect.
 	MCPServerName string `json:"mcp_server_name" api:"required"`
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// What the client should do next.
-	RetryStatus BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	Type        constant.MCPConnectionFailedError                         `json:"type" default:"mcp_connection_failed_error"`
+	RetryStatus BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.MCPConnectionFailedError                               `json:"type" default:"mcp_connection_failed_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		MCPServerName respjson.Field
@@ -2748,20 +2756,20 @@ type BetaManagedAgentsMCPConnectionFailedError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsMCPConnectionFailedError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsMCPConnectionFailedError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsMCPConnectionFailedErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsMCPConnectionFailedErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion contains all possible
-// properties and values from [BetaManagedAgentsRetryStatusRetrying],
+// BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion contains all
+// possible properties and values from [BetaManagedAgentsRetryStatusRetrying],
 // [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
 //
-// Use the [BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion.AsAny] method
-// to switch on the variant.
+// Use the [BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion.AsAny]
+// method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion struct {
+type BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion struct {
 	// Any of "retrying", "exhausted", "terminal".
 	Type string `json:"type"`
 	JSON struct {
@@ -2770,31 +2778,32 @@ type BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion struct {
 	} `json:"-"`
 }
 
-// anyBetaManagedAgentsMCPConnectionFailedErrorRetryStatus is implemented by each
-// variant of [BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion] to add
-// type safety for the return type of
-// [BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion.AsAny]
-type anyBetaManagedAgentsMCPConnectionFailedErrorRetryStatus interface {
-	implBetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion()
+// anyBetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatus is implemented by
+// each variant of
+// [BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion] to add type
+// safety for the return type of
+// [BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatus interface {
+	implBetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion()
 }
 
-func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion() {
 }
 
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion.AsAny().(type) {
+//	switch variant := BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsRetryStatusRetrying:
 //	case anthropic.BetaManagedAgentsRetryStatusExhausted:
 //	case anthropic.BetaManagedAgentsRetryStatusTerminal:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsMCPConnectionFailedErrorRetryStatus {
+func (u BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion) AsAny() anyBetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatus {
 	switch u.Type {
 	case "retrying":
 		return u.AsRetrying()
@@ -2806,38 +2815,38 @@ func (u BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion) AsAny() anyBe
 	return nil
 }
 
-func (u BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+func (u BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+func (u BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+func (u BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion) RawJSON() string {
+func (u BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion) RawJSON() string {
 	return u.JSON.raw
 }
 
-func (r *BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The model is currently overloaded. Emitted after automatic retries are
 // exhausted.
-type BetaManagedAgentsModelOverloadedError struct {
+type BetaManagedAgentsModelOverloadedErrorObject struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// What the client should do next.
-	RetryStatus BetaManagedAgentsModelOverloadedErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	Type        constant.ModelOverloadedError                         `json:"type" default:"model_overloaded_error"`
+	RetryStatus BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.ModelOverloadedError                               `json:"type" default:"model_overloaded_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -2849,20 +2858,20 @@ type BetaManagedAgentsModelOverloadedError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsModelOverloadedError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsModelOverloadedError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsModelOverloadedErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsModelOverloadedErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// BetaManagedAgentsModelOverloadedErrorRetryStatusUnion contains all possible
-// properties and values from [BetaManagedAgentsRetryStatusRetrying],
+// BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion contains all
+// possible properties and values from [BetaManagedAgentsRetryStatusRetrying],
 // [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
 //
-// Use the [BetaManagedAgentsModelOverloadedErrorRetryStatusUnion.AsAny] method to
-// switch on the variant.
+// Use the [BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion.AsAny]
+// method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaManagedAgentsModelOverloadedErrorRetryStatusUnion struct {
+type BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion struct {
 	// Any of "retrying", "exhausted", "terminal".
 	Type string `json:"type"`
 	JSON struct {
@@ -2871,31 +2880,31 @@ type BetaManagedAgentsModelOverloadedErrorRetryStatusUnion struct {
 	} `json:"-"`
 }
 
-// anyBetaManagedAgentsModelOverloadedErrorRetryStatus is implemented by each
-// variant of [BetaManagedAgentsModelOverloadedErrorRetryStatusUnion] to add type
-// safety for the return type of
-// [BetaManagedAgentsModelOverloadedErrorRetryStatusUnion.AsAny]
-type anyBetaManagedAgentsModelOverloadedErrorRetryStatus interface {
-	implBetaManagedAgentsModelOverloadedErrorRetryStatusUnion()
+// anyBetaManagedAgentsModelOverloadedErrorObjectRetryStatus is implemented by each
+// variant of [BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion] to add
+// type safety for the return type of
+// [BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsModelOverloadedErrorObjectRetryStatus interface {
+	implBetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion()
 }
 
-func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsModelOverloadedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsModelOverloadedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsModelOverloadedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion() {
 }
 
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := BetaManagedAgentsModelOverloadedErrorRetryStatusUnion.AsAny().(type) {
+//	switch variant := BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsRetryStatusRetrying:
 //	case anthropic.BetaManagedAgentsRetryStatusExhausted:
 //	case anthropic.BetaManagedAgentsRetryStatusTerminal:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaManagedAgentsModelOverloadedErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsModelOverloadedErrorRetryStatus {
+func (u BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion) AsAny() anyBetaManagedAgentsModelOverloadedErrorObjectRetryStatus {
 	switch u.Type {
 	case "retrying":
 		return u.AsRetrying()
@@ -2907,35 +2916,37 @@ func (u BetaManagedAgentsModelOverloadedErrorRetryStatusUnion) AsAny() anyBetaMa
 	return nil
 }
 
-func (u BetaManagedAgentsModelOverloadedErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+func (u BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsModelOverloadedErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+func (u BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsModelOverloadedErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+func (u BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u BetaManagedAgentsModelOverloadedErrorRetryStatusUnion) RawJSON() string { return u.JSON.raw }
+func (u BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion) RawJSON() string {
+	return u.JSON.raw
+}
 
-func (r *BetaManagedAgentsModelOverloadedErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The model request was rate-limited.
-type BetaManagedAgentsModelRateLimitedError struct {
+type BetaManagedAgentsModelRateLimitedErrorObject struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// What the client should do next.
-	RetryStatus BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	Type        constant.ModelRateLimitedError                         `json:"type" default:"model_rate_limited_error"`
+	RetryStatus BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.ModelRateLimitedError                               `json:"type" default:"model_rate_limited_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -2947,20 +2958,20 @@ type BetaManagedAgentsModelRateLimitedError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsModelRateLimitedError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsModelRateLimitedError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsModelRateLimitedErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsModelRateLimitedErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion contains all possible
-// properties and values from [BetaManagedAgentsRetryStatusRetrying],
+// BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion contains all
+// possible properties and values from [BetaManagedAgentsRetryStatusRetrying],
 // [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
 //
-// Use the [BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion.AsAny] method to
-// switch on the variant.
+// Use the [BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion.AsAny]
+// method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion struct {
+type BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion struct {
 	// Any of "retrying", "exhausted", "terminal".
 	Type string `json:"type"`
 	JSON struct {
@@ -2969,31 +2980,31 @@ type BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion struct {
 	} `json:"-"`
 }
 
-// anyBetaManagedAgentsModelRateLimitedErrorRetryStatus is implemented by each
-// variant of [BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion] to add type
-// safety for the return type of
-// [BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion.AsAny]
-type anyBetaManagedAgentsModelRateLimitedErrorRetryStatus interface {
-	implBetaManagedAgentsModelRateLimitedErrorRetryStatusUnion()
+// anyBetaManagedAgentsModelRateLimitedErrorObjectRetryStatus is implemented by
+// each variant of [BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion]
+// to add type safety for the return type of
+// [BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsModelRateLimitedErrorObjectRetryStatus interface {
+	implBetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion()
 }
 
-func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsModelRateLimitedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsModelRateLimitedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsModelRateLimitedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion() {
 }
 
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion.AsAny().(type) {
+//	switch variant := BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsRetryStatusRetrying:
 //	case anthropic.BetaManagedAgentsRetryStatusExhausted:
 //	case anthropic.BetaManagedAgentsRetryStatusTerminal:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsModelRateLimitedErrorRetryStatus {
+func (u BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion) AsAny() anyBetaManagedAgentsModelRateLimitedErrorObjectRetryStatus {
 	switch u.Type {
 	case "retrying":
 		return u.AsRetrying()
@@ -3005,35 +3016,37 @@ func (u BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion) AsAny() anyBetaM
 	return nil
 }
 
-func (u BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+func (u BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+func (u BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+func (u BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion) RawJSON() string { return u.JSON.raw }
+func (u BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion) RawJSON() string {
+	return u.JSON.raw
+}
 
-func (r *BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // A model request failed for a reason other than overload or rate-limiting.
-type BetaManagedAgentsModelRequestFailedError struct {
+type BetaManagedAgentsModelRequestFailedErrorObject struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// What the client should do next.
-	RetryStatus BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	Type        constant.ModelRequestFailedError                         `json:"type" default:"model_request_failed_error"`
+	RetryStatus BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.ModelRequestFailedError                               `json:"type" default:"model_request_failed_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -3045,20 +3058,20 @@ type BetaManagedAgentsModelRequestFailedError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsModelRequestFailedError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsModelRequestFailedError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsModelRequestFailedErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsModelRequestFailedErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion contains all possible
-// properties and values from [BetaManagedAgentsRetryStatusRetrying],
+// BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion contains all
+// possible properties and values from [BetaManagedAgentsRetryStatusRetrying],
 // [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
 //
-// Use the [BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion.AsAny] method
-// to switch on the variant.
+// Use the [BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion.AsAny]
+// method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion struct {
+type BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion struct {
 	// Any of "retrying", "exhausted", "terminal".
 	Type string `json:"type"`
 	JSON struct {
@@ -3067,31 +3080,31 @@ type BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion struct {
 	} `json:"-"`
 }
 
-// anyBetaManagedAgentsModelRequestFailedErrorRetryStatus is implemented by each
-// variant of [BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion] to add
-// type safety for the return type of
-// [BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion.AsAny]
-type anyBetaManagedAgentsModelRequestFailedErrorRetryStatus interface {
-	implBetaManagedAgentsModelRequestFailedErrorRetryStatusUnion()
+// anyBetaManagedAgentsModelRequestFailedErrorObjectRetryStatus is implemented by
+// each variant of [BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion]
+// to add type safety for the return type of
+// [BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsModelRequestFailedErrorObjectRetryStatus interface {
+	implBetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion()
 }
 
-func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsModelRequestFailedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsModelRequestFailedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsModelRequestFailedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion() {
 }
 
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion.AsAny().(type) {
+//	switch variant := BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsRetryStatusRetrying:
 //	case anthropic.BetaManagedAgentsRetryStatusExhausted:
 //	case anthropic.BetaManagedAgentsRetryStatusTerminal:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsModelRequestFailedErrorRetryStatus {
+func (u BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion) AsAny() anyBetaManagedAgentsModelRequestFailedErrorObjectRetryStatus {
 	switch u.Type {
 	case "retrying":
 		return u.AsRetrying()
@@ -3103,25 +3116,27 @@ func (u BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion) AsAny() anyBet
 	return nil
 }
 
-func (u BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+func (u BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+func (u BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+func (u BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion) RawJSON() string { return u.JSON.raw }
+func (u BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion) RawJSON() string {
+	return u.JSON.raw
+}
 
-func (r *BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3182,7 +3197,7 @@ func (r *BetaManagedAgentsPlainTextDocumentSourceParam) UnmarshalJSON(data []byt
 }
 
 // The plan, a program that the agent wrote, failed, or the server refused it.
-type BetaManagedAgentsProgramWorkflowRunError struct {
+type BetaManagedAgentsProgramWorkflowRunErrorObject struct {
 	// Short explanation written by the server. It never contains content from the run
 	// or its agents.
 	Message string                `json:"message" api:"required"`
@@ -3197,8 +3212,8 @@ type BetaManagedAgentsProgramWorkflowRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsProgramWorkflowRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsProgramWorkflowRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsProgramWorkflowRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsProgramWorkflowRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -3254,7 +3269,7 @@ func (r *BetaManagedAgentsRedactedBlockParam) UnmarshalJSON(data []byte) error {
 
 // The repository host rejected the credentials, or required credentials and
 // received none.
-type BetaManagedAgentsRepositoryAuthenticationError struct {
+type BetaManagedAgentsRepositoryAuthenticationErrorObject struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// URL of the repository that could not be cloned. Null when it could not be
@@ -3262,8 +3277,8 @@ type BetaManagedAgentsRepositoryAuthenticationError struct {
 	RepositoryURL string `json:"repository_url" api:"required"`
 	// What the client should do next. Always `retrying`: the session keeps running
 	// without the repository.
-	RetryStatus BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	Type        constant.RepositoryAuthenticationError                         `json:"type" default:"repository_authentication_error"`
+	RetryStatus BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.RepositoryAuthenticationError                               `json:"type" default:"repository_authentication_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message       respjson.Field
@@ -3276,20 +3291,21 @@ type BetaManagedAgentsRepositoryAuthenticationError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsRepositoryAuthenticationError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsRepositoryAuthenticationError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsRepositoryAuthenticationErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsRepositoryAuthenticationErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion contains all
-// possible properties and values from [BetaManagedAgentsRetryStatusRetrying],
+// BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion contains
+// all possible properties and values from [BetaManagedAgentsRetryStatusRetrying],
 // [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
 //
-// Use the [BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion.AsAny]
+// Use the
+// [BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion.AsAny]
 // method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion struct {
+type BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion struct {
 	// Any of "retrying", "exhausted", "terminal".
 	Type string `json:"type"`
 	JSON struct {
@@ -3298,31 +3314,32 @@ type BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion struct {
 	} `json:"-"`
 }
 
-// anyBetaManagedAgentsRepositoryAuthenticationErrorRetryStatus is implemented by
-// each variant of [BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion]
-// to add type safety for the return type of
-// [BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion.AsAny]
-type anyBetaManagedAgentsRepositoryAuthenticationErrorRetryStatus interface {
-	implBetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion()
+// anyBetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatus is
+// implemented by each variant of
+// [BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion] to add
+// type safety for the return type of
+// [BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatus interface {
+	implBetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion()
 }
 
-func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion() {
 }
 
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion.AsAny().(type) {
+//	switch variant := BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsRetryStatusRetrying:
 //	case anthropic.BetaManagedAgentsRetryStatusExhausted:
 //	case anthropic.BetaManagedAgentsRetryStatusTerminal:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsRepositoryAuthenticationErrorRetryStatus {
+func (u BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion) AsAny() anyBetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatus {
 	switch u.Type {
 	case "retrying":
 		return u.AsRetrying()
@@ -3334,32 +3351,32 @@ func (u BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion) AsAny() 
 	return nil
 }
 
-func (u BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+func (u BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+func (u BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+func (u BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion) RawJSON() string {
+func (u BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion) RawJSON() string {
 	return u.JSON.raw
 }
 
-func (r *BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The requested branch or commit does not exist in the repository.
-type BetaManagedAgentsRepositoryCheckoutError struct {
+type BetaManagedAgentsRepositoryCheckoutErrorObject struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// URL of the repository that could not be cloned. Null when it could not be
@@ -3367,8 +3384,8 @@ type BetaManagedAgentsRepositoryCheckoutError struct {
 	RepositoryURL string `json:"repository_url" api:"required"`
 	// What the client should do next. Always `retrying`: the session keeps running
 	// without the repository.
-	RetryStatus BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	Type        constant.RepositoryCheckoutError                         `json:"type" default:"repository_checkout_error"`
+	RetryStatus BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.RepositoryCheckoutError                               `json:"type" default:"repository_checkout_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message       respjson.Field
@@ -3381,20 +3398,20 @@ type BetaManagedAgentsRepositoryCheckoutError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsRepositoryCheckoutError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsRepositoryCheckoutError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsRepositoryCheckoutErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsRepositoryCheckoutErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion contains all possible
-// properties and values from [BetaManagedAgentsRetryStatusRetrying],
+// BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion contains all
+// possible properties and values from [BetaManagedAgentsRetryStatusRetrying],
 // [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
 //
-// Use the [BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion.AsAny] method
-// to switch on the variant.
+// Use the [BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion.AsAny]
+// method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion struct {
+type BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion struct {
 	// Any of "retrying", "exhausted", "terminal".
 	Type string `json:"type"`
 	JSON struct {
@@ -3403,31 +3420,31 @@ type BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion struct {
 	} `json:"-"`
 }
 
-// anyBetaManagedAgentsRepositoryCheckoutErrorRetryStatus is implemented by each
-// variant of [BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion] to add
-// type safety for the return type of
-// [BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion.AsAny]
-type anyBetaManagedAgentsRepositoryCheckoutErrorRetryStatus interface {
-	implBetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion()
+// anyBetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatus is implemented by
+// each variant of [BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion]
+// to add type safety for the return type of
+// [BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatus interface {
+	implBetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion()
 }
 
-func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion() {
 }
 
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion.AsAny().(type) {
+//	switch variant := BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsRetryStatusRetrying:
 //	case anthropic.BetaManagedAgentsRetryStatusExhausted:
 //	case anthropic.BetaManagedAgentsRetryStatusTerminal:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsRepositoryCheckoutErrorRetryStatus {
+func (u BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion) AsAny() anyBetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatus {
 	switch u.Type {
 	case "retrying":
 		return u.AsRetrying()
@@ -3439,30 +3456,32 @@ func (u BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion) AsAny() anyBet
 	return nil
 }
 
-func (u BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+func (u BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+func (u BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+func (u BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion) RawJSON() string { return u.JSON.raw }
+func (u BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion) RawJSON() string {
+	return u.JSON.raw
+}
 
-func (r *BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The repository could not be cloned.
-type BetaManagedAgentsRepositoryCloneError struct {
+type BetaManagedAgentsRepositoryCloneErrorObject struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// URL of the repository that could not be cloned. Null when it could not be
@@ -3470,8 +3489,8 @@ type BetaManagedAgentsRepositoryCloneError struct {
 	RepositoryURL string `json:"repository_url" api:"required"`
 	// What the client should do next. Always `retrying`: the session keeps running
 	// without the repository.
-	RetryStatus BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	Type        constant.RepositoryCloneError                         `json:"type" default:"repository_clone_error"`
+	RetryStatus BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.RepositoryCloneError                               `json:"type" default:"repository_clone_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message       respjson.Field
@@ -3484,20 +3503,20 @@ type BetaManagedAgentsRepositoryCloneError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsRepositoryCloneError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsRepositoryCloneError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsRepositoryCloneErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsRepositoryCloneErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion contains all possible
-// properties and values from [BetaManagedAgentsRetryStatusRetrying],
+// BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion contains all
+// possible properties and values from [BetaManagedAgentsRetryStatusRetrying],
 // [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
 //
-// Use the [BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion.AsAny] method to
-// switch on the variant.
+// Use the [BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion.AsAny]
+// method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion struct {
+type BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion struct {
 	// Any of "retrying", "exhausted", "terminal".
 	Type string `json:"type"`
 	JSON struct {
@@ -3506,31 +3525,31 @@ type BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion struct {
 	} `json:"-"`
 }
 
-// anyBetaManagedAgentsRepositoryCloneErrorRetryStatus is implemented by each
-// variant of [BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion] to add type
-// safety for the return type of
-// [BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion.AsAny]
-type anyBetaManagedAgentsRepositoryCloneErrorRetryStatus interface {
-	implBetaManagedAgentsRepositoryCloneErrorRetryStatusUnion()
+// anyBetaManagedAgentsRepositoryCloneErrorObjectRetryStatus is implemented by each
+// variant of [BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion] to add
+// type safety for the return type of
+// [BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsRepositoryCloneErrorObjectRetryStatus interface {
+	implBetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion()
 }
 
-func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsRepositoryCloneErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsRepositoryCloneErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsRepositoryCloneErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion() {
 }
 
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion.AsAny().(type) {
+//	switch variant := BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsRetryStatusRetrying:
 //	case anthropic.BetaManagedAgentsRetryStatusExhausted:
 //	case anthropic.BetaManagedAgentsRetryStatusTerminal:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsRepositoryCloneErrorRetryStatus {
+func (u BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion) AsAny() anyBetaManagedAgentsRepositoryCloneErrorObjectRetryStatus {
 	switch u.Type {
 	case "retrying":
 		return u.AsRetrying()
@@ -3542,30 +3561,32 @@ func (u BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion) AsAny() anyBetaMa
 	return nil
 }
 
-func (u BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+func (u BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+func (u BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+func (u BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion) RawJSON() string { return u.JSON.raw }
+func (u BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion) RawJSON() string {
+	return u.JSON.raw
+}
 
-func (r *BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The repository host refused access to the repository.
-type BetaManagedAgentsRepositoryForbiddenError struct {
+type BetaManagedAgentsRepositoryForbiddenErrorObject struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// URL of the repository that could not be cloned. Null when it could not be
@@ -3573,8 +3594,8 @@ type BetaManagedAgentsRepositoryForbiddenError struct {
 	RepositoryURL string `json:"repository_url" api:"required"`
 	// What the client should do next. Always `retrying`: the session keeps running
 	// without the repository.
-	RetryStatus BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	Type        constant.RepositoryForbiddenError                         `json:"type" default:"repository_forbidden_error"`
+	RetryStatus BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.RepositoryForbiddenError                               `json:"type" default:"repository_forbidden_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message       respjson.Field
@@ -3587,20 +3608,20 @@ type BetaManagedAgentsRepositoryForbiddenError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsRepositoryForbiddenError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsRepositoryForbiddenError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsRepositoryForbiddenErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsRepositoryForbiddenErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion contains all possible
-// properties and values from [BetaManagedAgentsRetryStatusRetrying],
+// BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion contains all
+// possible properties and values from [BetaManagedAgentsRetryStatusRetrying],
 // [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
 //
-// Use the [BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion.AsAny] method
-// to switch on the variant.
+// Use the [BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion.AsAny]
+// method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion struct {
+type BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion struct {
 	// Any of "retrying", "exhausted", "terminal".
 	Type string `json:"type"`
 	JSON struct {
@@ -3609,31 +3630,32 @@ type BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion struct {
 	} `json:"-"`
 }
 
-// anyBetaManagedAgentsRepositoryForbiddenErrorRetryStatus is implemented by each
-// variant of [BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion] to add
-// type safety for the return type of
-// [BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion.AsAny]
-type anyBetaManagedAgentsRepositoryForbiddenErrorRetryStatus interface {
-	implBetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion()
+// anyBetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatus is implemented by
+// each variant of
+// [BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion] to add type
+// safety for the return type of
+// [BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatus interface {
+	implBetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion()
 }
 
-func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion() {
 }
 
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion.AsAny().(type) {
+//	switch variant := BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsRetryStatusRetrying:
 //	case anthropic.BetaManagedAgentsRetryStatusExhausted:
 //	case anthropic.BetaManagedAgentsRetryStatusTerminal:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsRepositoryForbiddenErrorRetryStatus {
+func (u BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion) AsAny() anyBetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatus {
 	switch u.Type {
 	case "retrying":
 		return u.AsRetrying()
@@ -3645,32 +3667,32 @@ func (u BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion) AsAny() anyBe
 	return nil
 }
 
-func (u BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+func (u BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+func (u BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+func (u BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion) RawJSON() string {
+func (u BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion) RawJSON() string {
 	return u.JSON.raw
 }
 
-func (r *BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The repository host reported the repository as not found.
-type BetaManagedAgentsRepositoryNotFoundError struct {
+type BetaManagedAgentsRepositoryNotFoundErrorObject struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// URL of the repository that could not be cloned. Null when it could not be
@@ -3678,8 +3700,8 @@ type BetaManagedAgentsRepositoryNotFoundError struct {
 	RepositoryURL string `json:"repository_url" api:"required"`
 	// What the client should do next. Always `retrying`: the session keeps running
 	// without the repository.
-	RetryStatus BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	Type        constant.RepositoryNotFoundError                         `json:"type" default:"repository_not_found_error"`
+	RetryStatus BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.RepositoryNotFoundError                               `json:"type" default:"repository_not_found_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message       respjson.Field
@@ -3692,20 +3714,20 @@ type BetaManagedAgentsRepositoryNotFoundError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsRepositoryNotFoundError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsRepositoryNotFoundError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsRepositoryNotFoundErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsRepositoryNotFoundErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion contains all possible
-// properties and values from [BetaManagedAgentsRetryStatusRetrying],
+// BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion contains all
+// possible properties and values from [BetaManagedAgentsRetryStatusRetrying],
 // [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
 //
-// Use the [BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion.AsAny] method
-// to switch on the variant.
+// Use the [BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion.AsAny]
+// method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion struct {
+type BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion struct {
 	// Any of "retrying", "exhausted", "terminal".
 	Type string `json:"type"`
 	JSON struct {
@@ -3714,31 +3736,31 @@ type BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion struct {
 	} `json:"-"`
 }
 
-// anyBetaManagedAgentsRepositoryNotFoundErrorRetryStatus is implemented by each
-// variant of [BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion] to add
-// type safety for the return type of
-// [BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion.AsAny]
-type anyBetaManagedAgentsRepositoryNotFoundErrorRetryStatus interface {
-	implBetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion()
+// anyBetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatus is implemented by
+// each variant of [BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion]
+// to add type safety for the return type of
+// [BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatus interface {
+	implBetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion()
 }
 
-func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion() {
 }
 
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion.AsAny().(type) {
+//	switch variant := BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsRetryStatusRetrying:
 //	case anthropic.BetaManagedAgentsRetryStatusExhausted:
 //	case anthropic.BetaManagedAgentsRetryStatusTerminal:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsRepositoryNotFoundErrorRetryStatus {
+func (u BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion) AsAny() anyBetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatus {
 	switch u.Type {
 	case "retrying":
 		return u.AsRetrying()
@@ -3750,25 +3772,27 @@ func (u BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion) AsAny() anyBet
 	return nil
 }
 
-func (u BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+func (u BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+func (u BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+func (u BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion) RawJSON() string { return u.JSON.raw }
+func (u BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion) RawJSON() string {
+	return u.JSON.raw
+}
 
-func (r *BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -4279,21 +4303,21 @@ func (r *BetaManagedAgentsSessionErrorEvent) UnmarshalJSON(data []byte) error {
 }
 
 // BetaManagedAgentsSessionErrorEventErrorUnion contains all possible properties
-// and values from [BetaManagedAgentsUnknownError],
-// [BetaManagedAgentsModelOverloadedError],
-// [BetaManagedAgentsModelRateLimitedError],
-// [BetaManagedAgentsModelRequestFailedError],
-// [BetaManagedAgentsMCPConnectionFailedError],
-// [BetaManagedAgentsMCPAuthenticationFailedError],
-// [BetaManagedAgentsBillingError],
-// [BetaManagedAgentsCredentialHostUnreachableError],
-// [BetaManagedAgentsToolUseLimitReachedError],
-// [BetaManagedAgentsCompactionLimitReachedError],
-// [BetaManagedAgentsRepositoryAuthenticationError],
-// [BetaManagedAgentsRepositoryForbiddenError],
-// [BetaManagedAgentsRepositoryNotFoundError],
-// [BetaManagedAgentsRepositoryCheckoutError],
-// [BetaManagedAgentsRepositoryCloneError].
+// and values from [BetaManagedAgentsUnknownErrorObject],
+// [BetaManagedAgentsModelOverloadedErrorObject],
+// [BetaManagedAgentsModelRateLimitedErrorObject],
+// [BetaManagedAgentsModelRequestFailedErrorObject],
+// [BetaManagedAgentsMCPConnectionFailedErrorObject],
+// [BetaManagedAgentsMCPAuthenticationFailedErrorObject],
+// [BetaManagedAgentsBillingErrorObject],
+// [BetaManagedAgentsCredentialHostUnreachableErrorObject],
+// [BetaManagedAgentsToolUseLimitReachedErrorObject],
+// [BetaManagedAgentsCompactionLimitReachedErrorObject],
+// [BetaManagedAgentsRepositoryAuthenticationErrorObject],
+// [BetaManagedAgentsRepositoryForbiddenErrorObject],
+// [BetaManagedAgentsRepositoryNotFoundErrorObject],
+// [BetaManagedAgentsRepositoryCheckoutErrorObject],
+// [BetaManagedAgentsRepositoryCloneErrorObject].
 //
 // Use the [BetaManagedAgentsSessionErrorEventErrorUnion.AsAny] method to switch on
 // the variant.
@@ -4301,21 +4325,21 @@ func (r *BetaManagedAgentsSessionErrorEvent) UnmarshalJSON(data []byte) error {
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BetaManagedAgentsSessionErrorEventErrorUnion struct {
 	Message string `json:"message"`
-	// This field is a union of [BetaManagedAgentsUnknownErrorRetryStatusUnion],
-	// [BetaManagedAgentsModelOverloadedErrorRetryStatusUnion],
-	// [BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion],
-	// [BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion],
-	// [BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion],
-	// [BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion],
-	// [BetaManagedAgentsBillingErrorRetryStatusUnion],
-	// [BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion],
-	// [BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion],
-	// [BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion]
+	// This field is a union of [BetaManagedAgentsUnknownErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsBillingErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion]
 	RetryStatus BetaManagedAgentsSessionErrorEventErrorUnionRetryStatus `json:"retry_status"`
 	// Any of "unknown_error", "model_overloaded_error", "model_rate_limited_error",
 	// "model_request_failed_error", "mcp_connection_failed_error",
@@ -4326,9 +4350,11 @@ type BetaManagedAgentsSessionErrorEventErrorUnion struct {
 	// "repository_checkout_error", "repository_clone_error".
 	Type          string `json:"type"`
 	MCPServerName string `json:"mcp_server_name"`
-	// This field is from variant [BetaManagedAgentsCredentialHostUnreachableError].
+	// This field is from variant
+	// [BetaManagedAgentsCredentialHostUnreachableErrorObject].
 	CredentialID string `json:"credential_id"`
-	// This field is from variant [BetaManagedAgentsCredentialHostUnreachableError].
+	// This field is from variant
+	// [BetaManagedAgentsCredentialHostUnreachableErrorObject].
 	VaultID       string `json:"vault_id"`
 	RepositoryURL string `json:"repository_url"`
 	JSON          struct {
@@ -4350,44 +4376,53 @@ type anyBetaManagedAgentsSessionErrorEventError interface {
 	implBetaManagedAgentsSessionErrorEventErrorUnion()
 }
 
-func (BetaManagedAgentsUnknownError) implBetaManagedAgentsSessionErrorEventErrorUnion()             {}
-func (BetaManagedAgentsModelOverloadedError) implBetaManagedAgentsSessionErrorEventErrorUnion()     {}
-func (BetaManagedAgentsModelRateLimitedError) implBetaManagedAgentsSessionErrorEventErrorUnion()    {}
-func (BetaManagedAgentsModelRequestFailedError) implBetaManagedAgentsSessionErrorEventErrorUnion()  {}
-func (BetaManagedAgentsMCPConnectionFailedError) implBetaManagedAgentsSessionErrorEventErrorUnion() {}
-func (BetaManagedAgentsMCPAuthenticationFailedError) implBetaManagedAgentsSessionErrorEventErrorUnion() {
+func (BetaManagedAgentsUnknownErrorObject) implBetaManagedAgentsSessionErrorEventErrorUnion() {}
+func (BetaManagedAgentsModelOverloadedErrorObject) implBetaManagedAgentsSessionErrorEventErrorUnion() {
 }
-func (BetaManagedAgentsBillingError) implBetaManagedAgentsSessionErrorEventErrorUnion() {}
-func (BetaManagedAgentsCredentialHostUnreachableError) implBetaManagedAgentsSessionErrorEventErrorUnion() {
+func (BetaManagedAgentsModelRateLimitedErrorObject) implBetaManagedAgentsSessionErrorEventErrorUnion() {
 }
-func (BetaManagedAgentsToolUseLimitReachedError) implBetaManagedAgentsSessionErrorEventErrorUnion() {}
-func (BetaManagedAgentsCompactionLimitReachedError) implBetaManagedAgentsSessionErrorEventErrorUnion() {
+func (BetaManagedAgentsModelRequestFailedErrorObject) implBetaManagedAgentsSessionErrorEventErrorUnion() {
 }
-func (BetaManagedAgentsRepositoryAuthenticationError) implBetaManagedAgentsSessionErrorEventErrorUnion() {
+func (BetaManagedAgentsMCPConnectionFailedErrorObject) implBetaManagedAgentsSessionErrorEventErrorUnion() {
 }
-func (BetaManagedAgentsRepositoryForbiddenError) implBetaManagedAgentsSessionErrorEventErrorUnion() {}
-func (BetaManagedAgentsRepositoryNotFoundError) implBetaManagedAgentsSessionErrorEventErrorUnion()  {}
-func (BetaManagedAgentsRepositoryCheckoutError) implBetaManagedAgentsSessionErrorEventErrorUnion()  {}
-func (BetaManagedAgentsRepositoryCloneError) implBetaManagedAgentsSessionErrorEventErrorUnion()     {}
+func (BetaManagedAgentsMCPAuthenticationFailedErrorObject) implBetaManagedAgentsSessionErrorEventErrorUnion() {
+}
+func (BetaManagedAgentsBillingErrorObject) implBetaManagedAgentsSessionErrorEventErrorUnion() {}
+func (BetaManagedAgentsCredentialHostUnreachableErrorObject) implBetaManagedAgentsSessionErrorEventErrorUnion() {
+}
+func (BetaManagedAgentsToolUseLimitReachedErrorObject) implBetaManagedAgentsSessionErrorEventErrorUnion() {
+}
+func (BetaManagedAgentsCompactionLimitReachedErrorObject) implBetaManagedAgentsSessionErrorEventErrorUnion() {
+}
+func (BetaManagedAgentsRepositoryAuthenticationErrorObject) implBetaManagedAgentsSessionErrorEventErrorUnion() {
+}
+func (BetaManagedAgentsRepositoryForbiddenErrorObject) implBetaManagedAgentsSessionErrorEventErrorUnion() {
+}
+func (BetaManagedAgentsRepositoryNotFoundErrorObject) implBetaManagedAgentsSessionErrorEventErrorUnion() {
+}
+func (BetaManagedAgentsRepositoryCheckoutErrorObject) implBetaManagedAgentsSessionErrorEventErrorUnion() {
+}
+func (BetaManagedAgentsRepositoryCloneErrorObject) implBetaManagedAgentsSessionErrorEventErrorUnion() {
+}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaManagedAgentsSessionErrorEventErrorUnion.AsAny().(type) {
-//	case anthropic.BetaManagedAgentsUnknownError:
-//	case anthropic.BetaManagedAgentsModelOverloadedError:
-//	case anthropic.BetaManagedAgentsModelRateLimitedError:
-//	case anthropic.BetaManagedAgentsModelRequestFailedError:
-//	case anthropic.BetaManagedAgentsMCPConnectionFailedError:
-//	case anthropic.BetaManagedAgentsMCPAuthenticationFailedError:
-//	case anthropic.BetaManagedAgentsBillingError:
-//	case anthropic.BetaManagedAgentsCredentialHostUnreachableError:
-//	case anthropic.BetaManagedAgentsToolUseLimitReachedError:
-//	case anthropic.BetaManagedAgentsCompactionLimitReachedError:
-//	case anthropic.BetaManagedAgentsRepositoryAuthenticationError:
-//	case anthropic.BetaManagedAgentsRepositoryForbiddenError:
-//	case anthropic.BetaManagedAgentsRepositoryNotFoundError:
-//	case anthropic.BetaManagedAgentsRepositoryCheckoutError:
-//	case anthropic.BetaManagedAgentsRepositoryCloneError:
+//	case anthropic.BetaManagedAgentsUnknownErrorObject:
+//	case anthropic.BetaManagedAgentsModelOverloadedErrorObject:
+//	case anthropic.BetaManagedAgentsModelRateLimitedErrorObject:
+//	case anthropic.BetaManagedAgentsModelRequestFailedErrorObject:
+//	case anthropic.BetaManagedAgentsMCPConnectionFailedErrorObject:
+//	case anthropic.BetaManagedAgentsMCPAuthenticationFailedErrorObject:
+//	case anthropic.BetaManagedAgentsBillingErrorObject:
+//	case anthropic.BetaManagedAgentsCredentialHostUnreachableErrorObject:
+//	case anthropic.BetaManagedAgentsToolUseLimitReachedErrorObject:
+//	case anthropic.BetaManagedAgentsCompactionLimitReachedErrorObject:
+//	case anthropic.BetaManagedAgentsRepositoryAuthenticationErrorObject:
+//	case anthropic.BetaManagedAgentsRepositoryForbiddenErrorObject:
+//	case anthropic.BetaManagedAgentsRepositoryNotFoundErrorObject:
+//	case anthropic.BetaManagedAgentsRepositoryCheckoutErrorObject:
+//	case anthropic.BetaManagedAgentsRepositoryCloneErrorObject:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -4427,77 +4462,77 @@ func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsAny() anyBetaManagedAgen
 	return nil
 }
 
-func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsUnknownError() (v BetaManagedAgentsUnknownError) {
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsUnknownError() (v BetaManagedAgentsUnknownErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsModelOverloadedError() (v BetaManagedAgentsModelOverloadedError) {
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsModelOverloadedError() (v BetaManagedAgentsModelOverloadedErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsModelRateLimitedError() (v BetaManagedAgentsModelRateLimitedError) {
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsModelRateLimitedError() (v BetaManagedAgentsModelRateLimitedErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsModelRequestFailedError() (v BetaManagedAgentsModelRequestFailedError) {
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsModelRequestFailedError() (v BetaManagedAgentsModelRequestFailedErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsMCPConnectionFailedError() (v BetaManagedAgentsMCPConnectionFailedError) {
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsMCPConnectionFailedError() (v BetaManagedAgentsMCPConnectionFailedErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsMCPAuthenticationFailedError() (v BetaManagedAgentsMCPAuthenticationFailedError) {
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsMCPAuthenticationFailedError() (v BetaManagedAgentsMCPAuthenticationFailedErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsBillingError() (v BetaManagedAgentsBillingError) {
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsBillingError() (v BetaManagedAgentsBillingErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsCredentialHostUnreachableError() (v BetaManagedAgentsCredentialHostUnreachableError) {
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsCredentialHostUnreachableError() (v BetaManagedAgentsCredentialHostUnreachableErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsToolUseLimitReachedError() (v BetaManagedAgentsToolUseLimitReachedError) {
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsToolUseLimitReachedError() (v BetaManagedAgentsToolUseLimitReachedErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsCompactionLimitReachedError() (v BetaManagedAgentsCompactionLimitReachedError) {
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsCompactionLimitReachedError() (v BetaManagedAgentsCompactionLimitReachedErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsRepositoryAuthenticationError() (v BetaManagedAgentsRepositoryAuthenticationError) {
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsRepositoryAuthenticationError() (v BetaManagedAgentsRepositoryAuthenticationErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsRepositoryForbiddenError() (v BetaManagedAgentsRepositoryForbiddenError) {
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsRepositoryForbiddenError() (v BetaManagedAgentsRepositoryForbiddenErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsRepositoryNotFoundError() (v BetaManagedAgentsRepositoryNotFoundError) {
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsRepositoryNotFoundError() (v BetaManagedAgentsRepositoryNotFoundErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsRepositoryCheckoutError() (v BetaManagedAgentsRepositoryCheckoutError) {
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsRepositoryCheckoutError() (v BetaManagedAgentsRepositoryCheckoutErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsRepositoryCloneError() (v BetaManagedAgentsRepositoryCloneError) {
+func (u BetaManagedAgentsSessionErrorEventErrorUnion) AsRepositoryCloneError() (v BetaManagedAgentsRepositoryCloneErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -4631,7 +4666,7 @@ type BetaManagedAgentsSessionEventUnion struct {
 	// This field is from variant [BetaManagedAgentsAgentThreadMessageSentEvent].
 	ToAgentName string `json:"to_agent_name"`
 	// This field is a union of [BetaManagedAgentsSessionErrorEventErrorUnion],
-	// [BetaManagedAgentsWorkflowRunErrorUnion]
+	// [BetaManagedAgentsWorkflowRunErrorObjectUnion]
 	Error BetaManagedAgentsSessionEventUnionError `json:"error"`
 	// This field is from variant [BetaManagedAgentsSessionStatusIdleEvent].
 	StopDetails BetaManagedAgentsSessionRefusalStopDetails `json:"stop_details"`
@@ -5207,7 +5242,7 @@ type BetaManagedAgentsSessionEventUnionResult struct {
 	OfString string `json:",inline"`
 	Type     string `json:"type"`
 	// This field is from variant [BetaManagedAgentsWorkflowRunResultUnion].
-	Error BetaManagedAgentsWorkflowRunErrorUnion `json:"error"`
+	Error BetaManagedAgentsWorkflowRunErrorObjectUnion `json:"error"`
 	JSON  struct {
 		OfBetaManagedAgentsUserToolConfirmationEventResult respjson.Field
 		OfString                                           respjson.Field
@@ -5229,21 +5264,21 @@ func (r *BetaManagedAgentsSessionEventUnionResult) UnmarshalJSON(data []byte) er
 // [BetaManagedAgentsSessionEventUnion].
 type BetaManagedAgentsSessionEventUnionError struct {
 	Message string `json:"message"`
-	// This field is a union of [BetaManagedAgentsUnknownErrorRetryStatusUnion],
-	// [BetaManagedAgentsModelOverloadedErrorRetryStatusUnion],
-	// [BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion],
-	// [BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion],
-	// [BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion],
-	// [BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion],
-	// [BetaManagedAgentsBillingErrorRetryStatusUnion],
-	// [BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion],
-	// [BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion],
-	// [BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion]
+	// This field is a union of [BetaManagedAgentsUnknownErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsBillingErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion]
 	RetryStatus   BetaManagedAgentsSessionEventUnionErrorRetryStatus `json:"retry_status"`
 	Type          string                                             `json:"type"`
 	MCPServerName string                                             `json:"mcp_server_name"`
@@ -6316,7 +6351,7 @@ type BetaManagedAgentsStreamSessionEventsUnion struct {
 	// This field is from variant [BetaManagedAgentsAgentThreadMessageSentEvent].
 	ToAgentName string `json:"to_agent_name"`
 	// This field is a union of [BetaManagedAgentsSessionErrorEventErrorUnion],
-	// [BetaManagedAgentsWorkflowRunErrorUnion]
+	// [BetaManagedAgentsWorkflowRunErrorObjectUnion]
 	Error BetaManagedAgentsStreamSessionEventsUnionError `json:"error"`
 	// This field is from variant [BetaManagedAgentsSessionStatusIdleEvent].
 	StopDetails BetaManagedAgentsSessionRefusalStopDetails `json:"stop_details"`
@@ -6933,7 +6968,7 @@ type BetaManagedAgentsStreamSessionEventsUnionResult struct {
 	OfString string `json:",inline"`
 	Type     string `json:"type"`
 	// This field is from variant [BetaManagedAgentsWorkflowRunResultUnion].
-	Error BetaManagedAgentsWorkflowRunErrorUnion `json:"error"`
+	Error BetaManagedAgentsWorkflowRunErrorObjectUnion `json:"error"`
 	JSON  struct {
 		OfBetaManagedAgentsUserToolConfirmationEventResult respjson.Field
 		OfString                                           respjson.Field
@@ -6956,21 +6991,21 @@ func (r *BetaManagedAgentsStreamSessionEventsUnionResult) UnmarshalJSON(data []b
 // [BetaManagedAgentsStreamSessionEventsUnion].
 type BetaManagedAgentsStreamSessionEventsUnionError struct {
 	Message string `json:"message"`
-	// This field is a union of [BetaManagedAgentsUnknownErrorRetryStatusUnion],
-	// [BetaManagedAgentsModelOverloadedErrorRetryStatusUnion],
-	// [BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion],
-	// [BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion],
-	// [BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion],
-	// [BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion],
-	// [BetaManagedAgentsBillingErrorRetryStatusUnion],
-	// [BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion],
-	// [BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion],
-	// [BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion]
+	// This field is a union of [BetaManagedAgentsUnknownErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsBillingErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion]
 	RetryStatus   BetaManagedAgentsStreamSessionEventsUnionErrorRetryStatus `json:"retry_status"`
 	Type          string                                                    `json:"type"`
 	MCPServerName string                                                    `json:"mcp_server_name"`
@@ -7193,7 +7228,7 @@ func (r *BetaManagedAgentsTextRubricParams) UnmarshalJSON(data []byte) error {
 }
 
 // The run exceeded the limit on the number of threads that a run can create.
-type BetaManagedAgentsThreadLimitWorkflowRunError struct {
+type BetaManagedAgentsThreadLimitWorkflowRunErrorObject struct {
 	// Short explanation written by the server. It never contains content from the run
 	// or its agents.
 	Message string                    `json:"message" api:"required"`
@@ -7208,13 +7243,13 @@ type BetaManagedAgentsThreadLimitWorkflowRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsThreadLimitWorkflowRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsThreadLimitWorkflowRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsThreadLimitWorkflowRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsThreadLimitWorkflowRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The run reached its time limit.
-type BetaManagedAgentsTimeoutWorkflowRunError struct {
+type BetaManagedAgentsTimeoutWorkflowRunErrorObject struct {
 	// Short explanation written by the server. It never contains content from the run
 	// or its agents.
 	Message string                `json:"message" api:"required"`
@@ -7229,8 +7264,8 @@ type BetaManagedAgentsTimeoutWorkflowRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsTimeoutWorkflowRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsTimeoutWorkflowRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsTimeoutWorkflowRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsTimeoutWorkflowRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -7239,12 +7274,12 @@ func (r *BetaManagedAgentsTimeoutWorkflowRunError) UnmarshalJSON(data []byte) er
 // not because a request failed. The thread goes idle with
 // `stop_reason: retries_exhausted` (a child thread then terminates); the next
 // `user.message` starts a new turn.
-type BetaManagedAgentsToolUseLimitReachedError struct {
+type BetaManagedAgentsToolUseLimitReachedErrorObject struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// What the client should do next.
-	RetryStatus BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	Type        constant.ToolUseLimitReachedError                         `json:"type" default:"tool_use_limit_reached_error"`
+	RetryStatus BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.ToolUseLimitReachedError                               `json:"type" default:"tool_use_limit_reached_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -7256,20 +7291,20 @@ type BetaManagedAgentsToolUseLimitReachedError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsToolUseLimitReachedError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsToolUseLimitReachedError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsToolUseLimitReachedErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsToolUseLimitReachedErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion contains all possible
-// properties and values from [BetaManagedAgentsRetryStatusRetrying],
+// BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion contains all
+// possible properties and values from [BetaManagedAgentsRetryStatusRetrying],
 // [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
 //
-// Use the [BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion.AsAny] method
-// to switch on the variant.
+// Use the [BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion.AsAny]
+// method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion struct {
+type BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion struct {
 	// Any of "retrying", "exhausted", "terminal".
 	Type string `json:"type"`
 	JSON struct {
@@ -7278,31 +7313,32 @@ type BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion struct {
 	} `json:"-"`
 }
 
-// anyBetaManagedAgentsToolUseLimitReachedErrorRetryStatus is implemented by each
-// variant of [BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion] to add
-// type safety for the return type of
-// [BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion.AsAny]
-type anyBetaManagedAgentsToolUseLimitReachedErrorRetryStatus interface {
-	implBetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion()
+// anyBetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatus is implemented by
+// each variant of
+// [BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion] to add type
+// safety for the return type of
+// [BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatus interface {
+	implBetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion()
 }
 
-func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion() {
 }
-func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion() {
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion() {
 }
 
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion.AsAny().(type) {
+//	switch variant := BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsRetryStatusRetrying:
 //	case anthropic.BetaManagedAgentsRetryStatusExhausted:
 //	case anthropic.BetaManagedAgentsRetryStatusTerminal:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsToolUseLimitReachedErrorRetryStatus {
+func (u BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion) AsAny() anyBetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatus {
 	switch u.Type {
 	case "retrying":
 		return u.AsRetrying()
@@ -7314,39 +7350,39 @@ func (u BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion) AsAny() anyBe
 	return nil
 }
 
-func (u BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+func (u BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+func (u BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+func (u BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion) RawJSON() string {
+func (u BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion) RawJSON() string {
 	return u.JSON.raw
 }
 
-func (r *BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // An unknown or unexpected error occurred during session execution. A fallback
 // variant; clients that don't recognize a new error code can match on
 // `retry_status` and `message` alone.
-type BetaManagedAgentsUnknownError struct {
+type BetaManagedAgentsUnknownErrorObject struct {
 	// Human-readable error description.
 	Message string `json:"message" api:"required"`
 	// What the client should do next.
-	RetryStatus BetaManagedAgentsUnknownErrorRetryStatusUnion `json:"retry_status" api:"required"`
-	Type        constant.UnknownError                         `json:"type" default:"unknown_error"`
+	RetryStatus BetaManagedAgentsUnknownErrorObjectRetryStatusUnion `json:"retry_status" api:"required"`
+	Type        constant.UnknownError                               `json:"type" default:"unknown_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Message     respjson.Field
@@ -7358,20 +7394,20 @@ type BetaManagedAgentsUnknownError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsUnknownError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsUnknownError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsUnknownErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsUnknownErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// BetaManagedAgentsUnknownErrorRetryStatusUnion contains all possible properties
-// and values from [BetaManagedAgentsRetryStatusRetrying],
+// BetaManagedAgentsUnknownErrorObjectRetryStatusUnion contains all possible
+// properties and values from [BetaManagedAgentsRetryStatusRetrying],
 // [BetaManagedAgentsRetryStatusExhausted], [BetaManagedAgentsRetryStatusTerminal].
 //
-// Use the [BetaManagedAgentsUnknownErrorRetryStatusUnion.AsAny] method to switch
-// on the variant.
+// Use the [BetaManagedAgentsUnknownErrorObjectRetryStatusUnion.AsAny] method to
+// switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaManagedAgentsUnknownErrorRetryStatusUnion struct {
+type BetaManagedAgentsUnknownErrorObjectRetryStatusUnion struct {
 	// Any of "retrying", "exhausted", "terminal".
 	Type string `json:"type"`
 	JSON struct {
@@ -7380,27 +7416,30 @@ type BetaManagedAgentsUnknownErrorRetryStatusUnion struct {
 	} `json:"-"`
 }
 
-// anyBetaManagedAgentsUnknownErrorRetryStatus is implemented by each variant of
-// [BetaManagedAgentsUnknownErrorRetryStatusUnion] to add type safety for the
-// return type of [BetaManagedAgentsUnknownErrorRetryStatusUnion.AsAny]
-type anyBetaManagedAgentsUnknownErrorRetryStatus interface {
-	implBetaManagedAgentsUnknownErrorRetryStatusUnion()
+// anyBetaManagedAgentsUnknownErrorObjectRetryStatus is implemented by each variant
+// of [BetaManagedAgentsUnknownErrorObjectRetryStatusUnion] to add type safety for
+// the return type of [BetaManagedAgentsUnknownErrorObjectRetryStatusUnion.AsAny]
+type anyBetaManagedAgentsUnknownErrorObjectRetryStatus interface {
+	implBetaManagedAgentsUnknownErrorObjectRetryStatusUnion()
 }
 
-func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsUnknownErrorRetryStatusUnion()  {}
-func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsUnknownErrorRetryStatusUnion() {}
-func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsUnknownErrorRetryStatusUnion()  {}
+func (BetaManagedAgentsRetryStatusRetrying) implBetaManagedAgentsUnknownErrorObjectRetryStatusUnion() {
+}
+func (BetaManagedAgentsRetryStatusExhausted) implBetaManagedAgentsUnknownErrorObjectRetryStatusUnion() {
+}
+func (BetaManagedAgentsRetryStatusTerminal) implBetaManagedAgentsUnknownErrorObjectRetryStatusUnion() {
+}
 
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := BetaManagedAgentsUnknownErrorRetryStatusUnion.AsAny().(type) {
+//	switch variant := BetaManagedAgentsUnknownErrorObjectRetryStatusUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsRetryStatusRetrying:
 //	case anthropic.BetaManagedAgentsRetryStatusExhausted:
 //	case anthropic.BetaManagedAgentsRetryStatusTerminal:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaManagedAgentsUnknownErrorRetryStatusUnion) AsAny() anyBetaManagedAgentsUnknownErrorRetryStatus {
+func (u BetaManagedAgentsUnknownErrorObjectRetryStatusUnion) AsAny() anyBetaManagedAgentsUnknownErrorObjectRetryStatus {
 	switch u.Type {
 	case "retrying":
 		return u.AsRetrying()
@@ -7412,30 +7451,30 @@ func (u BetaManagedAgentsUnknownErrorRetryStatusUnion) AsAny() anyBetaManagedAge
 	return nil
 }
 
-func (u BetaManagedAgentsUnknownErrorRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
+func (u BetaManagedAgentsUnknownErrorObjectRetryStatusUnion) AsRetrying() (v BetaManagedAgentsRetryStatusRetrying) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsUnknownErrorRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
+func (u BetaManagedAgentsUnknownErrorObjectRetryStatusUnion) AsExhausted() (v BetaManagedAgentsRetryStatusExhausted) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaManagedAgentsUnknownErrorRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
+func (u BetaManagedAgentsUnknownErrorObjectRetryStatusUnion) AsTerminal() (v BetaManagedAgentsRetryStatusTerminal) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u BetaManagedAgentsUnknownErrorRetryStatusUnion) RawJSON() string { return u.JSON.raw }
+func (u BetaManagedAgentsUnknownErrorObjectRetryStatusUnion) RawJSON() string { return u.JSON.raw }
 
-func (r *BetaManagedAgentsUnknownErrorRetryStatusUnion) UnmarshalJSON(data []byte) error {
+func (r *BetaManagedAgentsUnknownErrorObjectRetryStatusUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // A failure that has no type of its own.
-type BetaManagedAgentsUnknownWorkflowRunError struct {
+type BetaManagedAgentsUnknownWorkflowRunErrorObject struct {
 	// Short explanation written by the server. It never contains content from the run
 	// or its agents.
 	Message string                `json:"message" api:"required"`
@@ -7450,8 +7489,8 @@ type BetaManagedAgentsUnknownWorkflowRunError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsUnknownWorkflowRunError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsUnknownWorkflowRunError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsUnknownWorkflowRunErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsUnknownWorkflowRunErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -8865,102 +8904,6 @@ func (r *BetaManagedAgentsWorkflowRunCreatedEvent) UnmarshalJSON(data []byte) er
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// BetaManagedAgentsWorkflowRunErrorUnion contains all possible properties and
-// values from [BetaManagedAgentsTimeoutWorkflowRunError],
-// [BetaManagedAgentsProgramWorkflowRunError],
-// [BetaManagedAgentsUnknownWorkflowRunError],
-// [BetaManagedAgentsThreadLimitWorkflowRunError],
-// [BetaManagedAgentsMaxWorkflowRunsWorkflowRunError].
-//
-// Use the [BetaManagedAgentsWorkflowRunErrorUnion.AsAny] method to switch on the
-// variant.
-//
-// Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaManagedAgentsWorkflowRunErrorUnion struct {
-	Message string `json:"message"`
-	// Any of "timeout_error", "program_error", "unknown_error", "thread_limit_error",
-	// "max_workflow_runs_error".
-	Type string `json:"type"`
-	JSON struct {
-		Message respjson.Field
-		Type    respjson.Field
-		raw     string
-	} `json:"-"`
-}
-
-// anyBetaManagedAgentsWorkflowRunError is implemented by each variant of
-// [BetaManagedAgentsWorkflowRunErrorUnion] to add type safety for the return type
-// of [BetaManagedAgentsWorkflowRunErrorUnion.AsAny]
-type anyBetaManagedAgentsWorkflowRunError interface {
-	implBetaManagedAgentsWorkflowRunErrorUnion()
-}
-
-func (BetaManagedAgentsTimeoutWorkflowRunError) implBetaManagedAgentsWorkflowRunErrorUnion()     {}
-func (BetaManagedAgentsProgramWorkflowRunError) implBetaManagedAgentsWorkflowRunErrorUnion()     {}
-func (BetaManagedAgentsUnknownWorkflowRunError) implBetaManagedAgentsWorkflowRunErrorUnion()     {}
-func (BetaManagedAgentsThreadLimitWorkflowRunError) implBetaManagedAgentsWorkflowRunErrorUnion() {}
-func (BetaManagedAgentsMaxWorkflowRunsWorkflowRunError) implBetaManagedAgentsWorkflowRunErrorUnion() {
-}
-
-// Use the following switch statement to find the correct variant
-//
-//	switch variant := BetaManagedAgentsWorkflowRunErrorUnion.AsAny().(type) {
-//	case anthropic.BetaManagedAgentsTimeoutWorkflowRunError:
-//	case anthropic.BetaManagedAgentsProgramWorkflowRunError:
-//	case anthropic.BetaManagedAgentsUnknownWorkflowRunError:
-//	case anthropic.BetaManagedAgentsThreadLimitWorkflowRunError:
-//	case anthropic.BetaManagedAgentsMaxWorkflowRunsWorkflowRunError:
-//	default:
-//	  fmt.Errorf("no variant present")
-//	}
-func (u BetaManagedAgentsWorkflowRunErrorUnion) AsAny() anyBetaManagedAgentsWorkflowRunError {
-	switch u.Type {
-	case "timeout_error":
-		return u.AsTimeoutError()
-	case "program_error":
-		return u.AsProgramError()
-	case "unknown_error":
-		return u.AsUnknownError()
-	case "thread_limit_error":
-		return u.AsThreadLimitError()
-	case "max_workflow_runs_error":
-		return u.AsMaxWorkflowRunsError()
-	}
-	return nil
-}
-
-func (u BetaManagedAgentsWorkflowRunErrorUnion) AsTimeoutError() (v BetaManagedAgentsTimeoutWorkflowRunError) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaManagedAgentsWorkflowRunErrorUnion) AsProgramError() (v BetaManagedAgentsProgramWorkflowRunError) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaManagedAgentsWorkflowRunErrorUnion) AsUnknownError() (v BetaManagedAgentsUnknownWorkflowRunError) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaManagedAgentsWorkflowRunErrorUnion) AsThreadLimitError() (v BetaManagedAgentsThreadLimitWorkflowRunError) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-func (u BetaManagedAgentsWorkflowRunErrorUnion) AsMaxWorkflowRunsError() (v BetaManagedAgentsMaxWorkflowRunsWorkflowRunError) {
-	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
-	return
-}
-
-// Returns the unmodified JSON received from the API
-func (u BetaManagedAgentsWorkflowRunErrorUnion) RawJSON() string { return u.JSON.raw }
-
-func (r *BetaManagedAgentsWorkflowRunErrorUnion) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
 // A workflow run met an error, or an error kept a run from being created. A run
 // that ends with a `result.type` of `error` emits this event before its
 // `workflow_run.status_ended`, with the same `error`.
@@ -8968,7 +8911,7 @@ type BetaManagedAgentsWorkflowRunErrorEvent struct {
 	// Unique identifier for this event.
 	ID string `json:"id" api:"required"`
 	// Why the run did not finish, or was not created.
-	Error BetaManagedAgentsWorkflowRunErrorUnion `json:"error" api:"required"`
+	Error BetaManagedAgentsWorkflowRunErrorObjectUnion `json:"error" api:"required"`
 	// Timestamp when this event was processed.
 	ProcessedAt time.Time                 `json:"processed_at" api:"required" format:"date-time"`
 	Type        constant.WorkflowRunError `json:"type" default:"workflow_run.error"`
@@ -8990,6 +8933,106 @@ type BetaManagedAgentsWorkflowRunErrorEvent struct {
 // Returns the unmodified JSON received from the API
 func (r BetaManagedAgentsWorkflowRunErrorEvent) RawJSON() string { return r.JSON.raw }
 func (r *BetaManagedAgentsWorkflowRunErrorEvent) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// BetaManagedAgentsWorkflowRunErrorObjectUnion contains all possible properties
+// and values from [BetaManagedAgentsTimeoutWorkflowRunErrorObject],
+// [BetaManagedAgentsProgramWorkflowRunErrorObject],
+// [BetaManagedAgentsUnknownWorkflowRunErrorObject],
+// [BetaManagedAgentsThreadLimitWorkflowRunErrorObject],
+// [BetaManagedAgentsMaxWorkflowRunsWorkflowRunErrorObject].
+//
+// Use the [BetaManagedAgentsWorkflowRunErrorObjectUnion.AsAny] method to switch on
+// the variant.
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+type BetaManagedAgentsWorkflowRunErrorObjectUnion struct {
+	Message string `json:"message"`
+	// Any of "timeout_error", "program_error", "unknown_error", "thread_limit_error",
+	// "max_workflow_runs_error".
+	Type string `json:"type"`
+	JSON struct {
+		Message respjson.Field
+		Type    respjson.Field
+		raw     string
+	} `json:"-"`
+}
+
+// anyBetaManagedAgentsWorkflowRunErrorObject is implemented by each variant of
+// [BetaManagedAgentsWorkflowRunErrorObjectUnion] to add type safety for the return
+// type of [BetaManagedAgentsWorkflowRunErrorObjectUnion.AsAny]
+type anyBetaManagedAgentsWorkflowRunErrorObject interface {
+	implBetaManagedAgentsWorkflowRunErrorObjectUnion()
+}
+
+func (BetaManagedAgentsTimeoutWorkflowRunErrorObject) implBetaManagedAgentsWorkflowRunErrorObjectUnion() {
+}
+func (BetaManagedAgentsProgramWorkflowRunErrorObject) implBetaManagedAgentsWorkflowRunErrorObjectUnion() {
+}
+func (BetaManagedAgentsUnknownWorkflowRunErrorObject) implBetaManagedAgentsWorkflowRunErrorObjectUnion() {
+}
+func (BetaManagedAgentsThreadLimitWorkflowRunErrorObject) implBetaManagedAgentsWorkflowRunErrorObjectUnion() {
+}
+func (BetaManagedAgentsMaxWorkflowRunsWorkflowRunErrorObject) implBetaManagedAgentsWorkflowRunErrorObjectUnion() {
+}
+
+// Use the following switch statement to find the correct variant
+//
+//	switch variant := BetaManagedAgentsWorkflowRunErrorObjectUnion.AsAny().(type) {
+//	case anthropic.BetaManagedAgentsTimeoutWorkflowRunErrorObject:
+//	case anthropic.BetaManagedAgentsProgramWorkflowRunErrorObject:
+//	case anthropic.BetaManagedAgentsUnknownWorkflowRunErrorObject:
+//	case anthropic.BetaManagedAgentsThreadLimitWorkflowRunErrorObject:
+//	case anthropic.BetaManagedAgentsMaxWorkflowRunsWorkflowRunErrorObject:
+//	default:
+//	  fmt.Errorf("no variant present")
+//	}
+func (u BetaManagedAgentsWorkflowRunErrorObjectUnion) AsAny() anyBetaManagedAgentsWorkflowRunErrorObject {
+	switch u.Type {
+	case "timeout_error":
+		return u.AsTimeoutError()
+	case "program_error":
+		return u.AsProgramError()
+	case "unknown_error":
+		return u.AsUnknownError()
+	case "thread_limit_error":
+		return u.AsThreadLimitError()
+	case "max_workflow_runs_error":
+		return u.AsMaxWorkflowRunsError()
+	}
+	return nil
+}
+
+func (u BetaManagedAgentsWorkflowRunErrorObjectUnion) AsTimeoutError() (v BetaManagedAgentsTimeoutWorkflowRunErrorObject) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsWorkflowRunErrorObjectUnion) AsProgramError() (v BetaManagedAgentsProgramWorkflowRunErrorObject) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsWorkflowRunErrorObjectUnion) AsUnknownError() (v BetaManagedAgentsUnknownWorkflowRunErrorObject) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsWorkflowRunErrorObjectUnion) AsThreadLimitError() (v BetaManagedAgentsThreadLimitWorkflowRunErrorObject) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaManagedAgentsWorkflowRunErrorObjectUnion) AsMaxWorkflowRunsError() (v BetaManagedAgentsMaxWorkflowRunsWorkflowRunErrorObject) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u BetaManagedAgentsWorkflowRunErrorObjectUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *BetaManagedAgentsWorkflowRunErrorObjectUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -9088,7 +9131,7 @@ func (r *BetaManagedAgentsWorkflowRunPhaseStartedEvent) UnmarshalJSON(data []byt
 
 // BetaManagedAgentsWorkflowRunResultUnion contains all possible properties and
 // values from [BetaManagedAgentsWorkflowRunResultCompleted],
-// [BetaManagedAgentsWorkflowRunResultError],
+// [BetaManagedAgentsWorkflowRunResultErrorObject],
 // [BetaManagedAgentsWorkflowRunResultStopped].
 //
 // Use the [BetaManagedAgentsWorkflowRunResultUnion.AsAny] method to switch on the
@@ -9098,8 +9141,8 @@ func (r *BetaManagedAgentsWorkflowRunPhaseStartedEvent) UnmarshalJSON(data []byt
 type BetaManagedAgentsWorkflowRunResultUnion struct {
 	// Any of "completed", "error", "stopped".
 	Type string `json:"type"`
-	// This field is from variant [BetaManagedAgentsWorkflowRunResultError].
-	Error BetaManagedAgentsWorkflowRunErrorUnion `json:"error"`
+	// This field is from variant [BetaManagedAgentsWorkflowRunResultErrorObject].
+	Error BetaManagedAgentsWorkflowRunErrorObjectUnion `json:"error"`
 	JSON  struct {
 		Type  respjson.Field
 		Error respjson.Field
@@ -9114,15 +9157,15 @@ type anyBetaManagedAgentsWorkflowRunResult interface {
 	implBetaManagedAgentsWorkflowRunResultUnion()
 }
 
-func (BetaManagedAgentsWorkflowRunResultCompleted) implBetaManagedAgentsWorkflowRunResultUnion() {}
-func (BetaManagedAgentsWorkflowRunResultError) implBetaManagedAgentsWorkflowRunResultUnion()     {}
-func (BetaManagedAgentsWorkflowRunResultStopped) implBetaManagedAgentsWorkflowRunResultUnion()   {}
+func (BetaManagedAgentsWorkflowRunResultCompleted) implBetaManagedAgentsWorkflowRunResultUnion()   {}
+func (BetaManagedAgentsWorkflowRunResultErrorObject) implBetaManagedAgentsWorkflowRunResultUnion() {}
+func (BetaManagedAgentsWorkflowRunResultStopped) implBetaManagedAgentsWorkflowRunResultUnion()     {}
 
 // Use the following switch statement to find the correct variant
 //
 //	switch variant := BetaManagedAgentsWorkflowRunResultUnion.AsAny().(type) {
 //	case anthropic.BetaManagedAgentsWorkflowRunResultCompleted:
-//	case anthropic.BetaManagedAgentsWorkflowRunResultError:
+//	case anthropic.BetaManagedAgentsWorkflowRunResultErrorObject:
 //	case anthropic.BetaManagedAgentsWorkflowRunResultStopped:
 //	default:
 //	  fmt.Errorf("no variant present")
@@ -9144,7 +9187,7 @@ func (u BetaManagedAgentsWorkflowRunResultUnion) AsCompleted() (v BetaManagedAge
 	return
 }
 
-func (u BetaManagedAgentsWorkflowRunResultUnion) AsError() (v BetaManagedAgentsWorkflowRunResultError) {
+func (u BetaManagedAgentsWorkflowRunResultUnion) AsError() (v BetaManagedAgentsWorkflowRunResultErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -9180,10 +9223,10 @@ func (r *BetaManagedAgentsWorkflowRunResultCompleted) UnmarshalJSON(data []byte)
 }
 
 // The run failed or reached its time limit.
-type BetaManagedAgentsWorkflowRunResultError struct {
+type BetaManagedAgentsWorkflowRunResultErrorObject struct {
 	// Why the run did not finish.
-	Error BetaManagedAgentsWorkflowRunErrorUnion `json:"error" api:"required"`
-	Type  constant.Error                         `json:"type" default:"error"`
+	Error BetaManagedAgentsWorkflowRunErrorObjectUnion `json:"error" api:"required"`
+	Type  constant.Error                               `json:"type" default:"error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Error       respjson.Field
@@ -9194,8 +9237,8 @@ type BetaManagedAgentsWorkflowRunResultError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaManagedAgentsWorkflowRunResultError) RawJSON() string { return r.JSON.raw }
-func (r *BetaManagedAgentsWorkflowRunResultError) UnmarshalJSON(data []byte) error {
+func (r BetaManagedAgentsWorkflowRunResultErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaManagedAgentsWorkflowRunResultErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -9304,6 +9347,158 @@ func (r BetaManagedAgentsWorkflowRunStatusRunningEvent) RawJSON() string { retur
 func (r *BetaManagedAgentsWorkflowRunStatusRunningEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Deprecated: BetaManagedAgentsUnknownError has been renamed to
+// BetaManagedAgentsUnknownErrorObject
+type BetaManagedAgentsUnknownError = BetaManagedAgentsUnknownErrorObject
+
+// Deprecated: BetaManagedAgentsUnknownErrorRetryStatusUnion has been renamed to
+// BetaManagedAgentsUnknownErrorObjectRetryStatusUnion
+type BetaManagedAgentsUnknownErrorRetryStatusUnion = BetaManagedAgentsUnknownErrorObjectRetryStatusUnion
+
+// Deprecated: BetaManagedAgentsModelOverloadedError has been renamed to
+// BetaManagedAgentsModelOverloadedErrorObject
+type BetaManagedAgentsModelOverloadedError = BetaManagedAgentsModelOverloadedErrorObject
+
+// Deprecated: BetaManagedAgentsModelOverloadedErrorRetryStatusUnion has been
+// renamed to BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion
+type BetaManagedAgentsModelOverloadedErrorRetryStatusUnion = BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion
+
+// Deprecated: BetaManagedAgentsModelRateLimitedError has been renamed to
+// BetaManagedAgentsModelRateLimitedErrorObject
+type BetaManagedAgentsModelRateLimitedError = BetaManagedAgentsModelRateLimitedErrorObject
+
+// Deprecated: BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion has been
+// renamed to BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion
+type BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion = BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion
+
+// Deprecated: BetaManagedAgentsModelRequestFailedError has been renamed to
+// BetaManagedAgentsModelRequestFailedErrorObject
+type BetaManagedAgentsModelRequestFailedError = BetaManagedAgentsModelRequestFailedErrorObject
+
+// Deprecated: BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion has been
+// renamed to BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion
+type BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion = BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion
+
+// Deprecated: BetaManagedAgentsMCPConnectionFailedError has been renamed to
+// BetaManagedAgentsMCPConnectionFailedErrorObject
+type BetaManagedAgentsMCPConnectionFailedError = BetaManagedAgentsMCPConnectionFailedErrorObject
+
+// Deprecated: BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion has been
+// renamed to BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion
+type BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion = BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion
+
+// Deprecated: BetaManagedAgentsMCPAuthenticationFailedError has been renamed to
+// BetaManagedAgentsMCPAuthenticationFailedErrorObject
+type BetaManagedAgentsMCPAuthenticationFailedError = BetaManagedAgentsMCPAuthenticationFailedErrorObject
+
+// Deprecated: BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion has
+// been renamed to
+// BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion
+type BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion = BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion
+
+// Deprecated: BetaManagedAgentsBillingError has been renamed to
+// BetaManagedAgentsBillingErrorObject
+type BetaManagedAgentsBillingError = BetaManagedAgentsBillingErrorObject
+
+// Deprecated: BetaManagedAgentsBillingErrorRetryStatusUnion has been renamed to
+// BetaManagedAgentsBillingErrorObjectRetryStatusUnion
+type BetaManagedAgentsBillingErrorRetryStatusUnion = BetaManagedAgentsBillingErrorObjectRetryStatusUnion
+
+// Deprecated: BetaManagedAgentsToolUseLimitReachedError has been renamed to
+// BetaManagedAgentsToolUseLimitReachedErrorObject
+type BetaManagedAgentsToolUseLimitReachedError = BetaManagedAgentsToolUseLimitReachedErrorObject
+
+// Deprecated: BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion has been
+// renamed to BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion
+type BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion = BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion
+
+// Deprecated: BetaManagedAgentsCompactionLimitReachedError has been renamed to
+// BetaManagedAgentsCompactionLimitReachedErrorObject
+type BetaManagedAgentsCompactionLimitReachedError = BetaManagedAgentsCompactionLimitReachedErrorObject
+
+// Deprecated: BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion has
+// been renamed to
+// BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion
+type BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion = BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion
+
+// Deprecated: BetaManagedAgentsCredentialHostUnreachableError has been renamed to
+// BetaManagedAgentsCredentialHostUnreachableErrorObject
+type BetaManagedAgentsCredentialHostUnreachableError = BetaManagedAgentsCredentialHostUnreachableErrorObject
+
+// Deprecated: BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion has
+// been renamed to
+// BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion
+type BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion = BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion
+
+// Deprecated: BetaManagedAgentsRepositoryAuthenticationError has been renamed to
+// BetaManagedAgentsRepositoryAuthenticationErrorObject
+type BetaManagedAgentsRepositoryAuthenticationError = BetaManagedAgentsRepositoryAuthenticationErrorObject
+
+// Deprecated: BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion has
+// been renamed to
+// BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion
+type BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion = BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion
+
+// Deprecated: BetaManagedAgentsRepositoryForbiddenError has been renamed to
+// BetaManagedAgentsRepositoryForbiddenErrorObject
+type BetaManagedAgentsRepositoryForbiddenError = BetaManagedAgentsRepositoryForbiddenErrorObject
+
+// Deprecated: BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion has been
+// renamed to BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion
+type BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion = BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion
+
+// Deprecated: BetaManagedAgentsRepositoryNotFoundError has been renamed to
+// BetaManagedAgentsRepositoryNotFoundErrorObject
+type BetaManagedAgentsRepositoryNotFoundError = BetaManagedAgentsRepositoryNotFoundErrorObject
+
+// Deprecated: BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion has been
+// renamed to BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion
+type BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion = BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion
+
+// Deprecated: BetaManagedAgentsRepositoryCheckoutError has been renamed to
+// BetaManagedAgentsRepositoryCheckoutErrorObject
+type BetaManagedAgentsRepositoryCheckoutError = BetaManagedAgentsRepositoryCheckoutErrorObject
+
+// Deprecated: BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion has been
+// renamed to BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion
+type BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion = BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion
+
+// Deprecated: BetaManagedAgentsRepositoryCloneError has been renamed to
+// BetaManagedAgentsRepositoryCloneErrorObject
+type BetaManagedAgentsRepositoryCloneError = BetaManagedAgentsRepositoryCloneErrorObject
+
+// Deprecated: BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion has been
+// renamed to BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion
+type BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion = BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion
+
+// Deprecated: BetaManagedAgentsWorkflowRunResultError has been renamed to
+// BetaManagedAgentsWorkflowRunResultErrorObject
+type BetaManagedAgentsWorkflowRunResultError = BetaManagedAgentsWorkflowRunResultErrorObject
+
+// Deprecated: BetaManagedAgentsWorkflowRunErrorUnion has been renamed to
+// BetaManagedAgentsWorkflowRunErrorObjectUnion
+type BetaManagedAgentsWorkflowRunErrorUnion = BetaManagedAgentsWorkflowRunErrorObjectUnion
+
+// Deprecated: BetaManagedAgentsTimeoutWorkflowRunError has been renamed to
+// BetaManagedAgentsTimeoutWorkflowRunErrorObject
+type BetaManagedAgentsTimeoutWorkflowRunError = BetaManagedAgentsTimeoutWorkflowRunErrorObject
+
+// Deprecated: BetaManagedAgentsProgramWorkflowRunError has been renamed to
+// BetaManagedAgentsProgramWorkflowRunErrorObject
+type BetaManagedAgentsProgramWorkflowRunError = BetaManagedAgentsProgramWorkflowRunErrorObject
+
+// Deprecated: BetaManagedAgentsUnknownWorkflowRunError has been renamed to
+// BetaManagedAgentsUnknownWorkflowRunErrorObject
+type BetaManagedAgentsUnknownWorkflowRunError = BetaManagedAgentsUnknownWorkflowRunErrorObject
+
+// Deprecated: BetaManagedAgentsThreadLimitWorkflowRunError has been renamed to
+// BetaManagedAgentsThreadLimitWorkflowRunErrorObject
+type BetaManagedAgentsThreadLimitWorkflowRunError = BetaManagedAgentsThreadLimitWorkflowRunErrorObject
+
+// Deprecated: BetaManagedAgentsMaxWorkflowRunsWorkflowRunError has been renamed to
+// BetaManagedAgentsMaxWorkflowRunsWorkflowRunErrorObject
+type BetaManagedAgentsMaxWorkflowRunsWorkflowRunError = BetaManagedAgentsMaxWorkflowRunsWorkflowRunErrorObject
 
 type BetaSessionEventListParams struct {
 	// Return events created after this time (exclusive). Compared against the event's

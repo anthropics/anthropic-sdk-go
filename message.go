@@ -75,9 +75,15 @@ func NewMessageService(opts ...option.RequestOption) (r MessageService) {
 //   - [ErrorCodeThreadUnsupportedRequest] (HTTP 400)
 //   - [ErrorCodeToolNameConflict] (HTTP 400)
 //   - [ErrorCodeToolReferenceUnresolved] (HTTP 400)
+//   - [ErrorCodeUserProfileRequired] (HTTP 400)
+//   - [ErrorCodeLinkedOrganizationBillingUnavailable] (HTTP 402)
+//   - [ErrorCodeLinkedOrganizationSpendLimitReached] (HTTP 402)
+//   - [ErrorCodeUserProfileBillingNotAuthorized] (HTTP 403)
+//   - [ErrorCodeUserProfileNotBillable] (HTTP 403)
 //   - [ErrorCodeThreadNotFound] (HTTP 404)
 //   - [ErrorCodeSkillReadBlockedUndecryptable] (HTTP 409)
 //   - [ErrorCodeRequestBodyTooLargeAfterDecoding] (HTTP 413)
+//   - [ErrorCodeContractSpendLimitReached] (HTTP 429)
 //   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429)
 //   - [ErrorCodeRampLimitExceeded] (HTTP 429)
 //   - [ErrorCodeCMEKKeyUnreachable] (HTTP 503)
@@ -143,9 +149,15 @@ func (r *MessageService) New(ctx context.Context, params MessageNewParams, opts 
 //   - [ErrorCodeThreadUnsupportedRequest] (HTTP 400)
 //   - [ErrorCodeToolNameConflict] (HTTP 400)
 //   - [ErrorCodeToolReferenceUnresolved] (HTTP 400)
+//   - [ErrorCodeUserProfileRequired] (HTTP 400)
+//   - [ErrorCodeLinkedOrganizationBillingUnavailable] (HTTP 402)
+//   - [ErrorCodeLinkedOrganizationSpendLimitReached] (HTTP 402)
+//   - [ErrorCodeUserProfileBillingNotAuthorized] (HTTP 403)
+//   - [ErrorCodeUserProfileNotBillable] (HTTP 403)
 //   - [ErrorCodeThreadNotFound] (HTTP 404)
 //   - [ErrorCodeSkillReadBlockedUndecryptable] (HTTP 409)
 //   - [ErrorCodeRequestBodyTooLargeAfterDecoding] (HTTP 413)
+//   - [ErrorCodeContractSpendLimitReached] (HTTP 429)
 //   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429)
 //   - [ErrorCodeRampLimitExceeded] (HTTP 429)
 //   - [ErrorCodeCMEKKeyUnreachable] (HTTP 503)
@@ -405,12 +417,12 @@ func (r *BashCodeExecutionToolResultBlock) UnmarshalJSON(data []byte) error {
 }
 
 // BashCodeExecutionToolResultBlockContentUnion contains all possible properties
-// and values from [BashCodeExecutionToolResultError],
+// and values from [BashCodeExecutionToolResultErrorObject],
 // [BashCodeExecutionResultBlock].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type BashCodeExecutionToolResultBlockContentUnion struct {
-	// This field is from variant [BashCodeExecutionToolResultError].
+	// This field is from variant [BashCodeExecutionToolResultErrorObject].
 	ErrorCode BashCodeExecutionToolResultErrorCode `json:"error_code"`
 	Type      string                               `json:"type"`
 	// This field is from variant [BashCodeExecutionResultBlock].
@@ -432,7 +444,7 @@ type BashCodeExecutionToolResultBlockContentUnion struct {
 	} `json:"-"`
 }
 
-func (u BashCodeExecutionToolResultBlockContentUnion) AsResponseBashCodeExecutionToolResultError() (v BashCodeExecutionToolResultError) {
+func (u BashCodeExecutionToolResultBlockContentUnion) AsResponseBashCodeExecutionToolResultError() (v BashCodeExecutionToolResultErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -544,7 +556,17 @@ func (u BashCodeExecutionToolResultBlockParamContentUnion) GetType() *string {
 	return nil
 }
 
-type BashCodeExecutionToolResultError struct {
+type BashCodeExecutionToolResultErrorCode string
+
+const (
+	BashCodeExecutionToolResultErrorCodeInvalidToolInput      BashCodeExecutionToolResultErrorCode = "invalid_tool_input"
+	BashCodeExecutionToolResultErrorCodeUnavailable           BashCodeExecutionToolResultErrorCode = "unavailable"
+	BashCodeExecutionToolResultErrorCodeTooManyRequests       BashCodeExecutionToolResultErrorCode = "too_many_requests"
+	BashCodeExecutionToolResultErrorCodeExecutionTimeExceeded BashCodeExecutionToolResultErrorCode = "execution_time_exceeded"
+	BashCodeExecutionToolResultErrorCodeOutputFileTooLarge    BashCodeExecutionToolResultErrorCode = "output_file_too_large"
+)
+
+type BashCodeExecutionToolResultErrorObject struct {
 	// Any of "invalid_tool_input", "unavailable", "too_many_requests",
 	// "execution_time_exceeded", "output_file_too_large".
 	ErrorCode BashCodeExecutionToolResultErrorCode      `json:"error_code" api:"required"`
@@ -559,20 +581,10 @@ type BashCodeExecutionToolResultError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BashCodeExecutionToolResultError) RawJSON() string { return r.JSON.raw }
-func (r *BashCodeExecutionToolResultError) UnmarshalJSON(data []byte) error {
+func (r BashCodeExecutionToolResultErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BashCodeExecutionToolResultErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type BashCodeExecutionToolResultErrorCode string
-
-const (
-	BashCodeExecutionToolResultErrorCodeInvalidToolInput      BashCodeExecutionToolResultErrorCode = "invalid_tool_input"
-	BashCodeExecutionToolResultErrorCodeUnavailable           BashCodeExecutionToolResultErrorCode = "unavailable"
-	BashCodeExecutionToolResultErrorCodeTooManyRequests       BashCodeExecutionToolResultErrorCode = "too_many_requests"
-	BashCodeExecutionToolResultErrorCodeExecutionTimeExceeded BashCodeExecutionToolResultErrorCode = "execution_time_exceeded"
-	BashCodeExecutionToolResultErrorCodeOutputFileTooLarge    BashCodeExecutionToolResultErrorCode = "output_file_too_large"
-)
 
 // The properties ErrorCode, Type are required.
 type BashCodeExecutionToolResultErrorParam struct {
@@ -4927,12 +4939,12 @@ func (r *CodeExecutionToolResultBlock) UnmarshalJSON(data []byte) error {
 }
 
 // CodeExecutionToolResultBlockContentUnion contains all possible properties and
-// values from [CodeExecutionToolResultError], [CodeExecutionResultBlock],
+// values from [CodeExecutionToolResultErrorObject], [CodeExecutionResultBlock],
 // [EncryptedCodeExecutionResultBlock].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type CodeExecutionToolResultBlockContentUnion struct {
-	// This field is from variant [CodeExecutionToolResultError].
+	// This field is from variant [CodeExecutionToolResultErrorObject].
 	ErrorCode  CodeExecutionToolResultErrorCode `json:"error_code"`
 	Type       string                           `json:"type"`
 	Content    []CodeExecutionOutputBlock       `json:"content"`
@@ -4954,7 +4966,7 @@ type CodeExecutionToolResultBlockContentUnion struct {
 	} `json:"-"`
 }
 
-func (u CodeExecutionToolResultBlockContentUnion) AsResponseCodeExecutionToolResultError() (v CodeExecutionToolResultError) {
+func (u CodeExecutionToolResultBlockContentUnion) AsResponseCodeExecutionToolResultError() (v CodeExecutionToolResultErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -5096,7 +5108,16 @@ func (u CodeExecutionToolResultBlockParamContentUnion) GetContent() []CodeExecut
 	return nil
 }
 
-type CodeExecutionToolResultError struct {
+type CodeExecutionToolResultErrorCode string
+
+const (
+	CodeExecutionToolResultErrorCodeInvalidToolInput      CodeExecutionToolResultErrorCode = "invalid_tool_input"
+	CodeExecutionToolResultErrorCodeUnavailable           CodeExecutionToolResultErrorCode = "unavailable"
+	CodeExecutionToolResultErrorCodeTooManyRequests       CodeExecutionToolResultErrorCode = "too_many_requests"
+	CodeExecutionToolResultErrorCodeExecutionTimeExceeded CodeExecutionToolResultErrorCode = "execution_time_exceeded"
+)
+
+type CodeExecutionToolResultErrorObject struct {
 	// Any of "invalid_tool_input", "unavailable", "too_many_requests",
 	// "execution_time_exceeded".
 	ErrorCode CodeExecutionToolResultErrorCode      `json:"error_code" api:"required"`
@@ -5111,19 +5132,10 @@ type CodeExecutionToolResultError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r CodeExecutionToolResultError) RawJSON() string { return r.JSON.raw }
-func (r *CodeExecutionToolResultError) UnmarshalJSON(data []byte) error {
+func (r CodeExecutionToolResultErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *CodeExecutionToolResultErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type CodeExecutionToolResultErrorCode string
-
-const (
-	CodeExecutionToolResultErrorCodeInvalidToolInput      CodeExecutionToolResultErrorCode = "invalid_tool_input"
-	CodeExecutionToolResultErrorCodeUnavailable           CodeExecutionToolResultErrorCode = "unavailable"
-	CodeExecutionToolResultErrorCodeTooManyRequests       CodeExecutionToolResultErrorCode = "too_many_requests"
-	CodeExecutionToolResultErrorCodeExecutionTimeExceeded CodeExecutionToolResultErrorCode = "execution_time_exceeded"
-)
 
 // The properties ErrorCode, Type are required.
 type CodeExecutionToolResultErrorParam struct {
@@ -7242,13 +7254,13 @@ func NewServerToolUseBlock(id string, input any, name ServerToolUseBlockParamNam
 }
 
 func NewWebSearchToolResultBlock[
-	T []WebSearchResultBlockParam | WebSearchToolRequestErrorParam,
+	T []WebSearchResultBlockParam | WebSearchToolRequestErrorObjectParam,
 ](content T, toolUseID string) ContentBlockParamUnion {
 	var webSearchToolResult WebSearchToolResultBlockParam
 	switch v := any(content).(type) {
 	case []WebSearchResultBlockParam:
 		webSearchToolResult.Content.OfWebSearchToolResultBlockItem = v
-	case WebSearchToolRequestErrorParam:
+	case WebSearchToolRequestErrorObjectParam:
 		webSearchToolResult.Content.OfRequestWebSearchToolResultError = &v
 	}
 	webSearchToolResult.ToolUseID = toolUseID
@@ -12724,16 +12736,16 @@ func (r *TextEditorCodeExecutionToolResultBlock) UnmarshalJSON(data []byte) erro
 }
 
 // TextEditorCodeExecutionToolResultBlockContentUnion contains all possible
-// properties and values from [TextEditorCodeExecutionToolResultError],
+// properties and values from [TextEditorCodeExecutionToolResultErrorObject],
 // [TextEditorCodeExecutionViewResultBlock],
 // [TextEditorCodeExecutionCreateResultBlock],
 // [TextEditorCodeExecutionStrReplaceResultBlock].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type TextEditorCodeExecutionToolResultBlockContentUnion struct {
-	// This field is from variant [TextEditorCodeExecutionToolResultError].
+	// This field is from variant [TextEditorCodeExecutionToolResultErrorObject].
 	ErrorCode TextEditorCodeExecutionToolResultErrorCode `json:"error_code"`
-	// This field is from variant [TextEditorCodeExecutionToolResultError].
+	// This field is from variant [TextEditorCodeExecutionToolResultErrorObject].
 	ErrorMessage string `json:"error_message"`
 	Type         string `json:"type"`
 	// This field is from variant [TextEditorCodeExecutionViewResultBlock].
@@ -12777,7 +12789,7 @@ type TextEditorCodeExecutionToolResultBlockContentUnion struct {
 	} `json:"-"`
 }
 
-func (u TextEditorCodeExecutionToolResultBlockContentUnion) AsResponseTextEditorCodeExecutionToolResultError() (v TextEditorCodeExecutionToolResultError) {
+func (u TextEditorCodeExecutionToolResultBlockContentUnion) AsResponseTextEditorCodeExecutionToolResultError() (v TextEditorCodeExecutionToolResultErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -12973,7 +12985,17 @@ func (u TextEditorCodeExecutionToolResultBlockParamContentUnion) GetType() *stri
 	return nil
 }
 
-type TextEditorCodeExecutionToolResultError struct {
+type TextEditorCodeExecutionToolResultErrorCode string
+
+const (
+	TextEditorCodeExecutionToolResultErrorCodeInvalidToolInput      TextEditorCodeExecutionToolResultErrorCode = "invalid_tool_input"
+	TextEditorCodeExecutionToolResultErrorCodeUnavailable           TextEditorCodeExecutionToolResultErrorCode = "unavailable"
+	TextEditorCodeExecutionToolResultErrorCodeTooManyRequests       TextEditorCodeExecutionToolResultErrorCode = "too_many_requests"
+	TextEditorCodeExecutionToolResultErrorCodeExecutionTimeExceeded TextEditorCodeExecutionToolResultErrorCode = "execution_time_exceeded"
+	TextEditorCodeExecutionToolResultErrorCodeFileNotFound          TextEditorCodeExecutionToolResultErrorCode = "file_not_found"
+)
+
+type TextEditorCodeExecutionToolResultErrorObject struct {
 	// Any of "invalid_tool_input", "unavailable", "too_many_requests",
 	// "execution_time_exceeded", "file_not_found".
 	ErrorCode    TextEditorCodeExecutionToolResultErrorCode      `json:"error_code" api:"required"`
@@ -12990,20 +13012,10 @@ type TextEditorCodeExecutionToolResultError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r TextEditorCodeExecutionToolResultError) RawJSON() string { return r.JSON.raw }
-func (r *TextEditorCodeExecutionToolResultError) UnmarshalJSON(data []byte) error {
+func (r TextEditorCodeExecutionToolResultErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *TextEditorCodeExecutionToolResultErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type TextEditorCodeExecutionToolResultErrorCode string
-
-const (
-	TextEditorCodeExecutionToolResultErrorCodeInvalidToolInput      TextEditorCodeExecutionToolResultErrorCode = "invalid_tool_input"
-	TextEditorCodeExecutionToolResultErrorCodeUnavailable           TextEditorCodeExecutionToolResultErrorCode = "unavailable"
-	TextEditorCodeExecutionToolResultErrorCodeTooManyRequests       TextEditorCodeExecutionToolResultErrorCode = "too_many_requests"
-	TextEditorCodeExecutionToolResultErrorCodeExecutionTimeExceeded TextEditorCodeExecutionToolResultErrorCode = "execution_time_exceeded"
-	TextEditorCodeExecutionToolResultErrorCodeFileNotFound          TextEditorCodeExecutionToolResultErrorCode = "file_not_found"
-)
 
 // The properties ErrorCode, Type are required.
 type TextEditorCodeExecutionToolResultErrorParam struct {
@@ -14098,13 +14110,14 @@ func (r *ToolSearchToolResultBlock) UnmarshalJSON(data []byte) error {
 }
 
 // ToolSearchToolResultBlockContentUnion contains all possible properties and
-// values from [ToolSearchToolResultError], [ToolSearchToolSearchResultBlock].
+// values from [ToolSearchToolResultErrorObject],
+// [ToolSearchToolSearchResultBlock].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 type ToolSearchToolResultBlockContentUnion struct {
-	// This field is from variant [ToolSearchToolResultError].
+	// This field is from variant [ToolSearchToolResultErrorObject].
 	ErrorCode ToolSearchToolResultErrorCode `json:"error_code"`
-	// This field is from variant [ToolSearchToolResultError].
+	// This field is from variant [ToolSearchToolResultErrorObject].
 	ErrorMessage string `json:"error_message"`
 	Type         string `json:"type"`
 	// This field is from variant [ToolSearchToolSearchResultBlock].
@@ -14118,7 +14131,7 @@ type ToolSearchToolResultBlockContentUnion struct {
 	} `json:"-"`
 }
 
-func (u ToolSearchToolResultBlockContentUnion) AsResponseToolSearchToolResultError() (v ToolSearchToolResultError) {
+func (u ToolSearchToolResultBlockContentUnion) AsResponseToolSearchToolResultError() (v ToolSearchToolResultErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -14214,7 +14227,16 @@ func (u ToolSearchToolResultBlockParamContentUnion) GetType() *string {
 	return nil
 }
 
-type ToolSearchToolResultError struct {
+type ToolSearchToolResultErrorCode string
+
+const (
+	ToolSearchToolResultErrorCodeInvalidToolInput      ToolSearchToolResultErrorCode = "invalid_tool_input"
+	ToolSearchToolResultErrorCodeUnavailable           ToolSearchToolResultErrorCode = "unavailable"
+	ToolSearchToolResultErrorCodeTooManyRequests       ToolSearchToolResultErrorCode = "too_many_requests"
+	ToolSearchToolResultErrorCodeExecutionTimeExceeded ToolSearchToolResultErrorCode = "execution_time_exceeded"
+)
+
+type ToolSearchToolResultErrorObject struct {
 	// Any of "invalid_tool_input", "unavailable", "too_many_requests",
 	// "execution_time_exceeded".
 	ErrorCode    ToolSearchToolResultErrorCode      `json:"error_code" api:"required"`
@@ -14231,19 +14253,10 @@ type ToolSearchToolResultError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r ToolSearchToolResultError) RawJSON() string { return r.JSON.raw }
-func (r *ToolSearchToolResultError) UnmarshalJSON(data []byte) error {
+func (r ToolSearchToolResultErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *ToolSearchToolResultErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type ToolSearchToolResultErrorCode string
-
-const (
-	ToolSearchToolResultErrorCodeInvalidToolInput      ToolSearchToolResultErrorCode = "invalid_tool_input"
-	ToolSearchToolResultErrorCodeUnavailable           ToolSearchToolResultErrorCode = "unavailable"
-	ToolSearchToolResultErrorCodeTooManyRequests       ToolSearchToolResultErrorCode = "too_many_requests"
-	ToolSearchToolResultErrorCodeExecutionTimeExceeded ToolSearchToolResultErrorCode = "execution_time_exceeded"
-)
 
 // The properties ErrorCode, Type are required.
 type ToolSearchToolResultErrorParam struct {
@@ -17643,7 +17656,7 @@ const (
 )
 
 // The properties ErrorCode, Type are required.
-type WebSearchToolRequestErrorParam struct {
+type WebSearchToolRequestErrorObjectParam struct {
 	// Any of "invalid_tool_input", "unavailable", "max_uses_exceeded",
 	// "too_many_requests", "query_too_long", "request_too_large".
 	ErrorCode WebSearchToolResultErrorCode `json:"error_code,omitzero" api:"required"`
@@ -17653,11 +17666,11 @@ type WebSearchToolRequestErrorParam struct {
 	paramObj
 }
 
-func (r WebSearchToolRequestErrorParam) MarshalJSON() (data []byte, err error) {
-	type shadow WebSearchToolRequestErrorParam
+func (r WebSearchToolRequestErrorObjectParam) MarshalJSON() (data []byte, err error) {
+	type shadow WebSearchToolRequestErrorObjectParam
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WebSearchToolRequestErrorParam) UnmarshalJSON(data []byte) error {
+func (r *WebSearchToolRequestErrorObjectParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -17756,7 +17769,7 @@ func (r *WebSearchToolResultBlockCallerUnion) UnmarshalJSON(data []byte) error {
 }
 
 // WebSearchToolResultBlockContentUnion contains all possible properties and values
-// from [WebSearchToolResultError], [[]WebSearchResultBlock].
+// from [WebSearchToolResultErrorObject], [[]WebSearchResultBlock].
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
 //
@@ -17766,9 +17779,9 @@ type WebSearchToolResultBlockContentUnion struct {
 	// This field will be present if the value is a [[]WebSearchResultBlock] instead of
 	// an object.
 	OfWebSearchResultBlockArray []WebSearchResultBlock `json:",inline"`
-	// This field is from variant [WebSearchToolResultError].
+	// This field is from variant [WebSearchToolResultErrorObject].
 	ErrorCode WebSearchToolResultErrorCode `json:"error_code"`
-	// This field is from variant [WebSearchToolResultError].
+	// This field is from variant [WebSearchToolResultErrorObject].
 	Type constant.WebSearchToolResultError `json:"type"`
 	JSON struct {
 		OfWebSearchResultBlockArray respjson.Field
@@ -17778,7 +17791,7 @@ type WebSearchToolResultBlockContentUnion struct {
 	} `json:"-"`
 }
 
-func (u WebSearchToolResultBlockContentUnion) AsResponseWebSearchToolResultError() (v WebSearchToolResultError) {
+func (u WebSearchToolResultBlockContentUnion) AsResponseWebSearchToolResultError() (v WebSearchToolResultErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -17876,7 +17889,7 @@ func init() {
 }
 
 func NewWebSearchToolRequestError(errorCode WebSearchToolResultErrorCode) WebSearchToolResultBlockParamContentUnion {
-	var variant WebSearchToolRequestErrorParam
+	var variant WebSearchToolRequestErrorObjectParam
 	variant.ErrorCode = errorCode
 	return WebSearchToolResultBlockParamContentUnion{OfRequestWebSearchToolResultError: &variant}
 }
@@ -17885,8 +17898,8 @@ func NewWebSearchToolRequestError(errorCode WebSearchToolResultErrorCode) WebSea
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type WebSearchToolResultBlockParamContentUnion struct {
-	OfWebSearchToolResultBlockItem    []WebSearchResultBlockParam     `json:",omitzero,inline"`
-	OfRequestWebSearchToolResultError *WebSearchToolRequestErrorParam `json:",omitzero,inline"`
+	OfWebSearchToolResultBlockItem    []WebSearchResultBlockParam           `json:",omitzero,inline"`
+	OfRequestWebSearchToolResultError *WebSearchToolRequestErrorObjectParam `json:",omitzero,inline"`
 	paramUnion
 }
 
@@ -17906,7 +17919,18 @@ func (u *WebSearchToolResultBlockParamContentUnion) asAny() any {
 	return nil
 }
 
-type WebSearchToolResultError struct {
+type WebSearchToolResultErrorCode string
+
+const (
+	WebSearchToolResultErrorCodeInvalidToolInput WebSearchToolResultErrorCode = "invalid_tool_input"
+	WebSearchToolResultErrorCodeUnavailable      WebSearchToolResultErrorCode = "unavailable"
+	WebSearchToolResultErrorCodeMaxUsesExceeded  WebSearchToolResultErrorCode = "max_uses_exceeded"
+	WebSearchToolResultErrorCodeTooManyRequests  WebSearchToolResultErrorCode = "too_many_requests"
+	WebSearchToolResultErrorCodeQueryTooLong     WebSearchToolResultErrorCode = "query_too_long"
+	WebSearchToolResultErrorCodeRequestTooLarge  WebSearchToolResultErrorCode = "request_too_large"
+)
+
+type WebSearchToolResultErrorObject struct {
 	// Any of "invalid_tool_input", "unavailable", "max_uses_exceeded",
 	// "too_many_requests", "query_too_long", "request_too_large".
 	ErrorCode WebSearchToolResultErrorCode      `json:"error_code" api:"required"`
@@ -17921,21 +17945,34 @@ type WebSearchToolResultError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r WebSearchToolResultError) RawJSON() string { return r.JSON.raw }
-func (r *WebSearchToolResultError) UnmarshalJSON(data []byte) error {
+func (r WebSearchToolResultErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *WebSearchToolResultErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type WebSearchToolResultErrorCode string
+// Deprecated: WebSearchToolResultError has been renamed to
+// WebSearchToolResultErrorObject
+type WebSearchToolResultError = WebSearchToolResultErrorObject
 
-const (
-	WebSearchToolResultErrorCodeInvalidToolInput WebSearchToolResultErrorCode = "invalid_tool_input"
-	WebSearchToolResultErrorCodeUnavailable      WebSearchToolResultErrorCode = "unavailable"
-	WebSearchToolResultErrorCodeMaxUsesExceeded  WebSearchToolResultErrorCode = "max_uses_exceeded"
-	WebSearchToolResultErrorCodeTooManyRequests  WebSearchToolResultErrorCode = "too_many_requests"
-	WebSearchToolResultErrorCodeQueryTooLong     WebSearchToolResultErrorCode = "query_too_long"
-	WebSearchToolResultErrorCodeRequestTooLarge  WebSearchToolResultErrorCode = "request_too_large"
-)
+// Deprecated: WebSearchToolRequestErrorParam has been renamed to
+// WebSearchToolRequestErrorObjectParam
+type WebSearchToolRequestErrorParam = WebSearchToolRequestErrorObjectParam
+
+// Deprecated: CodeExecutionToolResultError has been renamed to
+// CodeExecutionToolResultErrorObject
+type CodeExecutionToolResultError = CodeExecutionToolResultErrorObject
+
+// Deprecated: BashCodeExecutionToolResultError has been renamed to
+// BashCodeExecutionToolResultErrorObject
+type BashCodeExecutionToolResultError = BashCodeExecutionToolResultErrorObject
+
+// Deprecated: TextEditorCodeExecutionToolResultError has been renamed to
+// TextEditorCodeExecutionToolResultErrorObject
+type TextEditorCodeExecutionToolResultError = TextEditorCodeExecutionToolResultErrorObject
+
+// Deprecated: ToolSearchToolResultError has been renamed to
+// ToolSearchToolResultErrorObject
+type ToolSearchToolResultError = ToolSearchToolResultErrorObject
 
 type MessageNewParams struct {
 	// The maximum number of tokens to generate before stopping.

@@ -26,8 +26,7 @@ import (
 
 // DefaultMaxIdle is used for [SessionToolRunnerOptions.MaxIdle] when it is nil:
 // once the session goes idle with any stop_reason but "requires_action", the
-// runner keeps running for this long before stopping (any new event resets the
-// countdown).
+// runner keeps running for this long before stopping.
 const DefaultMaxIdle = 60 * time.Second
 
 const (
@@ -94,13 +93,20 @@ type SessionToolRunnerOptions struct {
 	Tools []BetaTool
 
 	// MaxIdle is how long the runner keeps running after the session goes idle
-	// with any stop_reason but "requires_action" before it stops; any new event
-	// resets the countdown and it re-arms on the next such idle. The countdown is
-	// deferred while a confirmation-gated call is held or still dispatching,
-	// and starts fresh once the last such call resolves. nil uses
-	// [DefaultMaxIdle] (60s). A non-nil value <= 0 disables it — the runner
-	// then only stops on session termination, the consumer breaking out, or
-	// ctx cancellation.
+	// with any stop_reason but "requires_action" before it stops. Any new event
+	// other than user.tool_confirmation, user.interrupt or
+	// session.thread_status_terminated cancels the countdown, and the next idle
+	// that ends the turn starts it again. The countdown is deferred while a
+	// confirmation-gated call is held or still dispatching, and starts fresh
+	// once the last such call resolves. nil uses [DefaultMaxIdle] (60s). A
+	// non-nil value <= 0 disables it — the runner then only stops on session
+	// termination, the consumer breaking out, or ctx cancellation.
+	//
+	// If the runner fails to read the session's event history after a reconnect,
+	// a termination that then arrives on the event stream cancels the countdown
+	// too, until the next idle or successful read. Until then, the end of a call
+	// that was interrupted or whose session thread terminated also cancels a
+	// deferred countdown instead of starting it.
 	MaxIdle *time.Duration
 
 	// Logger receives non-fatal warnings (transient stream errors, send
@@ -158,9 +164,13 @@ type SessionToolRunnerOptions struct {
 // IsError is true if the tool reported failure or exceeded its per-call
 // timeout. Posted is orthogonal to IsError: it reports whether a result event
 // was successfully sent back to the session. Posted=false means the agent will
-// not see a result from this runner, regardless of IsError — either because
-// the send failed or because the tool name is not one this runner owns and the
-// runner deliberately posted nothing and left the id pending for its owner.
+// not see a result from this runner, regardless of IsError. That happens when:
+//   - the send failed;
+//   - the tool name is not one this runner owns, so the runner left the id
+//     pending for its owner;
+//   - the call was denied, so the runner posted nothing;
+//   - the call was interrupted or its session thread terminated, so the server
+//     accepts no result for it.
 type DispatchedToolCall struct {
 	// Custom reports whether this dispatch was triggered by an
 	// agent.custom_tool_use event (a user-defined function tool) rather than an
@@ -222,7 +232,7 @@ type DispatchedToolCall struct {
 	// it deliberately posts nothing and leaves the id pending for its owner.
 	// An interrupted call is reported the same way: a session-wide
 	// user.interrupt cancelled it while it ran, and the server accepts no
-	// result for it.
+	// result for it. So is a call whose session thread terminated while it ran.
 	Posted bool
 }
 
@@ -250,9 +260,20 @@ type DispatchedToolCall struct {
 // executed and posts nothing, but IS yielded (Confirmation="deny",
 // Posted=false, no Result) so the caller can observe it. While a call is held
 // the server parks the session at stop_reason "requires_action" and the
-// runner waits until the verdict arrives, the session terminates, or ctx is
-// cancelled — wrap in [environments.EnvironmentWorker] for lease-driven
-// detach, or pass a context.WithTimeout for a wall-clock bound.
+// runner waits until the verdict arrives, the call's session thread or the
+// session terminates, or ctx is cancelled — wrap in
+// [environments.EnvironmentWorker] for lease-driven detach, or pass a
+// context.WithTimeout for a wall-clock bound.
+//
+// A session thread that has terminated accepts no further input, so its open
+// tool calls can never get a result. For example, the session threads of a
+// workflow run terminate when the run ends. Once a
+// session.thread_status_terminated event names a child session thread, the
+// runner does not execute, hold or yield that thread's calls, not even a denied
+// call or a call to a tool it does not own, and it posts nothing for them. If the
+// session thread terminates while the runner executes one of its calls, the
+// runner cancels the tool's context, still yields the call with Posted=false and
+// posts nothing.
 //
 // Tool lifetime is the caller's responsibility; the runner never closes tools,
 // so the same Tools slice can be reused across multiple sessions.
@@ -314,10 +335,15 @@ type SessionToolRunner struct {
 	// interruptCutoff is the latest processed_at seen on a session-wide
 	// user.interrupt. The server invalidates every tool call processed at or
 	// before it, so the runner marks those calls answered and never
-	// dispatches them. running is the call dispatchLoop is executing, kept so
-	// an interrupt can cancel it. Both are guarded by mu.
+	// dispatches them. Guarded by mu.
 	interruptCutoff time.Time
-	running         runningToolCall
+	// terminatedThreads holds the IDs of the session threads that a
+	// session.thread_status_terminated event named. The runner treats their
+	// calls as it treats interrupted ones. Guarded by mu.
+	terminatedThreads map[string]struct{}
+	// running is the call dispatchLoop is executing, kept so that an interrupt or
+	// the termination of its session thread can cancel it. Guarded by mu.
+	running runningToolCall
 	// Confirmation gating (always_ask tools). `confirmationVerdicts` records
 	// every user.tool_confirmation verdict by tool_use_id (persistent for the
 	// run, like seen/answered). `awaitingConfirmation` holds the ask-gated tool
@@ -402,6 +428,7 @@ func (r *BetaSessionEventService) NewToolRunner(ctx context.Context, sessionID s
 		seen:         map[string]struct{}{},
 		answered:     map[string]struct{}{},
 	}
+	rn.terminatedThreads = map[string]struct{}{}
 	rn.confirmationVerdicts = map[string]string{}
 	rn.awaitingConfirmation = map[string]pendingToolUse{}
 	rn.idle = newIdleClock(rn.maxIdle())
@@ -625,11 +652,11 @@ func (p pendingToolUse) processedAt() time.Time {
 	return p.toolUse.ProcessedAt
 }
 
-// runningToolCall identifies the executing tool call by its processed_at and
-// holds the cancel func for its tool context.
+// runningToolCall is the executing tool call and the cancel func for its tool
+// context.
 type runningToolCall struct {
-	processedAt time.Time
-	cancel      context.CancelFunc
+	call   pendingToolUse
+	cancel context.CancelFunc
 }
 
 // idleClock is the idle stop-countdown state. idleWatchdog reads it and
@@ -657,6 +684,10 @@ type idleClock struct {
 	// retiring the last blocker applies it. Cleared by any disarm. While it is
 	// set — and, more generally, while blockers is non-empty — armedAt is zero.
 	armPending bool
+	// armStale is set when a history read starts and cleared by the next arm.
+	// While it is set, events may have gone unread since the last arm, so its idle
+	// may no longer be the session's state.
+	armStale bool
 	// blockers counts the blocks per tool-use id: a reconcile can queue a second
 	// copy of an approved call while the first is still dispatching, and each
 	// copy is blocked and unblocked on its own.
@@ -678,15 +709,28 @@ func endsTurn(eventType, stopReason string) bool {
 	return stopReason != string(constant.ValueOf[constant.RequiresAction]())
 }
 
-// noteEvent arms on an idle that ends the turn; disarms on anything else.
-//
-// user.tool_confirmation and user.interrupt are neutral: neither is agent
-// activity or an idle. They affect the clock only by releasing held calls
-// through unblock, and disarming here would drop the pending arm that unblock
-// is about to apply.
+// idleNeutral reports whether an event gives no sign that the turn is over or
+// open. A session thread can terminate after the session's last idle, for example
+// when a client archives it, and a disarm then would keep the runner from stopping.
+func idleNeutral(eventType string) bool {
+	switch eventType {
+	case "user.tool_confirmation",
+		string(constant.ValueOf[constant.UserInterrupt]()),
+		string(constant.ValueOf[constant.SessionThreadStatusTerminated]()):
+		return true
+	}
+	return false
+}
+
+// noteEvent arms on an idle that ends the turn and disarms on any other event
+// that is not idleNeutral. A disarm on a neutral event would drop the pending
+// arm that unblock applies. The one exception is a session thread's termination
+// while armStale is set, because the session may no longer be idle.
 func (c *idleClock) noteEvent(eventType, stopReason string) {
-	if eventType == "user.tool_confirmation" ||
-		eventType == string(constant.ValueOf[constant.UserInterrupt]()) {
+	if idleNeutral(eventType) {
+		if eventType == string(constant.ValueOf[constant.SessionThreadStatusTerminated]()) && c.stale() {
+			c.disarm()
+		}
 		return
 	}
 	if endsTurn(eventType, stopReason) {
@@ -703,6 +747,7 @@ func (c *idleClock) arm() {
 		return
 	}
 	c.mu.Lock()
+	c.armStale = false
 	if len(c.blockers) > 0 {
 		// Any running countdown is stale: the arm defers because gated work is
 		// outstanding, so the session is not idly waiting to stop.
@@ -773,6 +818,29 @@ func (c *idleClock) unblock(id string) {
 	if fire {
 		c.signal()
 	}
+}
+
+func (c *idleClock) markStale() {
+	c.mu.Lock()
+	c.armStale = true
+	c.mu.Unlock()
+}
+
+func (c *idleClock) stale() bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.armStale
+}
+
+// abandon is unblock for a call that can no longer resolve: a stale pending arm
+// is dropped with the block, not applied.
+func (c *idleClock) abandon(id string) {
+	c.mu.Lock()
+	if c.armStale && c.blockers[id] > 0 {
+		c.armPending = false
+	}
+	c.mu.Unlock()
+	c.unblock(id)
 }
 
 func (c *idleClock) signal() {
@@ -864,7 +932,10 @@ func (r *SessionToolRunner) streamLoop(ctx context.Context, out chan<- pendingTo
 				r.noteConfirmation(ctx, out, ev.ToolUseID, string(ev.AsUserToolConfirmation().Result))
 			case string(constant.ValueOf[constant.UserInterrupt]()):
 				r.noteInterrupt(ev.ProcessedAt, ev.SessionThreadID)
-				r.releaseInterruptedHolds()
+				r.releaseInvalidatedHolds()
+			case string(constant.ValueOf[constant.SessionThreadStatusTerminated]()):
+				r.noteThreadTerminated(ev.SessionThreadID)
+				r.releaseInvalidatedHolds()
 			case string(constant.ValueOf[constant.UserToolResult]()):
 				r.noteResult(ev.ToolUseID)
 			case string(constant.ValueOf[constant.UserCustomToolResult]()):
@@ -921,11 +992,11 @@ func jitterDuration(d time.Duration) time.Duration {
 // running stream loop does not also enqueue it — but the enqueue decision is
 // gated on `answered`, NOT `seen`: a tool_use whose result post previously
 // FAILED was never marked answered, so it is re-dispatched on the next
-// reconcile instead of being silently dropped. The exception is a call a
-// session-wide user.interrupt invalidated. History is ordered by created_at,
-// and an interrupt is processed after it is created, so it can be listed
-// before calls it invalidates. The cutoff is therefore taken from the whole
-// listing before any call is routed.
+// reconcile instead of being silently dropped. The exceptions are a call of a
+// terminated session thread and a call a session-wide user.interrupt
+// invalidated. History is ordered by created_at, and an interrupt is processed
+// after it is created, so it can be listed before calls it invalidates. The
+// cutoff is therefore taken from the whole listing before any call is routed.
 //
 // Returns ErrSessionTerminated if the listed history contains a
 // session.status_terminated or session.deleted event — the live stream
@@ -937,6 +1008,10 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 	// still counts when the listing holds only neutral events or none, as when
 	// that idle fell outside the listed window.
 	lastEndedTurn := r.idle.countdownOwed()
+	// Mark the arm stale before the read, not after it fails: an event on an early
+	// page can end a dispatching call while a later page is still loading, and the
+	// call's end must not start the countdown.
+	r.idle.markStale()
 	pager := r.eventService.ListAutoPaging(ctx, r.sessionID,
 		BetaSessionEventListParams{
 			Limit: param.NewOpt(int64(1000)),
@@ -966,6 +1041,8 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 			}
 		case string(constant.ValueOf[constant.UserInterrupt]()):
 			r.noteInterrupt(ev.ProcessedAt, ev.SessionThreadID)
+		case string(constant.ValueOf[constant.SessionThreadStatusTerminated]()):
+			r.noteThreadTerminated(ev.SessionThreadID)
 		case string(constant.ValueOf[constant.UserToolResult]()):
 			r.noteResult(ev.ToolUseID)
 		case string(constant.ValueOf[constant.UserCustomToolResult]()):
@@ -978,20 +1055,19 @@ func (r *SessionToolRunner) reconcile(ctx context.Context, out chan<- pendingToo
 			r.log.Info("reconcile: session already terminated", slog.String("type", ev.Type))
 			return ErrSessionTerminated
 		}
-		// Neutral here as in idleClock.noteEvent: a verdict or an interrupt is
-		// neither agent activity nor an idle, so a turn-ending idle before it
+		// As in idleClock.noteEvent: a turn-ending idle before a neutral event
 		// still counts.
-		if ev.Type != "user.tool_confirmation" &&
-			ev.Type != string(constant.ValueOf[constant.UserInterrupt]()) {
+		if !idleNeutral(ev.Type) {
 			lastEndedTurn = endsTurn(ev.Type, ev.StopReason.Type)
 		}
 	}
 	r.historyRead = pager.Err() == nil
+	// Release before the error check: events read before a page failed still apply.
+	r.releaseInvalidatedHolds()
 	if err := pager.Err(); err != nil {
 		r.log.Warn("reconcile list failed", slog.Any("error", err))
 		return nil
 	}
-	r.releaseInterruptedHolds()
 	var unanswered []pendingToolUse
 	for _, p := range pending {
 		if !r.isAnswered(p.id()) {
@@ -1053,10 +1129,9 @@ func (r *SessionToolRunner) outstanding(unanswered []pendingToolUse) []pendingTo
 // tool-use per session at a time, so serial execution is correct. Pushes the
 // resulting DispatchedToolCall to r.results.
 //
-// Each call is unblocked once it is fully disposed of — executed, or moot
-// because it was answered elsewhere or interrupted — retiring the idle-clock
-// blocker applyVerdict took on a user-approved call. unblock is a no-op for a
-// call that was never gated.
+// Once a call is fully disposed of — executed, or moot because it was answered
+// elsewhere or invalidated — retireBlock retires the idle-clock blocker that
+// applyVerdict took on a user-approved call. A call that was never gated has none.
 func (r *SessionToolRunner) dispatchLoop(ctx context.Context, in <-chan pendingToolUse) error {
 	for {
 		select {
@@ -1068,17 +1143,27 @@ func (r *SessionToolRunner) dispatchLoop(ctx context.Context, in <-chan pendingT
 			}
 			// Retire the blocker only once the call is fully disposed of —
 			// executed and surfaced, or moot because it was answered
-			// elsewhere or interrupted while queued. Surfacing can block on
+			// elsewhere or invalidated while queued. Surfacing can block on
 			// a full results buffer, and the countdown must not start while
 			// the call is still queued.
 			func() {
-				defer r.idle.unblock(p.id())
-				if r.isAnswered(p.id()) || r.settleIfInterrupted(p) {
+				defer r.retireBlock(p)
+				if r.isAnswered(p.id()) || r.settleIfInvalidated(p) {
 					return
 				}
 				r.surfaceCall(r.execute(ctx, p))
 			}()
 		}
+	}
+}
+
+// retireBlock retires the idle-clock blocker of a call that dispatchLoop has
+// finished with. An invalidated call drops a stale pending arm with it.
+func (r *SessionToolRunner) retireBlock(p pendingToolUse) {
+	if r.settleIfInvalidated(p) {
+		r.idle.abandon(p.id())
+	} else {
+		r.idle.unblock(p.id())
 	}
 }
 
@@ -1258,15 +1343,15 @@ func (r *SessionToolRunner) execute(ctx context.Context, p pendingToolUse) Dispa
 		}
 		// A Session event has no toolset_name.
 		toolCtx, span := telemetry.StartToolUseSpan(toolCtx, r.telemetry, toolSpanName(tool, !p.custom), name, "", tool.Description, id, resourceIDs...)
-		r.setRunning(p.processedAt(), cancel)
+		r.setRunning(p, cancel)
 		out, runErr := tool.Execute(toolCtx, rawInput)
-		r.setRunning(time.Time{}, nil)
+		r.setRunning(pendingToolUse{}, nil)
 		cancel()
-		if r.settleIfInterrupted(p) {
-			// An interrupt invalidated this call while it ran. The server
-			// would reject a result with a permanent 4xx, so post nothing. The
-			// run was stopped, not failed: its span ends as a canceled run's.
-			log.Info("tool call interrupted; not posting a result")
+		if r.settleIfInvalidated(p) {
+			// The call was invalidated while it ran. The server takes no result
+			// for it, so post nothing. The run was stopped, not failed: its span
+			// ends as a canceled run's.
+			log.Info("tool call interrupted or its session thread terminated; not posting a result")
 			telemetry.EndToolUseSpan(ctx, span, r.telemetry, rawInput, nil, context.Canceled)
 			return call
 		}
@@ -1505,8 +1590,23 @@ func (r *SessionToolRunner) noteInterrupt(processedAt time.Time, sessionThreadID
 	if processedAt.After(r.interruptCutoff) {
 		r.interruptCutoff = processedAt
 	}
+	r.mu.Unlock()
+	r.cancelInvalidatedRun()
+}
+
+// noteThreadTerminated records that a session thread terminated and cancels the
+// running tool if its call is that thread's.
+func (r *SessionToolRunner) noteThreadTerminated(sessionThreadID string) {
+	r.mu.Lock()
+	r.terminatedThreads[sessionThreadID] = struct{}{}
+	r.mu.Unlock()
+	r.cancelInvalidatedRun()
+}
+
+func (r *SessionToolRunner) cancelInvalidatedRun() {
+	r.mu.Lock()
 	var cancel context.CancelFunc
-	if r.running.cancel != nil && r.interruptedLocked(r.running.processedAt) {
+	if r.running.cancel != nil && r.invalidatedLocked(r.running.call) {
 		cancel = r.running.cancel
 	}
 	r.mu.Unlock()
@@ -1515,19 +1615,23 @@ func (r *SessionToolRunner) noteInterrupt(processedAt time.Time, sessionThreadID
 	}
 }
 
-// interruptedLocked reports whether a tool call with the given processed_at
-// is at or before interruptCutoff. The caller must hold r.mu.
-func (r *SessionToolRunner) interruptedLocked(processedAt time.Time) bool {
+// invalidatedLocked reports whether p's session thread has terminated or its
+// processed_at is at or before interruptCutoff. The caller must hold r.mu.
+func (r *SessionToolRunner) invalidatedLocked(p pendingToolUse) bool {
+	if _, terminated := r.terminatedThreads[p.sessionThreadID()]; terminated {
+		return true
+	}
+	processedAt := p.processedAt()
 	return !r.interruptCutoff.IsZero() && !processedAt.IsZero() && !processedAt.After(r.interruptCutoff)
 }
 
-// settleIfInterrupted reports whether an interrupt invalidated p. If so, it
-// marks p answered so it is never dispatched: the server will not accept a
-// result for it.
-func (r *SessionToolRunner) settleIfInterrupted(p pendingToolUse) bool {
+// settleIfInvalidated reports whether an interrupt or its thread's termination
+// invalidated p. If so, it marks p answered so it is never dispatched: the
+// server will not accept a result for it.
+func (r *SessionToolRunner) settleIfInvalidated(p pendingToolUse) bool {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	if !r.interruptedLocked(p.processedAt()) {
+	if !r.invalidatedLocked(p) {
 		return false
 	}
 	r.answered[p.id()] = struct{}{}
@@ -1535,27 +1639,27 @@ func (r *SessionToolRunner) settleIfInterrupted(p pendingToolUse) bool {
 }
 
 // setRunning records the tool call dispatchLoop is executing; a nil cancel
-// clears it. A call an interrupt already covers is cancelled immediately,
+// clears it. A call that is already invalidated is cancelled immediately,
 // which closes the gap between dispatchLoop's check and the tool starting.
-func (r *SessionToolRunner) setRunning(processedAt time.Time, cancel context.CancelFunc) {
+func (r *SessionToolRunner) setRunning(p pendingToolUse, cancel context.CancelFunc) {
 	r.mu.Lock()
-	r.running = runningToolCall{processedAt: processedAt, cancel: cancel}
-	interrupted := cancel != nil && r.interruptedLocked(processedAt)
+	r.running = runningToolCall{call: p, cancel: cancel}
+	invalidated := cancel != nil && r.invalidatedLocked(p)
 	r.mu.Unlock()
-	if interrupted {
+	if invalidated {
 		cancel()
 	}
 }
 
-// releaseInterruptedHolds drops every held call an interrupt invalidated and
+// releaseInvalidatedHolds drops every held call that is invalidated and
 // retires its idle-clock blocker. Like all awaitingConfirmation access, it
 // runs on the stream goroutine.
-func (r *SessionToolRunner) releaseInterruptedHolds() {
+func (r *SessionToolRunner) releaseInvalidatedHolds() {
 	for id, held := range r.awaitingConfirmation {
-		if r.settleIfInterrupted(held) {
+		if r.settleIfInvalidated(held) {
 			delete(r.awaitingConfirmation, id)
-			r.idle.unblock(id)
-			r.log.Info("held tool call interrupted; releasing",
+			r.idle.abandon(id)
+			r.log.Info("held tool call interrupted or its session thread terminated; not executing",
 				slog.String("tool", held.name()), slog.String("tool_use_id", id))
 		}
 	}
@@ -1593,7 +1697,9 @@ func (r *SessionToolRunner) primaryThread() string {
 // evaluated to "deny" is resolved as denied regardless of any recorded verdict.
 func (r *SessionToolRunner) routeToolEvent(ctx context.Context, out chan<- pendingToolUse, p pendingToolUse) {
 	id := p.id()
-	if r.settleIfInterrupted(p) {
+	if r.settleIfInvalidated(p) {
+		r.log.Info("tool call interrupted or its session thread terminated; not executing",
+			slog.String("tool", p.name()), slog.String("tool_use_id", id))
 		return
 	}
 	perm := p.permission()

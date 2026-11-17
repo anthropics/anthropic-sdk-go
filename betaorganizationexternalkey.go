@@ -174,8 +174,7 @@ func (r *BetaOrganizationExternalKeyService) Validate(ctx context.Context, exter
 
 type BetaAWSExternalKeyConfig struct {
 	// Full ARN of the AWS KMS key. On Claude Platform on AWS, alias ARNs are rejected,
-	// and your organization's own key must be a single-Region key in your
-	// organization's AWS account.
+	// and your organization's own key must be a single-Region key.
 	KMSARN string       `json:"kms_arn" api:"required"`
 	Type   constant.AWS `json:"type" default:"aws"`
 	// AWS region. Derived from `kms_arn` if omitted.
@@ -214,8 +213,7 @@ func (r BetaAWSExternalKeyConfig) ToParam() BetaAWSExternalKeyConfigParam {
 // The properties KMSARN, Type are required.
 type BetaAWSExternalKeyConfigParam struct {
 	// Full ARN of the AWS KMS key. On Claude Platform on AWS, alias ARNs are rejected,
-	// and your organization's own key must be a single-Region key in your
-	// organization's AWS account.
+	// and your organization's own key must be a single-Region key.
 	KMSARN string `json:"kms_arn" api:"required"`
 	// AWS region. Derived from `kms_arn` if omitted.
 	Region param.Opt[string] `json:"region,omitzero"`

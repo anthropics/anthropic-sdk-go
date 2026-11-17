@@ -304,7 +304,8 @@ type BetaNewOrganizationWebhookEndpoint struct {
 	DisabledReason string `json:"disabled_reason" api:"required"`
 	// The event types delivered to the endpoint.
 	//
-	// Any of "user_profile.enforcement_action_opened",
+	// Any of "external_key.failed", "external_key.recovered",
+	// "user_profile.enforcement_action_opened",
 	// "user_profile.enforcement_action_resolved",
 	// "user_profile.program_status_updated".
 	EnabledEvents []string `json:"enabled_events" api:"required"`
@@ -359,7 +360,8 @@ type BetaOrganizationWebhookEndpoint struct {
 	DisabledReason string `json:"disabled_reason" api:"required"`
 	// The event types delivered to the endpoint.
 	//
-	// Any of "user_profile.enforcement_action_opened",
+	// Any of "external_key.failed", "external_key.recovered",
+	// "user_profile.enforcement_action_opened",
 	// "user_profile.enforcement_action_resolved",
 	// "user_profile.program_status_updated".
 	EnabledEvents []string `json:"enabled_events" api:"required"`
@@ -425,7 +427,8 @@ const (
 type BetaOrganizationWebhookNewParams struct {
 	// The event types to deliver to the endpoint. Must list at least one.
 	//
-	// Any of "user_profile.enforcement_action_opened",
+	// Any of "external_key.failed", "external_key.recovered",
+	// "user_profile.enforcement_action_opened",
 	// "user_profile.enforcement_action_resolved",
 	// "user_profile.program_status_updated".
 	EnabledEvents []string `json:"enabled_events,omitzero" api:"required"`
@@ -466,7 +469,8 @@ type BetaOrganizationWebhookUpdateParams struct {
 	// The event types to deliver to the endpoint. Replaces the whole set; an empty
 	// list leaves it unchanged.
 	//
-	// Any of "user_profile.enforcement_action_opened",
+	// Any of "external_key.failed", "external_key.recovered",
+	// "user_profile.enforcement_action_opened",
 	// "user_profile.enforcement_action_resolved",
 	// "user_profile.program_status_updated".
 	EnabledEvents []string `json:"enabled_events,omitzero"`

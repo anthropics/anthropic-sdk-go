@@ -849,7 +849,7 @@ type BetaManagedAgentsStreamSessionThreadEventsUnion struct {
 	// This field is from variant [BetaManagedAgentsAgentThreadMessageSentEvent].
 	ToAgentName string `json:"to_agent_name"`
 	// This field is a union of [BetaManagedAgentsSessionErrorEventErrorUnion],
-	// [BetaManagedAgentsWorkflowRunErrorUnion]
+	// [BetaManagedAgentsWorkflowRunErrorObjectUnion]
 	Error BetaManagedAgentsStreamSessionThreadEventsUnionError `json:"error"`
 	// This field is from variant [BetaManagedAgentsSessionStatusIdleEvent].
 	StopDetails BetaManagedAgentsSessionRefusalStopDetails `json:"stop_details"`
@@ -1481,7 +1481,7 @@ type BetaManagedAgentsStreamSessionThreadEventsUnionResult struct {
 	OfString string `json:",inline"`
 	Type     string `json:"type"`
 	// This field is from variant [BetaManagedAgentsWorkflowRunResultUnion].
-	Error BetaManagedAgentsWorkflowRunErrorUnion `json:"error"`
+	Error BetaManagedAgentsWorkflowRunErrorObjectUnion `json:"error"`
 	JSON  struct {
 		OfBetaManagedAgentsUserToolConfirmationEventResult respjson.Field
 		OfString                                           respjson.Field
@@ -1504,21 +1504,21 @@ func (r *BetaManagedAgentsStreamSessionThreadEventsUnionResult) UnmarshalJSON(da
 // [BetaManagedAgentsStreamSessionThreadEventsUnion].
 type BetaManagedAgentsStreamSessionThreadEventsUnionError struct {
 	Message string `json:"message"`
-	// This field is a union of [BetaManagedAgentsUnknownErrorRetryStatusUnion],
-	// [BetaManagedAgentsModelOverloadedErrorRetryStatusUnion],
-	// [BetaManagedAgentsModelRateLimitedErrorRetryStatusUnion],
-	// [BetaManagedAgentsModelRequestFailedErrorRetryStatusUnion],
-	// [BetaManagedAgentsMCPConnectionFailedErrorRetryStatusUnion],
-	// [BetaManagedAgentsMCPAuthenticationFailedErrorRetryStatusUnion],
-	// [BetaManagedAgentsBillingErrorRetryStatusUnion],
-	// [BetaManagedAgentsCredentialHostUnreachableErrorRetryStatusUnion],
-	// [BetaManagedAgentsToolUseLimitReachedErrorRetryStatusUnion],
-	// [BetaManagedAgentsCompactionLimitReachedErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryAuthenticationErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryForbiddenErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryNotFoundErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryCheckoutErrorRetryStatusUnion],
-	// [BetaManagedAgentsRepositoryCloneErrorRetryStatusUnion]
+	// This field is a union of [BetaManagedAgentsUnknownErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsModelOverloadedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsModelRateLimitedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsModelRequestFailedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsMCPConnectionFailedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsMCPAuthenticationFailedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsBillingErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsCredentialHostUnreachableErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsToolUseLimitReachedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsCompactionLimitReachedErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryAuthenticationErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryForbiddenErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryNotFoundErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryCheckoutErrorObjectRetryStatusUnion],
+	// [BetaManagedAgentsRepositoryCloneErrorObjectRetryStatusUnion]
 	RetryStatus   BetaManagedAgentsStreamSessionThreadEventsUnionErrorRetryStatus `json:"retry_status"`
 	Type          string                                                          `json:"type"`
 	MCPServerName string                                                          `json:"mcp_server_name"`

@@ -137,10 +137,11 @@ const (
 	// Deprecated: This value is no longer needed. Remove it from your requests.
 	AnthropicBetaCacheDiagnosis2026_04_07 AnthropicBeta = "cache-diagnosis-2026-04-07"
 	// Deprecated: This value is no longer needed. Remove it from your requests.
-	AnthropicBetaCEUserManagement2026_07_13 AnthropicBeta = "ce-user-management-2026-07-13"
+	AnthropicBetaCEUserManagement2026_07_13    AnthropicBeta = "ce-user-management-2026-07-13"
+	AnthropicBetaUserProfilesBilling2026_10_01 AnthropicBeta = "user-profiles-billing-2026-10-01"
 )
 
-type BetaAPIError struct {
+type BetaAPIErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -156,12 +157,12 @@ type BetaAPIError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaAPIError) RawJSON() string { return r.JSON.raw }
-func (r *BetaAPIError) UnmarshalJSON(data []byte) error {
+func (r BetaAPIErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaAPIErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaAuthenticationError struct {
+type BetaAuthenticationErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -177,12 +178,12 @@ type BetaAuthenticationError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaAuthenticationError) RawJSON() string { return r.JSON.raw }
-func (r *BetaAuthenticationError) UnmarshalJSON(data []byte) error {
+func (r BetaAuthenticationErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaAuthenticationErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaBillingError struct {
+type BetaBillingErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -198,8 +199,8 @@ type BetaBillingError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaBillingError) RawJSON() string { return r.JSON.raw }
-func (r *BetaBillingError) UnmarshalJSON(data []byte) error {
+func (r BetaBillingErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaBillingErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -209,15 +210,17 @@ const (
 	BetaCurrencyUSD BetaCurrency = "USD"
 )
 
-// BetaErrorUnion contains all possible properties and values from
-// [BetaInvalidRequestError], [BetaAuthenticationError], [BetaBillingError],
-// [BetaPermissionError], [BetaNotFoundError], [BetaRateLimitError],
-// [BetaGatewayTimeoutError], [BetaAPIError], [BetaOverloadedError].
+// BetaErrorObjectUnion contains all possible properties and values from
+// [BetaInvalidRequestErrorObject], [BetaAuthenticationErrorObject],
+// [BetaBillingErrorObject], [BetaPermissionErrorObject],
+// [BetaNotFoundErrorObject], [BetaRateLimitErrorObject],
+// [BetaGatewayTimeoutErrorObject], [BetaAPIErrorObject],
+// [BetaOverloadedErrorObject].
 //
-// Use the [BetaErrorUnion.AsAny] method to switch on the variant.
+// Use the [BetaErrorObjectUnion.AsAny] method to switch on the variant.
 //
 // Use the methods beginning with 'As' to cast the union to one of its variants.
-type BetaErrorUnion struct {
+type BetaErrorObjectUnion struct {
 	Message string `json:"message"`
 	// Any of "invalid_request_error", "authentication_error", "billing_error",
 	// "permission_error", "not_found_error", "rate_limit_error", "timeout_error",
@@ -230,38 +233,38 @@ type BetaErrorUnion struct {
 	} `json:"-"`
 }
 
-// anyBetaError is implemented by each variant of [BetaErrorUnion] to add type
-// safety for the return type of [BetaErrorUnion.AsAny]
-type anyBetaError interface {
-	implBetaErrorUnion()
+// anyBetaErrorObject is implemented by each variant of [BetaErrorObjectUnion] to
+// add type safety for the return type of [BetaErrorObjectUnion.AsAny]
+type anyBetaErrorObject interface {
+	implBetaErrorObjectUnion()
 }
 
-func (BetaInvalidRequestError) implBetaErrorUnion() {}
-func (BetaAuthenticationError) implBetaErrorUnion() {}
-func (BetaBillingError) implBetaErrorUnion()        {}
-func (BetaPermissionError) implBetaErrorUnion()     {}
-func (BetaNotFoundError) implBetaErrorUnion()       {}
-func (BetaRateLimitError) implBetaErrorUnion()      {}
-func (BetaGatewayTimeoutError) implBetaErrorUnion() {}
-func (BetaAPIError) implBetaErrorUnion()            {}
-func (BetaOverloadedError) implBetaErrorUnion()     {}
+func (BetaInvalidRequestErrorObject) implBetaErrorObjectUnion() {}
+func (BetaAuthenticationErrorObject) implBetaErrorObjectUnion() {}
+func (BetaBillingErrorObject) implBetaErrorObjectUnion()        {}
+func (BetaPermissionErrorObject) implBetaErrorObjectUnion()     {}
+func (BetaNotFoundErrorObject) implBetaErrorObjectUnion()       {}
+func (BetaRateLimitErrorObject) implBetaErrorObjectUnion()      {}
+func (BetaGatewayTimeoutErrorObject) implBetaErrorObjectUnion() {}
+func (BetaAPIErrorObject) implBetaErrorObjectUnion()            {}
+func (BetaOverloadedErrorObject) implBetaErrorObjectUnion()     {}
 
 // Use the following switch statement to find the correct variant
 //
-//	switch variant := BetaErrorUnion.AsAny().(type) {
-//	case anthropic.BetaInvalidRequestError:
-//	case anthropic.BetaAuthenticationError:
-//	case anthropic.BetaBillingError:
-//	case anthropic.BetaPermissionError:
-//	case anthropic.BetaNotFoundError:
-//	case anthropic.BetaRateLimitError:
-//	case anthropic.BetaGatewayTimeoutError:
-//	case anthropic.BetaAPIError:
-//	case anthropic.BetaOverloadedError:
+//	switch variant := BetaErrorObjectUnion.AsAny().(type) {
+//	case anthropic.BetaInvalidRequestErrorObject:
+//	case anthropic.BetaAuthenticationErrorObject:
+//	case anthropic.BetaBillingErrorObject:
+//	case anthropic.BetaPermissionErrorObject:
+//	case anthropic.BetaNotFoundErrorObject:
+//	case anthropic.BetaRateLimitErrorObject:
+//	case anthropic.BetaGatewayTimeoutErrorObject:
+//	case anthropic.BetaAPIErrorObject:
+//	case anthropic.BetaOverloadedErrorObject:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
-func (u BetaErrorUnion) AsAny() anyBetaError {
+func (u BetaErrorObjectUnion) AsAny() anyBetaErrorObject {
 	switch u.Type {
 	case "invalid_request_error":
 		return u.AsInvalidRequestError()
@@ -285,62 +288,62 @@ func (u BetaErrorUnion) AsAny() anyBetaError {
 	return nil
 }
 
-func (u BetaErrorUnion) AsInvalidRequestError() (v BetaInvalidRequestError) {
+func (u BetaErrorObjectUnion) AsInvalidRequestError() (v BetaInvalidRequestErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaErrorUnion) AsAuthenticationError() (v BetaAuthenticationError) {
+func (u BetaErrorObjectUnion) AsAuthenticationError() (v BetaAuthenticationErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaErrorUnion) AsBillingError() (v BetaBillingError) {
+func (u BetaErrorObjectUnion) AsBillingError() (v BetaBillingErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaErrorUnion) AsPermissionError() (v BetaPermissionError) {
+func (u BetaErrorObjectUnion) AsPermissionError() (v BetaPermissionErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaErrorUnion) AsNotFoundError() (v BetaNotFoundError) {
+func (u BetaErrorObjectUnion) AsNotFoundError() (v BetaNotFoundErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaErrorUnion) AsRateLimitError() (v BetaRateLimitError) {
+func (u BetaErrorObjectUnion) AsRateLimitError() (v BetaRateLimitErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaErrorUnion) AsTimeoutError() (v BetaGatewayTimeoutError) {
+func (u BetaErrorObjectUnion) AsTimeoutError() (v BetaGatewayTimeoutErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaErrorUnion) AsAPIError() (v BetaAPIError) {
+func (u BetaErrorObjectUnion) AsAPIError() (v BetaAPIErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
-func (u BetaErrorUnion) AsOverloadedError() (v BetaOverloadedError) {
+func (u BetaErrorObjectUnion) AsOverloadedError() (v BetaOverloadedErrorObject) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
 
 // Returns the unmodified JSON received from the API
-func (u BetaErrorUnion) RawJSON() string { return u.JSON.raw }
+func (u BetaErrorObjectUnion) RawJSON() string { return u.JSON.raw }
 
-func (r *BetaErrorUnion) UnmarshalJSON(data []byte) error {
+func (r *BetaErrorObjectUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 type BetaErrorResponse struct {
-	Error     BetaErrorUnion `json:"error" api:"required"`
-	RequestID string         `json:"request_id" api:"required"`
-	Type      constant.Error `json:"type" default:"error"`
+	Error     BetaErrorObjectUnion `json:"error" api:"required"`
+	RequestID string               `json:"request_id" api:"required"`
+	Type      constant.Error       `json:"type" default:"error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Error       respjson.Field
@@ -357,7 +360,7 @@ func (r *BetaErrorResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaGatewayTimeoutError struct {
+type BetaGatewayTimeoutErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -373,12 +376,12 @@ type BetaGatewayTimeoutError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaGatewayTimeoutError) RawJSON() string { return r.JSON.raw }
-func (r *BetaGatewayTimeoutError) UnmarshalJSON(data []byte) error {
+func (r BetaGatewayTimeoutErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaGatewayTimeoutErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaInvalidRequestError struct {
+type BetaInvalidRequestErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -394,8 +397,8 @@ type BetaInvalidRequestError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaInvalidRequestError) RawJSON() string { return r.JSON.raw }
-func (r *BetaInvalidRequestError) UnmarshalJSON(data []byte) error {
+func (r BetaInvalidRequestErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaInvalidRequestErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -460,7 +463,7 @@ func (r *BetaMonetaryAmountParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaNotFoundError struct {
+type BetaNotFoundErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -476,12 +479,12 @@ type BetaNotFoundError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaNotFoundError) RawJSON() string { return r.JSON.raw }
-func (r *BetaNotFoundError) UnmarshalJSON(data []byte) error {
+func (r BetaNotFoundErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaNotFoundErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaOverloadedError struct {
+type BetaOverloadedErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -497,12 +500,12 @@ type BetaOverloadedError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaOverloadedError) RawJSON() string { return r.JSON.raw }
-func (r *BetaOverloadedError) UnmarshalJSON(data []byte) error {
+func (r BetaOverloadedErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaOverloadedErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaPermissionError struct {
+type BetaPermissionErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -518,12 +521,12 @@ type BetaPermissionError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaPermissionError) RawJSON() string { return r.JSON.raw }
-func (r *BetaPermissionError) UnmarshalJSON(data []byte) error {
+func (r BetaPermissionErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaPermissionErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type BetaRateLimitError struct {
+type BetaRateLimitErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
 	// match on it.
 	Message string `json:"message" api:"required"`
@@ -539,7 +542,40 @@ type BetaRateLimitError struct {
 }
 
 // Returns the unmodified JSON received from the API
-func (r BetaRateLimitError) RawJSON() string { return r.JSON.raw }
-func (r *BetaRateLimitError) UnmarshalJSON(data []byte) error {
+func (r BetaRateLimitErrorObject) RawJSON() string { return r.JSON.raw }
+func (r *BetaRateLimitErrorObject) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+// Deprecated: BetaErrorUnion has been renamed to BetaErrorObjectUnion
+type BetaErrorUnion = BetaErrorObjectUnion
+
+// Deprecated: BetaAPIError has been renamed to BetaAPIErrorObject
+type BetaAPIError = BetaAPIErrorObject
+
+// Deprecated: BetaAuthenticationError has been renamed to
+// BetaAuthenticationErrorObject
+type BetaAuthenticationError = BetaAuthenticationErrorObject
+
+// Deprecated: BetaInvalidRequestError has been renamed to
+// BetaInvalidRequestErrorObject
+type BetaInvalidRequestError = BetaInvalidRequestErrorObject
+
+// Deprecated: BetaBillingError has been renamed to BetaBillingErrorObject
+type BetaBillingError = BetaBillingErrorObject
+
+// Deprecated: BetaGatewayTimeoutError has been renamed to
+// BetaGatewayTimeoutErrorObject
+type BetaGatewayTimeoutError = BetaGatewayTimeoutErrorObject
+
+// Deprecated: BetaNotFoundError has been renamed to BetaNotFoundErrorObject
+type BetaNotFoundError = BetaNotFoundErrorObject
+
+// Deprecated: BetaOverloadedError has been renamed to BetaOverloadedErrorObject
+type BetaOverloadedError = BetaOverloadedErrorObject
+
+// Deprecated: BetaPermissionError has been renamed to BetaPermissionErrorObject
+type BetaPermissionError = BetaPermissionErrorObject
+
+// Deprecated: BetaRateLimitError has been renamed to BetaRateLimitErrorObject
+type BetaRateLimitError = BetaRateLimitErrorObject

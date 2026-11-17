@@ -205,6 +205,25 @@ func (r *CMEKKeyUnreachableErrorDetails) UnmarshalJSON(data []byte) error {
 
 func (CMEKKeyUnreachableErrorDetails) ImplErrorDetailsUnion() {}
 
+// The organization has reached the spend limit of its contract.
+type ContractSpendLimitReachedErrorDetails struct {
+	ErrorCode constant.ContractSpendLimitReachedErrorCode `json:"error_code" default:"contract_spend_limit_reached"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ContractSpendLimitReachedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ContractSpendLimitReachedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (ContractSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
+
 // The organization has crossed the monthly API usage threshold of its API tier.
 type EnforcedSpendLimitReachedErrorDetails struct {
 	ErrorCode constant.EnforcedSpendLimitReachedErrorCode `json:"error_code" default:"enforced_spend_limit_reached"`
@@ -247,6 +266,7 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [UserProfileNotBillableErrorDetails], [ThreadNotFoundErrorDetails],
 // [SkillReadBlockedUndecryptableErrorDetails],
 // [RequestBodyTooLargeAfterDecodingErrorDetails],
+// [ContractSpendLimitReachedErrorDetails],
 // [EnforcedSpendLimitReachedErrorDetails], [RampLimitExceededErrorDetails],
 // [CMEKKeyUnreachableErrorDetails], [CompactionUnavailableErrorDetails],
 // [StorageQuotaExceededErrorDetails], [FileNotDownloadableErrorDetails],
@@ -310,10 +330,10 @@ type ErrorDetailsUnion struct {
 	// "linked_organization_spend_limit_reached",
 	// "user_profile_billing_not_authorized", "user_profile_not_billable",
 	// "thread_not_found", "skill_read_blocked_undecryptable",
-	// "request_body_too_large_after_decoding", "enforced_spend_limit_reached",
-	// "ramp_limit_exceeded", "cmek_key_unreachable", "compaction_unavailable",
-	// "storage_quota_exceeded", "file_not_downloadable", "file_expired",
-	// "cmek_context_unavailable", "org_api_key_limit_exceeded",
+	// "request_body_too_large_after_decoding", "contract_spend_limit_reached",
+	// "enforced_spend_limit_reached", "ramp_limit_exceeded", "cmek_key_unreachable",
+	// "compaction_unavailable", "storage_quota_exceeded", "file_not_downloadable",
+	// "file_expired", "cmek_context_unavailable", "org_api_key_limit_exceeded",
 	// "workspace_api_key_limit_exceeded", "sandbox_egress_restricted",
 	// "user_profile_not_found", "external_key_in_workspace_policy", "already_member",
 	// "cannot_invite_emails_with_unverified_domains", "email_domain_not_allowed",
@@ -407,6 +427,7 @@ type anyErrorDetails interface {
 //	case shared.ThreadNotFoundErrorDetails:
 //	case shared.SkillReadBlockedUndecryptableErrorDetails:
 //	case shared.RequestBodyTooLargeAfterDecodingErrorDetails:
+//	case shared.ContractSpendLimitReachedErrorDetails:
 //	case shared.EnforcedSpendLimitReachedErrorDetails:
 //	case shared.RampLimitExceededErrorDetails:
 //	case shared.CMEKKeyUnreachableErrorDetails:
@@ -533,6 +554,8 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsSkillReadBlockedUndecryptable()
 	case "request_body_too_large_after_decoding":
 		return u.AsRequestBodyTooLargeAfterDecoding()
+	case "contract_spend_limit_reached":
+		return u.AsContractSpendLimitReached()
 	case "enforced_spend_limit_reached":
 		return u.AsEnforcedSpendLimitReached()
 	case "ramp_limit_exceeded":
@@ -805,6 +828,11 @@ func (u ErrorDetailsUnion) AsSkillReadBlockedUndecryptable() (v SkillReadBlocked
 }
 
 func (u ErrorDetailsUnion) AsRequestBodyTooLargeAfterDecoding() (v RequestBodyTooLargeAfterDecodingErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsContractSpendLimitReached() (v ContractSpendLimitReachedErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }

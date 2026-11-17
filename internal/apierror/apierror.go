@@ -747,6 +747,12 @@ const (
 	// [shared.RequestBodyTooLargeAfterDecodingErrorDetails] details.
 	ErrorCodeRequestBodyTooLargeAfterDecoding ErrorCode = "request_body_too_large_after_decoding"
 
+	// The organization has reached the spend limit of its contract.
+	//
+	// Returned with HTTP status 429 and [shared.ContractSpendLimitReachedErrorDetails]
+	// details.
+	ErrorCodeContractSpendLimitReached ErrorCode = "contract_spend_limit_reached"
+
 	// The organization has crossed the monthly API usage threshold of its API tier.
 	//
 	// Returned with HTTP status 429 and [shared.EnforcedSpendLimitReachedErrorDetails]

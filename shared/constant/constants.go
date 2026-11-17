@@ -174,6 +174,7 @@ type ContentBlockStop string                                   // Always "conten
 type ContentDelta string                                       // Always "content_delta"
 type ContentSha256 string                                      // Always "content_sha256"
 type Continue string                                           // Always "continue"
+type ContractSpendLimitReachedErrorCode string                 // Always "contract_spend_limit_reached"
 type Coordinate string                                         // Always "coordinate"
 type Coordinator string                                        // Always "coordinator"
 type Create string                                             // Always "create"
@@ -867,10 +868,13 @@ func (c ContentBlockStop) Default() ContentBlockStop         { return "content_b
 func (c ContentDelta) Default() ContentDelta                 { return "content_delta" }
 func (c ContentSha256) Default() ContentSha256               { return "content_sha256" }
 func (c Continue) Default() Continue                         { return "continue" }
-func (c Coordinate) Default() Coordinate                     { return "coordinate" }
-func (c Coordinator) Default() Coordinator                   { return "coordinator" }
-func (c Create) Default() Create                             { return "create" }
-func (c CreateNew) Default() CreateNew                       { return "create_new" }
+func (c ContractSpendLimitReachedErrorCode) Default() ContractSpendLimitReachedErrorCode {
+	return "contract_spend_limit_reached"
+}
+func (c Coordinate) Default() Coordinate   { return "coordinate" }
+func (c Coordinator) Default() Coordinator { return "coordinator" }
+func (c Create) Default() Create           { return "create" }
+func (c CreateNew) Default() CreateNew     { return "create_new" }
 func (c CredentialHostUnreachableError) Default() CredentialHostUnreachableError {
 	return "credential_host_unreachable_error"
 }
@@ -1748,6 +1752,7 @@ func (c ContentBlockStop) MarshalJSON() ([]byte, error)                    { ret
 func (c ContentDelta) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c ContentSha256) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Continue) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c ContractSpendLimitReachedErrorCode) MarshalJSON() ([]byte, error)  { return marshalString(c) }
 func (c Coordinate) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c Coordinator) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c Create) MarshalJSON() ([]byte, error)                              { return marshalString(c) }

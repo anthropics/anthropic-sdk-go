@@ -605,6 +605,12 @@ const ErrorCodeBetaHeartbeatPreconditionFailed = apierror.ErrorCodeBetaHeartbeat
 // [shared.RequestBodyTooLargeAfterDecodingErrorDetails] details.
 const ErrorCodeRequestBodyTooLargeAfterDecoding = apierror.ErrorCodeRequestBodyTooLargeAfterDecoding
 
+// The organization has reached the spend limit of its contract.
+//
+// Returned with HTTP status 429 and [shared.ContractSpendLimitReachedErrorDetails]
+// details.
+const ErrorCodeContractSpendLimitReached = apierror.ErrorCodeContractSpendLimitReached
+
 // The organization has crossed the monthly API usage threshold of its API tier.
 //
 // Returned with HTTP status 429 and [shared.EnforcedSpendLimitReachedErrorDetails]
@@ -692,6 +698,11 @@ type CMEKKeyNetworkBlockedErrorDetails = shared.CMEKKeyNetworkBlockedErrorDetail
 //
 // This is an alias to an internal type.
 type CMEKKeyUnreachableErrorDetails = shared.CMEKKeyUnreachableErrorDetails
+
+// The organization has reached the spend limit of its contract.
+//
+// This is an alias to an internal type.
+type ContractSpendLimitReachedErrorDetails = shared.ContractSpendLimitReachedErrorDetails
 
 // The organization has crossed the monthly API usage threshold of its API tier.
 //

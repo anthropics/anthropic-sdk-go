@@ -240,7 +240,11 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [ThreadAlreadyContinuedErrorDetails], [ThreadContinueInFlightErrorDetails],
 // [ThreadFingerprintMismatchErrorDetails], [ThreadUnsupportedRequestErrorDetails],
 // [ToolNameConflictErrorDetails], [ToolReferenceUnresolvedErrorDetails],
-// [ThreadNotFoundErrorDetails], [SkillReadBlockedUndecryptableErrorDetails],
+// [UserProfileRequiredErrorDetails],
+// [LinkedOrganizationBillingUnavailableErrorDetails],
+// [LinkedOrganizationSpendLimitReachedErrorDetails],
+// [UserProfileNotBillableErrorDetails], [ThreadNotFoundErrorDetails],
+// [SkillReadBlockedUndecryptableErrorDetails],
 // [RequestBodyTooLargeAfterDecodingErrorDetails],
 // [EnforcedSpendLimitReachedErrorDetails], [RampLimitExceededErrorDetails],
 // [CMEKKeyUnreachableErrorDetails], [CompactionUnavailableErrorDetails],
@@ -301,6 +305,8 @@ type ErrorDetailsUnion struct {
 	// "request_body_encoding_unsupported", "thread_already_continued",
 	// "thread_continue_in_flight", "thread_fingerprint_mismatch",
 	// "thread_unsupported_request", "tool_name_conflict", "tool_reference_unresolved",
+	// "user_profile_required", "linked_organization_billing_unavailable",
+	// "linked_organization_spend_limit_reached", "user_profile_not_billable",
 	// "thread_not_found", "skill_read_blocked_undecryptable",
 	// "request_body_too_large_after_decoding", "enforced_spend_limit_reached",
 	// "ramp_limit_exceeded", "cmek_key_unreachable", "compaction_unavailable",
@@ -391,6 +397,10 @@ type anyErrorDetails interface {
 //	case shared.ThreadUnsupportedRequestErrorDetails:
 //	case shared.ToolNameConflictErrorDetails:
 //	case shared.ToolReferenceUnresolvedErrorDetails:
+//	case shared.UserProfileRequiredErrorDetails:
+//	case shared.LinkedOrganizationBillingUnavailableErrorDetails:
+//	case shared.LinkedOrganizationSpendLimitReachedErrorDetails:
+//	case shared.UserProfileNotBillableErrorDetails:
 //	case shared.ThreadNotFoundErrorDetails:
 //	case shared.SkillReadBlockedUndecryptableErrorDetails:
 //	case shared.RequestBodyTooLargeAfterDecodingErrorDetails:
@@ -504,6 +514,14 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsToolNameConflict()
 	case "tool_reference_unresolved":
 		return u.AsToolReferenceUnresolved()
+	case "user_profile_required":
+		return u.AsUserProfileRequired()
+	case "linked_organization_billing_unavailable":
+		return u.AsLinkedOrganizationBillingUnavailable()
+	case "linked_organization_spend_limit_reached":
+		return u.AsLinkedOrganizationSpendLimitReached()
+	case "user_profile_not_billable":
+		return u.AsUserProfileNotBillable()
 	case "thread_not_found":
 		return u.AsThreadNotFound()
 	case "skill_read_blocked_undecryptable":
@@ -742,6 +760,26 @@ func (u ErrorDetailsUnion) AsToolNameConflict() (v ToolNameConflictErrorDetails)
 }
 
 func (u ErrorDetailsUnion) AsToolReferenceUnresolved() (v ToolReferenceUnresolvedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsUserProfileRequired() (v UserProfileRequiredErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsLinkedOrganizationBillingUnavailable() (v LinkedOrganizationBillingUnavailableErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsLinkedOrganizationSpendLimitReached() (v LinkedOrganizationSpendLimitReachedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsUserProfileNotBillable() (v UserProfileNotBillableErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1273,6 +1311,48 @@ func (r *InvalidRequestErrorObject) UnmarshalJSON(data []byte) error {
 }
 
 func (InvalidRequestErrorObject) ImplErrorObjectUnion() {}
+
+// Anthropic cannot currently bill the organization linked to the request's user
+// profile, for a reason that lies with that organization's own account. The
+// response does not say what the reason is.
+type LinkedOrganizationBillingUnavailableErrorDetails struct {
+	ErrorCode constant.LinkedOrganizationBillingUnavailableErrorCode `json:"error_code" default:"linked_organization_billing_unavailable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r LinkedOrganizationBillingUnavailableErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *LinkedOrganizationBillingUnavailableErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (LinkedOrganizationBillingUnavailableErrorDetails) ImplErrorDetailsUnion() {}
+
+// The organization linked to the request's user profile has reached a spend limit
+// that it set, or lacks credit for the request. The response does not say which
+// applies.
+type LinkedOrganizationSpendLimitReachedErrorDetails struct {
+	ErrorCode constant.LinkedOrganizationSpendLimitReachedErrorCode `json:"error_code" default:"linked_organization_spend_limit_reached"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r LinkedOrganizationSpendLimitReachedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *LinkedOrganizationSpendLimitReachedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (LinkedOrganizationSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 
 type NotFoundErrorObject struct {
 	// A human-readable explanation of the error. Its wording can change, so don't
@@ -1844,6 +1924,46 @@ func (r *ToolReferenceUnresolvedErrorDetails) UnmarshalJSON(data []byte) error {
 }
 
 func (ToolReferenceUnresolvedErrorDetails) ImplErrorDetailsUnion() {}
+
+// The request sets `billing_policy.bill_to` to `"user_profile"` but names no user
+// profile. Name the profile to bill in the `anthropic-user-profile-id` header.
+type UserProfileRequiredErrorDetails struct {
+	ErrorCode constant.UserProfileRequiredErrorCode `json:"error_code" default:"user_profile_required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r UserProfileRequiredErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *UserProfileRequiredErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (UserProfileRequiredErrorDetails) ImplErrorDetailsUnion() {}
+
+// The caller is not allowed to bill the user profile that the request names. The
+// response gives no more specific error code and does not say what the reason is.
+type UserProfileNotBillableErrorDetails struct {
+	ErrorCode constant.UserProfileNotBillableErrorCode `json:"error_code" default:"user_profile_not_billable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r UserProfileNotBillableErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *UserProfileNotBillableErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (UserProfileNotBillableErrorDetails) ImplErrorDetailsUnion() {}
 
 // No usable Thread state was found for `previous_message_id`. Replay the full
 // conversation with `thread: {"type": "create"}` to start a new Thread.

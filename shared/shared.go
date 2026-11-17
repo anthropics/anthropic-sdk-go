@@ -243,6 +243,7 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [UserProfileRequiredErrorDetails],
 // [LinkedOrganizationBillingUnavailableErrorDetails],
 // [LinkedOrganizationSpendLimitReachedErrorDetails],
+// [UserProfileBillingNotAuthorizedErrorDetails],
 // [UserProfileNotBillableErrorDetails], [ThreadNotFoundErrorDetails],
 // [SkillReadBlockedUndecryptableErrorDetails],
 // [RequestBodyTooLargeAfterDecodingErrorDetails],
@@ -306,7 +307,8 @@ type ErrorDetailsUnion struct {
 	// "thread_continue_in_flight", "thread_fingerprint_mismatch",
 	// "thread_unsupported_request", "tool_name_conflict", "tool_reference_unresolved",
 	// "user_profile_required", "linked_organization_billing_unavailable",
-	// "linked_organization_spend_limit_reached", "user_profile_not_billable",
+	// "linked_organization_spend_limit_reached",
+	// "user_profile_billing_not_authorized", "user_profile_not_billable",
 	// "thread_not_found", "skill_read_blocked_undecryptable",
 	// "request_body_too_large_after_decoding", "enforced_spend_limit_reached",
 	// "ramp_limit_exceeded", "cmek_key_unreachable", "compaction_unavailable",
@@ -400,6 +402,7 @@ type anyErrorDetails interface {
 //	case shared.UserProfileRequiredErrorDetails:
 //	case shared.LinkedOrganizationBillingUnavailableErrorDetails:
 //	case shared.LinkedOrganizationSpendLimitReachedErrorDetails:
+//	case shared.UserProfileBillingNotAuthorizedErrorDetails:
 //	case shared.UserProfileNotBillableErrorDetails:
 //	case shared.ThreadNotFoundErrorDetails:
 //	case shared.SkillReadBlockedUndecryptableErrorDetails:
@@ -520,6 +523,8 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsLinkedOrganizationBillingUnavailable()
 	case "linked_organization_spend_limit_reached":
 		return u.AsLinkedOrganizationSpendLimitReached()
+	case "user_profile_billing_not_authorized":
+		return u.AsUserProfileBillingNotAuthorized()
 	case "user_profile_not_billable":
 		return u.AsUserProfileNotBillable()
 	case "thread_not_found":
@@ -775,6 +780,11 @@ func (u ErrorDetailsUnion) AsLinkedOrganizationBillingUnavailable() (v LinkedOrg
 }
 
 func (u ErrorDetailsUnion) AsLinkedOrganizationSpendLimitReached() (v LinkedOrganizationSpendLimitReachedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsUserProfileBillingNotAuthorized() (v UserProfileBillingNotAuthorizedErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1944,6 +1954,27 @@ func (r *UserProfileRequiredErrorDetails) UnmarshalJSON(data []byte) error {
 }
 
 func (UserProfileRequiredErrorDetails) ImplErrorDetailsUnion() {}
+
+// The customer that the named user profile represents has not authorized the
+// caller to bill them, or the authorization that the request's credential uses has
+// ended. The response does not say which applies.
+type UserProfileBillingNotAuthorizedErrorDetails struct {
+	ErrorCode constant.UserProfileBillingNotAuthorizedErrorCode `json:"error_code" default:"user_profile_billing_not_authorized"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r UserProfileBillingNotAuthorizedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *UserProfileBillingNotAuthorizedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (UserProfileBillingNotAuthorizedErrorDetails) ImplErrorDetailsUnion() {}
 
 // The caller is not allowed to bill the user profile that the request names. The
 // response gives no more specific error code and does not say what the reason is.

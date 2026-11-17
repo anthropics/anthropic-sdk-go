@@ -641,6 +641,14 @@ const (
 	// [shared.BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails] details.
 	ErrorCodeBetaSpendLimitsAdminAPIWritesNotEnabled ErrorCode = "spend_limits_admin_api_writes_not_enabled"
 
+	// The customer that the named user profile represents has not authorized the
+	// caller to bill them, or the authorization that the request's credential uses has
+	// ended. The response does not say which applies.
+	//
+	// Returned with HTTP status 403 and
+	// [shared.UserProfileBillingNotAuthorizedErrorDetails] details.
+	ErrorCodeUserProfileBillingNotAuthorized ErrorCode = "user_profile_billing_not_authorized"
+
 	// The caller is not allowed to bill the user profile that the request names. The
 	// response gives no more specific error code and does not say what the reason is.
 	//

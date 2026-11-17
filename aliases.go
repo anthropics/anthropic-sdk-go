@@ -499,6 +499,14 @@ const ErrorCodeSandboxEgressRestricted = apierror.ErrorCodeSandboxEgressRestrict
 // [shared.BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails] details.
 const ErrorCodeBetaSpendLimitsAdminAPIWritesNotEnabled = apierror.ErrorCodeBetaSpendLimitsAdminAPIWritesNotEnabled
 
+// The customer that the named user profile represents has not authorized the
+// caller to bill them, or the authorization that the request's credential uses has
+// ended. The response does not say which applies.
+//
+// Returned with HTTP status 403 and
+// [shared.UserProfileBillingNotAuthorizedErrorDetails] details.
+const ErrorCodeUserProfileBillingNotAuthorized = apierror.ErrorCodeUserProfileBillingNotAuthorized
+
 // The caller is not allowed to bill the user profile that the request names. The
 // response gives no more specific error code and does not say what the reason is.
 //
@@ -935,6 +943,13 @@ type ToolReferenceUnresolvedErrorDetails = shared.ToolReferenceUnresolvedErrorDe
 //
 // This is an alias to an internal type.
 type UserProfileRequiredErrorDetails = shared.UserProfileRequiredErrorDetails
+
+// The customer that the named user profile represents has not authorized the
+// caller to bill them, or the authorization that the request's credential uses has
+// ended. The response does not say which applies.
+//
+// This is an alias to an internal type.
+type UserProfileBillingNotAuthorizedErrorDetails = shared.UserProfileBillingNotAuthorizedErrorDetails
 
 // The caller is not allowed to bill the user profile that the request names. The
 // response gives no more specific error code and does not say what the reason is.

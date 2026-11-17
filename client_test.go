@@ -86,6 +86,42 @@ func TestUserAgentHeader(t *testing.T) {
 	}
 }
 
+func TestEmptyBaseURLEnvCountsAsUnset(t *testing.T) {
+	t.Setenv("ANTHROPIC_BASE_URL", "")
+	var requestURL string
+	client := anthropic.NewClient(
+		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithHTTPClient(&http.Client{
+			Transport: &closureTransport{
+				fn: func(req *http.Request) (*http.Response, error) {
+					requestURL = req.URL.String()
+					return &http.Response{
+						StatusCode: http.StatusOK,
+					}, nil
+				},
+			},
+		}),
+	)
+
+	_, _ = client.Messages.New(context.Background(), anthropic.MessageNewParams{
+		MaxTokens: 1024,
+		Messages: []anthropic.MessageParam{{
+			OfUser: &anthropic.UserMessageParam{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
+				}},
+			},
+		}},
+		Model: anthropic.ModelClaudeOpus5_5,
+	})
+
+	if want := "https://api.anthropic.com"; !strings.HasPrefix(requestURL, want) {
+		t.Errorf("Expected the request URL to start with %q, got %q", want, requestURL)
+	}
+}
+
 func TestRetryAfter(t *testing.T) {
 	retryCountHeaders := make([]string, 0)
 	client := anthropic.NewClient(

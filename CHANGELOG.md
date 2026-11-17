@@ -1,5 +1,50 @@
 # Changelog
 
+## [2.11.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.10.0...v2.11.0) (2026-11-17)
+
+### Features
+
+* **api:** add beta support for the billing_policy request parameter
+* **api:** add contract_spend_limit_reached error code to messages
+* **api:** add error codes for linked billing refusals
+* **api:** add the user_profile_billing_not_authorized error code
+* **api:** add webhook events for external key failure and recovery
+
+
+### Bug Fixes
+
+* **environments:** stop EnvironmentWorker from running tools for a terminated session
+
+  For a terminated session, which includes an archived one, the worker now force-stops the work item right after it retrieves the session, before it downloads skills or memory stores. `HandleItem` no longer returns `ErrSessionMemoryNoToken` or a `SessionMemoryError` for such a session.
+
+* **sessions:** keep the session tool runner's MaxIdle countdown running when a session thread terminates
+
+  If the runner fails to read the session's event history after a reconnect, a termination that then arrives on the event stream still cancels the countdown, until the next idle or successful read.
+
+* **sessions:** stop the session tool runner from running the tool calls of a terminated session thread
+
+  Once a `session.thread_status_terminated` event names a child session thread, the runner also no longer yields that thread's calls, including a denied call (`Confirmation="deny"`) and a call to a tool that it does not own. It no longer waits for a confirmation of any of that thread's calls either. If a tool is already running for one of the thread's calls when the session thread terminates, the runner cancels the tool's context, still yields the call with `Posted=false` and posts no result.
+
+* **sessions:** stop the session tool runner from waiting for the confirmation of an interrupted tool call when listing the session's events fails partway
+
+  After such a failure, an interrupt no longer starts the `MaxIdle` countdown from an idle that came before the failure. The runner waits for the next idle.
+
+
+### Chores
+
+* **api:** rename error data models, deprecating the old names
+* **docs:** clarify which AWS KMS keys a workspace can use on Claude Platform on AWS
+* **docs:** clarify which credential work get, update and list accept
+* **docs:** clarify which uploads a plugin pin holds back
+* **docs:** note that a plugin scan's reason also covers errored scans
+
+  `content_scan.reason` on an errored scan now says why there is no verdict. It is not a security finding, so code that treats any `reason` as a concern should also check `status`.
+
+
+### Documentation
+
+* name each SDK's own types in rename deprecations
+
 ## [2.10.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.9.0...v2.10.0) (2026-11-16)
 
 ### Features

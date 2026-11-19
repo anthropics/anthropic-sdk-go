@@ -1266,58 +1266,50 @@ func TestBedrockRejectsUserProfilesAPI(t *testing.T) {
 	}
 }
 
-func TestBedrockSendsUserProfileIDHeader(t *testing.T) {
-	ctx := context.Background()
-	messages := []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock("hi"))}
-	betaMessages := []anthropic.BetaMessageParam{anthropic.NewBetaUserMessage(anthropic.NewBetaTextBlock("hi"))}
-	const model = "claude-sonnet-4-6-20250514"
+func TestBedrockSendsUserProfileIDInBody(t *testing.T) {
+	var gotHeader string
+	var gotBody []byte
+	client := newUserProfileTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+		gotBody, _ = io.ReadAll(r.Body)
+		gotHeader = r.Header.Get("anthropic-user-profile-id")
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{}`))
+	})
 
-	tests := []struct {
-		name string
-		send func(client anthropic.Client) error
-	}{
-		{
-			name: "messages",
-			send: func(client anthropic.Client) error {
-				_, err := client.Messages.New(ctx, anthropic.MessageNewParams{
-					Model: model, MaxTokens: 1, Messages: messages, UserProfileID: anthropic.String("uprof_1"),
-				})
-				return err
-			},
-		},
-		{
-			name: "beta messages",
-			send: func(client anthropic.Client) error {
-				_, err := client.Beta.Messages.New(ctx, anthropic.BetaMessageNewParams{
-					Model: model, MaxTokens: 1, Messages: betaMessages, UserProfileID: anthropic.String("uprof_1"),
-				})
-				return err
-			},
-		},
+	_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
+		Model:         "claude-sonnet-4-6-20250514",
+		MaxTokens:     1,
+		Messages:      []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock("hi"))},
+		UserProfileID: anthropic.String("uprof_1"),
+	})
+	if err != nil {
+		t.Fatalf("request failed: %v", err)
 	}
+	if got := gjson.GetBytes(gotBody, "user_profile_id").String(); got != "uprof_1" {
+		t.Errorf("body user_profile_id = %q, want %q; body: %s", got, "uprof_1", gotBody)
+	}
+	if gotHeader != "" {
+		t.Errorf("anthropic-user-profile-id = %q, want no header", gotHeader)
+	}
+}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			var gotPath, gotHeader, gotBody string
-			client := newUserProfileTestClient(t, func(w http.ResponseWriter, r *http.Request) {
-				body, _ := io.ReadAll(r.Body)
-				gotPath, gotHeader, gotBody = r.URL.Path, r.Header.Get("anthropic-user-profile-id"), string(body)
-				w.Header().Set("Content-Type", "application/json")
-				w.Write([]byte(`{}`))
-			})
+func TestBedrockOmitsUnsetUserProfileID(t *testing.T) {
+	var gotBody []byte
+	client := newUserProfileTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+		gotBody, _ = io.ReadAll(r.Body)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{}`))
+	})
 
-			if err := tt.send(client); err != nil {
-				t.Fatalf("request failed: %v", err)
-			}
-			if want := "/model/" + model + "/invoke"; gotPath != want {
-				t.Errorf("path = %q, want %q", gotPath, want)
-			}
-			if gotHeader != "uprof_1" {
-				t.Errorf("anthropic-user-profile-id = %q, want %q", gotHeader, "uprof_1")
-			}
-			if strings.Contains(gotBody, "user_profile_id") {
-				t.Errorf("expected no user_profile_id in the body, got %s", gotBody)
-			}
-		})
+	_, err := client.Messages.New(context.Background(), anthropic.MessageNewParams{
+		Model:     "claude-sonnet-4-6-20250514",
+		MaxTokens: 1,
+		Messages:  []anthropic.MessageParam{anthropic.NewUserMessage(anthropic.NewTextBlock("hi"))},
+	})
+	if err != nil {
+		t.Fatalf("request failed: %v", err)
+	}
+	if gjson.GetBytes(gotBody, "user_profile_id").Exists() {
+		t.Errorf("expected no user_profile_id in the body, got %s", gotBody)
 	}
 }

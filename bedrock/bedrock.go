@@ -241,7 +241,7 @@ var withPlatform = requestconfig.RequestOptionFunc(func(rc *requestconfig.Reques
 //
 // Amazon Bedrock does not serve the User Profiles API, so a request to it
 // returns an error instead of being sent. A user profile ID on a Messages
-// request is sent as usual.
+// request is sent in the request body.
 //
 // The returned option is an [option.Join] of [option.WithoutEnvironmentDefaults]
 // and the Bedrock configuration, so a client constructed with it skips the
@@ -338,6 +338,16 @@ func bedrockMiddleware(signer *v4.Signer, cfg aws.Config) option.Middleware {
 
 				body, _ = sjson.DeleteBytes(body, "model")
 				body, _ = sjson.DeleteBytes(body, "stream")
+
+				if profileID := r.Header.Get("anthropic-user-profile-id"); profileID != "" {
+					if !gjson.GetBytes(body, "user_profile_id").Exists() {
+						body, err = sjson.SetBytes(body, "user_profile_id", profileID)
+						if err != nil {
+							return nil, err
+						}
+					}
+					r.Header.Del("anthropic-user-profile-id")
+				}
 
 				var method string
 				if stream {

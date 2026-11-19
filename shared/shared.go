@@ -2049,7 +2049,7 @@ func (r *UserProfileRequiredErrorDetails) UnmarshalJSON(data []byte) error {
 
 func (UserProfileRequiredErrorDetails) ImplErrorDetailsUnion() {}
 
-// The customer that the named user profile represents has not authorized the
+// The customer that the request's user profile represents has not authorized the
 // caller to bill them, or the authorization that the request's credential uses has
 // ended. The response does not say which applies.
 type UserProfileBillingNotAuthorizedErrorDetails struct {
@@ -2070,8 +2070,8 @@ func (r *UserProfileBillingNotAuthorizedErrorDetails) UnmarshalJSON(data []byte)
 
 func (UserProfileBillingNotAuthorizedErrorDetails) ImplErrorDetailsUnion() {}
 
-// The caller is not allowed to bill the user profile that the request names. The
-// response gives no more specific error code and does not say what the reason is.
+// The request's user profile cannot be billed. The response gives no more specific
+// error code and does not say what the reason is.
 type UserProfileNotBillableErrorDetails struct {
 	ErrorCode constant.UserProfileNotBillableErrorCode `json:"error_code" default:"user_profile_not_billable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].

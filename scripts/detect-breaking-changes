@@ -117,6 +117,9 @@ TEST_PATHS=(
 	betaorganizationtelemetrydestination_test.go
 	betaorganizationtelemetrydestinationworkspace_test.go
 	betaorganizationwebhook_test.go
+	betaorganizationclaudecodemanagedsettingconfiguration_test.go
+	betaorganizationclaudecodemanagedsettingrbacgroup_test.go
+	betaorganizationclaudecodemanagedsettingrbacgroupdefault_test.go
 	betaorganizationclaudetagslackchannel_test.go
 	betaorganizationclaudetagslackworkspace_test.go
 	betaorganizationclaudetagbundle_test.go

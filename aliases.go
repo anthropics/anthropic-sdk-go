@@ -84,6 +84,14 @@ const ErrorCodeClaudeCodeKeyCreatorNotMember = apierror.ErrorCodeClaudeCodeKeyCr
 // details.
 const ErrorCodeClaudeCodeVersionTooOld = apierror.ErrorCodeClaudeCodeVersionTooOld
 
+// This stored settings document currently cannot be read or replaced. Contact
+// support, or, if you no longer need these settings, delete the group's settings
+// or clear the default.
+//
+// Returned with HTTP status 400 and
+// [shared.BetaCMEKFeatureUnsupportedErrorDetails] details.
+const ErrorCodeBetaCMEKFeatureUnsupported = apierror.ErrorCodeBetaCMEKFeatureUnsupported
+
 // The workspace's customer-managed encryption key is disabled or revoked.
 // Re-enable the key, then retry.
 //
@@ -271,6 +279,13 @@ const ErrorCodeParentOrganizationRequired = apierror.ErrorCodeParentOrganization
 // [shared.RBACGroupGrantsOwnerAccessErrorDetails] details.
 const ErrorCodeRBACGroupGrantsOwnerAccess = apierror.ErrorCodeRBACGroupGrantsOwnerAccess
 
+// The RBAC Group order already has the most groups allowed. Delete another group's
+// settings first.
+//
+// Returned with HTTP status 400 and
+// [shared.BetaRBACGroupOrderLimitExceededErrorDetails] details.
+const ErrorCodeBetaRBACGroupOrderLimitExceeded = apierror.ErrorCodeBetaRBACGroupOrderLimitExceeded
+
 // The API could not finish checking whether an RBAC Group in the request grants
 // owner access, so it made no change. Retrying the same request will not help.
 // Make the change in the organization's admin settings in Claude.
@@ -291,11 +306,38 @@ const ErrorCodeRequestBodyEncodingInvalid = apierror.ErrorCodeRequestBodyEncodin
 // [shared.RequestBodyEncodingUnsupportedErrorDetails] details.
 const ErrorCodeRequestBodyEncodingUnsupported = apierror.ErrorCodeRequestBodyEncodingUnsupported
 
+// The request body did not finish arriving in time, so nothing was done. Send a
+// smaller body, or send it over a faster connection.
+//
+// Returned with HTTP status 400 and [shared.BetaRequestBodyTimeoutErrorDetails]
+// details.
+const ErrorCodeBetaRequestBodyTimeout = apierror.ErrorCodeBetaRequestBodyTimeout
+
 // The version in `plugin_version_id` did not pass its content scan, so it cannot
 // be served.
 //
 // Returned with HTTP status 400 and [shared.BetaScanFailedErrorDetails] details.
 const ErrorCodeBetaScanFailed = apierror.ErrorCodeBetaScanFailed
+
+// The organization has reached its limit of settings documents, counting unused
+// ones. An owner can remove unused documents in claude.ai. Deleting a group's
+// settings or clearing the default settings also frees a document, if nothing else
+// uses it. None of these works once the organization has also reached its settings
+// history limit.
+//
+// Returned with HTTP status 400 and
+// [shared.BetaSettingsDocumentLimitExceededErrorDetails] details.
+const ErrorCodeBetaSettingsDocumentLimitExceeded = apierror.ErrorCodeBetaSettingsDocumentLimitExceeded
+
+// The organization has reached its settings history limit, a cap on stored
+// versions of its settings documents. Nothing in the API or claude.ai lowers the
+// count, so contact support. Creating or deleting group settings, creating or
+// clearing the default settings, and reordering are refused. Changing the mode
+// still works, unless it would copy the organization settings into a new default.
+//
+// Returned with HTTP status 400 and
+// [shared.BetaSettingsHistoryLimitExceededErrorDetails] details.
+const ErrorCodeBetaSettingsHistoryLimitExceeded = apierror.ErrorCodeBetaSettingsHistoryLimitExceeded
 
 // The request set the channel up, and `settings` was then refused. The channel
 // stays set up with every setting unset.
@@ -524,6 +566,18 @@ const ErrorCodeBetaEnvironmentNotFound = apierror.ErrorCodeBetaEnvironmentNotFou
 //
 // Returned with HTTP status 404 and [shared.FileExpiredErrorDetails] details.
 const ErrorCodeFileExpired = apierror.ErrorCodeFileExpired
+
+// This RBAC Group has no Claude Code managed settings.
+//
+// Returned with HTTP status 404 and
+// [shared.BetaRBACGroupManagedSettingsNotFoundErrorDetails] details.
+const ErrorCodeBetaRBACGroupManagedSettingsNotFound = apierror.ErrorCodeBetaRBACGroupManagedSettingsNotFound
+
+// The RBAC Group is not one of the organization's groups.
+//
+// Returned with HTTP status 404 and [shared.BetaRBACGroupNotFoundErrorDetails]
+// details.
+const ErrorCodeBetaRBACGroupNotFound = apierror.ErrorCodeBetaRBACGroupNotFound
 
 // No RBAC Role with this ID was found.
 //
@@ -1274,6 +1328,53 @@ type BetaScanFailedErrorDetails = shared.BetaScanFailedErrorDetails
 //
 // This is an alias to an internal type.
 type BetaScanPendingErrorDetails = shared.BetaScanPendingErrorDetails
+
+// The request body did not finish arriving in time, so nothing was done. Send a
+// smaller body, or send it over a faster connection.
+//
+// This is an alias to an internal type.
+type BetaRequestBodyTimeoutErrorDetails = shared.BetaRequestBodyTimeoutErrorDetails
+
+// The organization has reached its limit of settings documents, counting unused
+// ones. An owner can remove unused documents in claude.ai. Deleting a group's
+// settings or clearing the default settings also frees a document, if nothing else
+// uses it. None of these works once the organization has also reached its settings
+// history limit.
+//
+// This is an alias to an internal type.
+type BetaSettingsDocumentLimitExceededErrorDetails = shared.BetaSettingsDocumentLimitExceededErrorDetails
+
+// The organization has reached its settings history limit, a cap on stored
+// versions of its settings documents. Nothing in the API or claude.ai lowers the
+// count, so contact support. Creating or deleting group settings, creating or
+// clearing the default settings, and reordering are refused. Changing the mode
+// still works, unless it would copy the organization settings into a new default.
+//
+// This is an alias to an internal type.
+type BetaSettingsHistoryLimitExceededErrorDetails = shared.BetaSettingsHistoryLimitExceededErrorDetails
+
+// This stored settings document currently cannot be read or replaced. Contact
+// support, or, if you no longer need these settings, delete the group's settings
+// or clear the default.
+//
+// This is an alias to an internal type.
+type BetaCMEKFeatureUnsupportedErrorDetails = shared.BetaCMEKFeatureUnsupportedErrorDetails
+
+// This RBAC Group has no Claude Code managed settings.
+//
+// This is an alias to an internal type.
+type BetaRBACGroupManagedSettingsNotFoundErrorDetails = shared.BetaRBACGroupManagedSettingsNotFoundErrorDetails
+
+// The RBAC Group order already has the most groups allowed. Delete another group's
+// settings first.
+//
+// This is an alias to an internal type.
+type BetaRBACGroupOrderLimitExceededErrorDetails = shared.BetaRBACGroupOrderLimitExceededErrorDetails
+
+// The RBAC Group is not one of the organization's groups.
+//
+// This is an alias to an internal type.
+type BetaRBACGroupNotFoundErrorDetails = shared.BetaRBACGroupNotFoundErrorDetails
 
 // The request set the channel up, and `settings` was then refused. The channel
 // stays set up with every setting unset.

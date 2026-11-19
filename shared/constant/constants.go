@@ -29,6 +29,7 @@ func ValueOf[T Constant[T]]() T {
 	return t.Default()
 }
 
+type Active string                                             // Always "active"
 type Adaptive string                                           // Always "adaptive"
 type Advisor string                                            // Always "advisor"
 type Advisor20260301 string                                    // Always "advisor_20260301"
@@ -117,6 +118,11 @@ type ChannelOnly string                                        // Always "channe
 type CharLocation string                                       // Always "char_location"
 type CitationsDelta string                                     // Always "citations_delta"
 type ClaudeCodeKeyCreatorNotMemberErrorCode string             // Always "claude_code_key_creator_not_member"
+type ClaudeCodeManagedSettingsConfiguration string             // Always "claude_code_managed_settings_configuration"
+type ClaudeCodeRBACGroupDefaultManagedSettings string          // Always "claude_code_rbac_group_default_managed_settings"
+type ClaudeCodeRBACGroupManagedSettings string                 // Always "claude_code_rbac_group_managed_settings"
+type ClaudeCodeRBACGroupManagedSettingsDeleted string          // Always "claude_code_rbac_group_managed_settings_deleted"
+type ClaudeCodeRBACGroupManagedSettingsSummary string          // Always "claude_code_rbac_group_managed_settings_summary"
 type ClaudeCodeVersionTooOldErrorCode string                   // Always "claude_code_version_too_old"
 type BetaClaudeTagWritesNotEnabledErrorCode string             // Always "claude_tag_writes_not_enabled"
 type ClearThinking20251015 string                              // Always "clear_thinking_20251015"
@@ -126,6 +132,7 @@ type ClientSecretPost string                                   // Always "client
 type CloseTab string                                           // Always "close_tab"
 type Cloud string                                              // Always "cloud"
 type CMEKContextUnavailableErrorCode string                    // Always "cmek_context_unavailable"
+type BetaCMEKFeatureUnsupportedErrorCode string                // Always "cmek_feature_unsupported"
 type CMEKKeyDisabledErrorCode string                           // Always "cmek_key_disabled"
 type CMEKKeyNetworkBlockedErrorCode string                     // Always "cmek_key_network_blocked"
 type CMEKKeyUnreachableErrorCode string                        // Always "cmek_key_unreachable"
@@ -185,6 +192,7 @@ type CursorPosition string                                     // Always "cursor
 type Custom string                                             // Always "custom"
 type Default string                                            // Always "default"
 type Delete string                                             // Always "delete"
+type Deleted string                                            // Always "deleted"
 type Deny string                                               // Always "deny"
 type Deployment string                                         // Always "deployment"
 type DeploymentRun string                                      // Always "deployment_run"
@@ -383,9 +391,13 @@ type RateLimitError string                                     // Always "rate_l
 type RBACGroup string                                          // Always "rbac_group"
 type RBACGroupDeleted string                                   // Always "rbac_group_deleted"
 type RBACGroupGrantsOwnerAccessErrorCode string                // Always "rbac_group_grants_owner_access"
+type BetaRBACGroupManagedSettingsNotFoundErrorCode string      // Always "rbac_group_managed_settings_not_found"
 type RBACGroupMember string                                    // Always "rbac_group_member"
 type RBACGroupMemberDeleted string                             // Always "rbac_group_member_deleted"
+type BetaRBACGroupNotFoundErrorCode string                     // Always "rbac_group_not_found"
+type BetaRBACGroupOrderLimitExceededErrorCode string           // Always "rbac_group_order_limit_exceeded"
 type RBACGroupOwnerAccessUnconfirmedErrorCode string           // Always "rbac_group_owner_access_unconfirmed"
+type RBACGroups string                                         // Always "rbac_groups"
 type RBACRole string                                           // Always "rbac_role"
 type RBACRoleNotFoundErrorCode string                          // Always "rbac_role_not_found"
 type RBACRolePermission string                                 // Always "rbac_role_permission"
@@ -408,6 +420,7 @@ type RepositoryForbiddenError string                           // Always "reposi
 type RepositoryNotFoundError string                            // Always "repository_not_found_error"
 type RequestBodyEncodingInvalidErrorCode string                // Always "request_body_encoding_invalid"
 type RequestBodyEncodingUnsupportedErrorCode string            // Always "request_body_encoding_unsupported"
+type BetaRequestBodyTimeoutErrorCode string                    // Always "request_body_timeout"
 type RequestBodyTooLargeAfterDecodingErrorCode string          // Always "request_body_too_large_after_decoding"
 type RequiresAction string                                     // Always "requires_action"
 type Restrict string                                           // Always "restrict"
@@ -468,6 +481,8 @@ type SessionThreadTerminated string                            // Always "sessio
 type SessionUpdated string                                     // Always "session.updated"
 type SessionUsage string                                       // Always "session.usage"
 type Sessions string                                           // Always "sessions"
+type BetaSettingsDocumentLimitExceededErrorCode string         // Always "settings_document_limit_exceeded"
+type BetaSettingsHistoryLimitExceededErrorCode string          // Always "settings_history_limit_exceeded"
 type SignatureDelta string                                     // Always "signature_delta"
 type Skill string                                              // Always "skill"
 type SkillDeleted string                                       // Always "skill_deleted"
@@ -567,6 +582,7 @@ type TunnelToken string                                        // Always "tunnel
 type Type string                                               // Always "type"
 type Unattached string                                         // Always "unattached"
 type Unavailable string                                        // Always "unavailable"
+type Unknown string                                            // Always "unknown"
 type UnknownError string                                       // Always "unknown_error"
 type Unrestricted string                                       // Always "unrestricted"
 type BetaUnsupportedCharsetErrorCode string                    // Always "unsupported_charset"
@@ -647,6 +663,7 @@ type Write string                                              // Always "write"
 type Xhigh string                                              // Always "xhigh"
 type Zoom string                                               // Always "zoom"
 
+func (c Active) Default() Active                                 { return "active" }
 func (c Adaptive) Default() Adaptive                             { return "adaptive" }
 func (c Advisor) Default() Advisor                               { return "advisor" }
 func (c Advisor20260301) Default() Advisor20260301               { return "advisor_20260301" }
@@ -771,6 +788,21 @@ func (c CitationsDelta) Default() CitationsDelta { return "citations_delta" }
 func (c ClaudeCodeKeyCreatorNotMemberErrorCode) Default() ClaudeCodeKeyCreatorNotMemberErrorCode {
 	return "claude_code_key_creator_not_member"
 }
+func (c ClaudeCodeManagedSettingsConfiguration) Default() ClaudeCodeManagedSettingsConfiguration {
+	return "claude_code_managed_settings_configuration"
+}
+func (c ClaudeCodeRBACGroupDefaultManagedSettings) Default() ClaudeCodeRBACGroupDefaultManagedSettings {
+	return "claude_code_rbac_group_default_managed_settings"
+}
+func (c ClaudeCodeRBACGroupManagedSettings) Default() ClaudeCodeRBACGroupManagedSettings {
+	return "claude_code_rbac_group_managed_settings"
+}
+func (c ClaudeCodeRBACGroupManagedSettingsDeleted) Default() ClaudeCodeRBACGroupManagedSettingsDeleted {
+	return "claude_code_rbac_group_managed_settings_deleted"
+}
+func (c ClaudeCodeRBACGroupManagedSettingsSummary) Default() ClaudeCodeRBACGroupManagedSettingsSummary {
+	return "claude_code_rbac_group_managed_settings_summary"
+}
 func (c ClaudeCodeVersionTooOldErrorCode) Default() ClaudeCodeVersionTooOldErrorCode {
 	return "claude_code_version_too_old"
 }
@@ -785,6 +817,9 @@ func (c CloseTab) Default() CloseTab                           { return "close_t
 func (c Cloud) Default() Cloud                                 { return "cloud" }
 func (c CMEKContextUnavailableErrorCode) Default() CMEKContextUnavailableErrorCode {
 	return "cmek_context_unavailable"
+}
+func (c BetaCMEKFeatureUnsupportedErrorCode) Default() BetaCMEKFeatureUnsupportedErrorCode {
+	return "cmek_feature_unsupported"
 }
 func (c CMEKKeyDisabledErrorCode) Default() CMEKKeyDisabledErrorCode { return "cmek_key_disabled" }
 func (c CMEKKeyNetworkBlockedErrorCode) Default() CMEKKeyNetworkBlockedErrorCode {
@@ -883,6 +918,7 @@ func (c CursorPosition) Default() CursorPosition                 { return "curso
 func (c Custom) Default() Custom                                 { return "custom" }
 func (c Default) Default() Default                               { return "default" }
 func (c Delete) Default() Delete                                 { return "delete" }
+func (c Deleted) Default() Deleted                               { return "deleted" }
 func (c Deny) Default() Deny                                     { return "deny" }
 func (c Deployment) Default() Deployment                         { return "deployment" }
 func (c DeploymentRun) Default() DeploymentRun                   { return "deployment_run" }
@@ -1173,11 +1209,21 @@ func (c RBACGroupDeleted) Default() RBACGroupDeleted { return "rbac_group_delete
 func (c RBACGroupGrantsOwnerAccessErrorCode) Default() RBACGroupGrantsOwnerAccessErrorCode {
 	return "rbac_group_grants_owner_access"
 }
+func (c BetaRBACGroupManagedSettingsNotFoundErrorCode) Default() BetaRBACGroupManagedSettingsNotFoundErrorCode {
+	return "rbac_group_managed_settings_not_found"
+}
 func (c RBACGroupMember) Default() RBACGroupMember               { return "rbac_group_member" }
 func (c RBACGroupMemberDeleted) Default() RBACGroupMemberDeleted { return "rbac_group_member_deleted" }
+func (c BetaRBACGroupNotFoundErrorCode) Default() BetaRBACGroupNotFoundErrorCode {
+	return "rbac_group_not_found"
+}
+func (c BetaRBACGroupOrderLimitExceededErrorCode) Default() BetaRBACGroupOrderLimitExceededErrorCode {
+	return "rbac_group_order_limit_exceeded"
+}
 func (c RBACGroupOwnerAccessUnconfirmedErrorCode) Default() RBACGroupOwnerAccessUnconfirmedErrorCode {
 	return "rbac_group_owner_access_unconfirmed"
 }
+func (c RBACGroups) Default() RBACGroups                               { return "rbac_groups" }
 func (c RBACRole) Default() RBACRole                                   { return "rbac_role" }
 func (c RBACRoleNotFoundErrorCode) Default() RBACRoleNotFoundErrorCode { return "rbac_role_not_found" }
 func (c RBACRolePermission) Default() RBACRolePermission               { return "rbac_role_permission" }
@@ -1213,6 +1259,9 @@ func (c RequestBodyEncodingInvalidErrorCode) Default() RequestBodyEncodingInvali
 }
 func (c RequestBodyEncodingUnsupportedErrorCode) Default() RequestBodyEncodingUnsupportedErrorCode {
 	return "request_body_encoding_unsupported"
+}
+func (c BetaRequestBodyTimeoutErrorCode) Default() BetaRequestBodyTimeoutErrorCode {
+	return "request_body_timeout"
 }
 func (c RequestBodyTooLargeAfterDecodingErrorCode) Default() RequestBodyTooLargeAfterDecodingErrorCode {
 	return "request_body_too_large_after_decoding"
@@ -1305,9 +1354,15 @@ func (c SessionThreadStatusTerminated) Default() SessionThreadStatusTerminated {
 func (c SessionThreadTerminated) Default() SessionThreadTerminated {
 	return "session.thread_terminated"
 }
-func (c SessionUpdated) Default() SessionUpdated                           { return "session.updated" }
-func (c SessionUsage) Default() SessionUsage                               { return "session.usage" }
-func (c Sessions) Default() Sessions                                       { return "sessions" }
+func (c SessionUpdated) Default() SessionUpdated { return "session.updated" }
+func (c SessionUsage) Default() SessionUsage     { return "session.usage" }
+func (c Sessions) Default() Sessions             { return "sessions" }
+func (c BetaSettingsDocumentLimitExceededErrorCode) Default() BetaSettingsDocumentLimitExceededErrorCode {
+	return "settings_document_limit_exceeded"
+}
+func (c BetaSettingsHistoryLimitExceededErrorCode) Default() BetaSettingsHistoryLimitExceededErrorCode {
+	return "settings_history_limit_exceeded"
+}
 func (c SignatureDelta) Default() SignatureDelta                           { return "signature_delta" }
 func (c Skill) Default() Skill                                             { return "skill" }
 func (c SkillDeleted) Default() SkillDeleted                               { return "skill_deleted" }
@@ -1465,6 +1520,7 @@ func (c TunnelToken) Default() TunnelToken             { return "tunnel_token" }
 func (c Type) Default() Type                           { return "type" }
 func (c Unattached) Default() Unattached               { return "unattached" }
 func (c Unavailable) Default() Unavailable             { return "unavailable" }
+func (c Unknown) Default() Unknown                     { return "unknown" }
 func (c UnknownError) Default() UnknownError           { return "unknown_error" }
 func (c Unrestricted) Default() Unrestricted           { return "unrestricted" }
 func (c BetaUnsupportedCharsetErrorCode) Default() BetaUnsupportedCharsetErrorCode {
@@ -1585,6 +1641,7 @@ func (c Write) Default() Write                           { return "write" }
 func (c Xhigh) Default() Xhigh                           { return "xhigh" }
 func (c Zoom) Default() Zoom                             { return "zoom" }
 
+func (c Active) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Adaptive) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c Advisor) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Advisor20260301) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
@@ -1687,6 +1744,19 @@ func (c CitationsDelta) MarshalJSON() ([]byte, error)                 { return m
 func (c ClaudeCodeKeyCreatorNotMemberErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }
+func (c ClaudeCodeManagedSettingsConfiguration) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c ClaudeCodeRBACGroupDefaultManagedSettings) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c ClaudeCodeRBACGroupManagedSettings) MarshalJSON() ([]byte, error) { return marshalString(c) }
+func (c ClaudeCodeRBACGroupManagedSettingsDeleted) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c ClaudeCodeRBACGroupManagedSettingsSummary) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
 func (c ClaudeCodeVersionTooOldErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
 func (c BetaClaudeTagWritesNotEnabledErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
@@ -1698,6 +1768,7 @@ func (c ClientSecretPost) MarshalJSON() ([]byte, error)                      { r
 func (c CloseTab) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Cloud) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c CMEKContextUnavailableErrorCode) MarshalJSON() ([]byte, error)       { return marshalString(c) }
+func (c BetaCMEKFeatureUnsupportedErrorCode) MarshalJSON() ([]byte, error)   { return marshalString(c) }
 func (c CMEKKeyDisabledErrorCode) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c CMEKKeyNetworkBlockedErrorCode) MarshalJSON() ([]byte, error)        { return marshalString(c) }
 func (c CMEKKeyUnreachableErrorCode) MarshalJSON() ([]byte, error)           { return marshalString(c) }
@@ -1763,6 +1834,7 @@ func (c CursorPosition) MarshalJSON() ([]byte, error)                      { ret
 func (c Custom) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Default) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c Delete) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
+func (c Deleted) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c Deny) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c Deployment) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c DeploymentRun) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
@@ -1977,11 +2049,19 @@ func (c RateLimitError) MarshalJSON() ([]byte, error)                        { r
 func (c RBACGroup) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c RBACGroupDeleted) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c RBACGroupGrantsOwnerAccessErrorCode) MarshalJSON() ([]byte, error)   { return marshalString(c) }
-func (c RBACGroupMember) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
-func (c RBACGroupMemberDeleted) MarshalJSON() ([]byte, error)                { return marshalString(c) }
+func (c BetaRBACGroupManagedSettingsNotFoundErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c RBACGroupMember) MarshalJSON() ([]byte, error)                { return marshalString(c) }
+func (c RBACGroupMemberDeleted) MarshalJSON() ([]byte, error)         { return marshalString(c) }
+func (c BetaRBACGroupNotFoundErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
+func (c BetaRBACGroupOrderLimitExceededErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
 func (c RBACGroupOwnerAccessUnconfirmedErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }
+func (c RBACGroups) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c RBACRole) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c RBACRoleNotFoundErrorCode) MarshalJSON() ([]byte, error)           { return marshalString(c) }
 func (c RBACRolePermission) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
@@ -2006,6 +2086,7 @@ func (c RequestBodyEncodingInvalidErrorCode) MarshalJSON() ([]byte, error) { ret
 func (c RequestBodyEncodingUnsupportedErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }
+func (c BetaRequestBodyTimeoutErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
 func (c RequestBodyTooLargeAfterDecodingErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }
@@ -2068,11 +2149,17 @@ func (c SessionThreadTerminated) MarshalJSON() ([]byte, error)              { re
 func (c SessionUpdated) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c SessionUsage) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c Sessions) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
-func (c SignatureDelta) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
-func (c Skill) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
-func (c SkillDeleted) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
-func (c BetaSkillNameTakenErrorCode) MarshalJSON() ([]byte, error)          { return marshalString(c) }
-func (c SkillNotFoundError) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
+func (c BetaSettingsDocumentLimitExceededErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c BetaSettingsHistoryLimitExceededErrorCode) MarshalJSON() ([]byte, error) {
+	return marshalString(c)
+}
+func (c SignatureDelta) MarshalJSON() ([]byte, error)              { return marshalString(c) }
+func (c Skill) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
+func (c SkillDeleted) MarshalJSON() ([]byte, error)                { return marshalString(c) }
+func (c BetaSkillNameTakenErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
+func (c SkillNotFoundError) MarshalJSON() ([]byte, error)          { return marshalString(c) }
 func (c SkillReadBlockedUndecryptableErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }
@@ -2181,6 +2268,7 @@ func (c TunnelToken) MarshalJSON() ([]byte, error)                        { retu
 func (c Type) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c Unattached) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c Unavailable) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
+func (c Unknown) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c UnknownError) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Unrestricted) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c BetaUnsupportedCharsetErrorCode) MarshalJSON() ([]byte, error)    { return marshalString(c) }

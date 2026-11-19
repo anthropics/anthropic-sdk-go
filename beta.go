@@ -137,8 +137,9 @@ const (
 	// Deprecated: This value is no longer needed. Remove it from your requests.
 	AnthropicBetaCacheDiagnosis2026_04_07 AnthropicBeta = "cache-diagnosis-2026-04-07"
 	// Deprecated: This value is no longer needed. Remove it from your requests.
-	AnthropicBetaCEUserManagement2026_07_13    AnthropicBeta = "ce-user-management-2026-07-13"
-	AnthropicBetaUserProfilesBilling2026_10_01 AnthropicBeta = "user-profiles-billing-2026-10-01"
+	AnthropicBetaCEUserManagement2026_07_13            AnthropicBeta = "ce-user-management-2026-07-13"
+	AnthropicBetaCEClaudeCodeManagedSettings2026_10_06 AnthropicBeta = "ce-claude-code-managed-settings-2026-10-06"
+	AnthropicBetaUserProfilesBilling2026_10_01         AnthropicBeta = "user-profiles-billing-2026-10-01"
 )
 
 type BetaAPIErrorObject struct {

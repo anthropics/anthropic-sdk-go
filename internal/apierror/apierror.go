@@ -226,6 +226,14 @@ const (
 	// details.
 	ErrorCodeClaudeCodeVersionTooOld ErrorCode = "claude_code_version_too_old"
 
+	// This stored settings document currently cannot be read or replaced. Contact
+	// support, or, if you no longer need these settings, delete the group's settings
+	// or clear the default.
+	//
+	// Returned with HTTP status 400 and
+	// [shared.BetaCMEKFeatureUnsupportedErrorDetails] details.
+	ErrorCodeBetaCMEKFeatureUnsupported ErrorCode = "cmek_feature_unsupported"
+
 	// The workspace's customer-managed encryption key is disabled or revoked.
 	// Re-enable the key, then retry.
 	//
@@ -413,6 +421,13 @@ const (
 	// [shared.RBACGroupGrantsOwnerAccessErrorDetails] details.
 	ErrorCodeRBACGroupGrantsOwnerAccess ErrorCode = "rbac_group_grants_owner_access"
 
+	// The RBAC Group order already has the most groups allowed. Delete another group's
+	// settings first.
+	//
+	// Returned with HTTP status 400 and
+	// [shared.BetaRBACGroupOrderLimitExceededErrorDetails] details.
+	ErrorCodeBetaRBACGroupOrderLimitExceeded ErrorCode = "rbac_group_order_limit_exceeded"
+
 	// The API could not finish checking whether an RBAC Group in the request grants
 	// owner access, so it made no change. Retrying the same request will not help.
 	// Make the change in the organization's admin settings in Claude.
@@ -433,11 +448,38 @@ const (
 	// [shared.RequestBodyEncodingUnsupportedErrorDetails] details.
 	ErrorCodeRequestBodyEncodingUnsupported ErrorCode = "request_body_encoding_unsupported"
 
+	// The request body did not finish arriving in time, so nothing was done. Send a
+	// smaller body, or send it over a faster connection.
+	//
+	// Returned with HTTP status 400 and [shared.BetaRequestBodyTimeoutErrorDetails]
+	// details.
+	ErrorCodeBetaRequestBodyTimeout ErrorCode = "request_body_timeout"
+
 	// The version in `plugin_version_id` did not pass its content scan, so it cannot
 	// be served.
 	//
 	// Returned with HTTP status 400 and [shared.BetaScanFailedErrorDetails] details.
 	ErrorCodeBetaScanFailed ErrorCode = "scan_failed"
+
+	// The organization has reached its limit of settings documents, counting unused
+	// ones. An owner can remove unused documents in claude.ai. Deleting a group's
+	// settings or clearing the default settings also frees a document, if nothing else
+	// uses it. None of these works once the organization has also reached its settings
+	// history limit.
+	//
+	// Returned with HTTP status 400 and
+	// [shared.BetaSettingsDocumentLimitExceededErrorDetails] details.
+	ErrorCodeBetaSettingsDocumentLimitExceeded ErrorCode = "settings_document_limit_exceeded"
+
+	// The organization has reached its settings history limit, a cap on stored
+	// versions of its settings documents. Nothing in the API or claude.ai lowers the
+	// count, so contact support. Creating or deleting group settings, creating or
+	// clearing the default settings, and reordering are refused. Changing the mode
+	// still works, unless it would copy the organization settings into a new default.
+	//
+	// Returned with HTTP status 400 and
+	// [shared.BetaSettingsHistoryLimitExceededErrorDetails] details.
+	ErrorCodeBetaSettingsHistoryLimitExceeded ErrorCode = "settings_history_limit_exceeded"
 
 	// The request set the channel up, and `settings` was then refused. The channel
 	// stays set up with every setting unset.
@@ -627,7 +669,7 @@ const (
 	ErrorCodeBetaOrganizationLevelScopedAPIKeyRequired ErrorCode = "organization_level_scoped_api_key_required"
 
 	// The request came from a Claude sandbox with restricted network access, which is
-	// not allowed to make this change. Send it from outside the sandbox, or from a
+	// not allowed to make this request. Send it from outside the sandbox, or from a
 	// sandbox with unrestricted network access.
 	//
 	// Returned with HTTP status 403 and [shared.SandboxEgressRestrictedErrorDetails]
@@ -666,6 +708,18 @@ const (
 	//
 	// Returned with HTTP status 404 and [shared.FileExpiredErrorDetails] details.
 	ErrorCodeFileExpired ErrorCode = "file_expired"
+
+	// This RBAC Group has no Claude Code managed settings.
+	//
+	// Returned with HTTP status 404 and
+	// [shared.BetaRBACGroupManagedSettingsNotFoundErrorDetails] details.
+	ErrorCodeBetaRBACGroupManagedSettingsNotFound ErrorCode = "rbac_group_managed_settings_not_found"
+
+	// The RBAC Group is not one of the organization's groups.
+	//
+	// Returned with HTTP status 404 and [shared.BetaRBACGroupNotFoundErrorDetails]
+	// details.
+	ErrorCodeBetaRBACGroupNotFound ErrorCode = "rbac_group_not_found"
 
 	// No RBAC Role with this ID was found.
 	//

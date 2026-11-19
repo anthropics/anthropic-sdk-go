@@ -302,6 +302,13 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [BetaUnsupportedCharsetErrorDetails], [BetaPluginNameTakenErrorDetails],
 // [BetaSkillNameTakenErrorDetails], [BetaRegistrationPendingErrorDetails],
 // [BetaScanFailedErrorDetails], [BetaScanPendingErrorDetails],
+// [BetaRequestBodyTimeoutErrorDetails],
+// [BetaSettingsDocumentLimitExceededErrorDetails],
+// [BetaSettingsHistoryLimitExceededErrorDetails],
+// [BetaCMEKFeatureUnsupportedErrorDetails],
+// [BetaRBACGroupManagedSettingsNotFoundErrorDetails],
+// [BetaRBACGroupOrderLimitExceededErrorDetails],
+// [BetaRBACGroupNotFoundErrorDetails],
 // [BetaSlackChannelSetUpSettingsRefusedErrorDetails],
 // [BetaAPIKeyScopeMissingErrorDetails],
 // [BetaClaudeTagWritesNotEnabledErrorDetails],
@@ -353,7 +360,10 @@ type ErrorDetailsUnion struct {
 	// "cannot_sign_out_privileged_member",
 	// "spend_limits_admin_api_writes_not_enabled", "unsupported_charset",
 	// "plugin_name_taken", "skill_name_taken", "registration_pending", "scan_failed",
-	// "scan_pending", "slack_channel_set_up_settings_refused",
+	// "scan_pending", "request_body_timeout", "settings_document_limit_exceeded",
+	// "settings_history_limit_exceeded", "cmek_feature_unsupported",
+	// "rbac_group_managed_settings_not_found", "rbac_group_order_limit_exceeded",
+	// "rbac_group_not_found", "slack_channel_set_up_settings_refused",
 	// "api_key_scope_missing", "claude_tag_writes_not_enabled",
 	// "compliance_configuration_restricted",
 	// "organization_level_scoped_api_key_required", "environment_not_found",
@@ -479,6 +489,13 @@ type anyErrorDetails interface {
 //	case shared.BetaRegistrationPendingErrorDetails:
 //	case shared.BetaScanFailedErrorDetails:
 //	case shared.BetaScanPendingErrorDetails:
+//	case shared.BetaRequestBodyTimeoutErrorDetails:
+//	case shared.BetaSettingsDocumentLimitExceededErrorDetails:
+//	case shared.BetaSettingsHistoryLimitExceededErrorDetails:
+//	case shared.BetaCMEKFeatureUnsupportedErrorDetails:
+//	case shared.BetaRBACGroupManagedSettingsNotFoundErrorDetails:
+//	case shared.BetaRBACGroupOrderLimitExceededErrorDetails:
+//	case shared.BetaRBACGroupNotFoundErrorDetails:
 //	case shared.BetaSlackChannelSetUpSettingsRefusedErrorDetails:
 //	case shared.BetaAPIKeyScopeMissingErrorDetails:
 //	case shared.BetaClaudeTagWritesNotEnabledErrorDetails:
@@ -658,6 +675,20 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsScanFailed()
 	case "scan_pending":
 		return u.AsScanPending()
+	case "request_body_timeout":
+		return u.AsRequestBodyTimeout()
+	case "settings_document_limit_exceeded":
+		return u.AsSettingsDocumentLimitExceeded()
+	case "settings_history_limit_exceeded":
+		return u.AsSettingsHistoryLimitExceeded()
+	case "cmek_feature_unsupported":
+		return u.AsCMEKFeatureUnsupported()
+	case "rbac_group_managed_settings_not_found":
+		return u.AsRBACGroupManagedSettingsNotFound()
+	case "rbac_group_order_limit_exceeded":
+		return u.AsRBACGroupOrderLimitExceeded()
+	case "rbac_group_not_found":
+		return u.AsRBACGroupNotFound()
 	case "slack_channel_set_up_settings_refused":
 		return u.AsSlackChannelSetUpSettingsRefused()
 	case "api_key_scope_missing":
@@ -1088,6 +1119,41 @@ func (u ErrorDetailsUnion) AsScanFailed() (v BetaScanFailedErrorDetails) {
 }
 
 func (u ErrorDetailsUnion) AsScanPending() (v BetaScanPendingErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsRequestBodyTimeout() (v BetaRequestBodyTimeoutErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsSettingsDocumentLimitExceeded() (v BetaSettingsDocumentLimitExceededErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsSettingsHistoryLimitExceeded() (v BetaSettingsHistoryLimitExceededErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsCMEKFeatureUnsupported() (v BetaCMEKFeatureUnsupportedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsRBACGroupManagedSettingsNotFound() (v BetaRBACGroupManagedSettingsNotFoundErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsRBACGroupOrderLimitExceeded() (v BetaRBACGroupOrderLimitExceededErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsRBACGroupNotFound() (v BetaRBACGroupNotFoundErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1625,7 +1691,7 @@ func (r *RequestBodyTooLargeAfterDecodingErrorDetails) UnmarshalJSON(data []byte
 func (RequestBodyTooLargeAfterDecodingErrorDetails) ImplErrorDetailsUnion() {}
 
 // The request came from a Claude sandbox with restricted network access, which is
-// not allowed to make this change. Send it from outside the sandbox, or from a
+// not allowed to make this request. Send it from outside the sandbox, or from a
 // sandbox with unrestricted network access.
 type SandboxEgressRestrictedErrorDetails struct {
 	ErrorCode constant.SandboxEgressRestrictedErrorCode `json:"error_code" default:"sandbox_egress_restricted"`
@@ -3009,6 +3075,151 @@ func (r *BetaScanPendingErrorDetails) UnmarshalJSON(data []byte) error {
 }
 
 func (BetaScanPendingErrorDetails) ImplErrorDetailsUnion() {}
+
+// The request body did not finish arriving in time, so nothing was done. Send a
+// smaller body, or send it over a faster connection.
+type BetaRequestBodyTimeoutErrorDetails struct {
+	ErrorCode constant.BetaRequestBodyTimeoutErrorCode `json:"error_code" default:"request_body_timeout"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaRequestBodyTimeoutErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaRequestBodyTimeoutErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaRequestBodyTimeoutErrorDetails) ImplErrorDetailsUnion() {}
+
+// The organization has reached its limit of settings documents, counting unused
+// ones. An owner can remove unused documents in claude.ai. Deleting a group's
+// settings or clearing the default settings also frees a document, if nothing else
+// uses it. None of these works once the organization has also reached its settings
+// history limit.
+type BetaSettingsDocumentLimitExceededErrorDetails struct {
+	ErrorCode constant.BetaSettingsDocumentLimitExceededErrorCode `json:"error_code" default:"settings_document_limit_exceeded"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaSettingsDocumentLimitExceededErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaSettingsDocumentLimitExceededErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaSettingsDocumentLimitExceededErrorDetails) ImplErrorDetailsUnion() {}
+
+// The organization has reached its settings history limit, a cap on stored
+// versions of its settings documents. Nothing in the API or claude.ai lowers the
+// count, so contact support. Creating or deleting group settings, creating or
+// clearing the default settings, and reordering are refused. Changing the mode
+// still works, unless it would copy the organization settings into a new default.
+type BetaSettingsHistoryLimitExceededErrorDetails struct {
+	ErrorCode constant.BetaSettingsHistoryLimitExceededErrorCode `json:"error_code" default:"settings_history_limit_exceeded"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaSettingsHistoryLimitExceededErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaSettingsHistoryLimitExceededErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaSettingsHistoryLimitExceededErrorDetails) ImplErrorDetailsUnion() {}
+
+// This stored settings document currently cannot be read or replaced. Contact
+// support, or, if you no longer need these settings, delete the group's settings
+// or clear the default.
+type BetaCMEKFeatureUnsupportedErrorDetails struct {
+	ErrorCode constant.BetaCMEKFeatureUnsupportedErrorCode `json:"error_code" default:"cmek_feature_unsupported"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCMEKFeatureUnsupportedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaCMEKFeatureUnsupportedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaCMEKFeatureUnsupportedErrorDetails) ImplErrorDetailsUnion() {}
+
+// This RBAC Group has no Claude Code managed settings.
+type BetaRBACGroupManagedSettingsNotFoundErrorDetails struct {
+	ErrorCode constant.BetaRBACGroupManagedSettingsNotFoundErrorCode `json:"error_code" default:"rbac_group_managed_settings_not_found"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaRBACGroupManagedSettingsNotFoundErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaRBACGroupManagedSettingsNotFoundErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaRBACGroupManagedSettingsNotFoundErrorDetails) ImplErrorDetailsUnion() {}
+
+// The RBAC Group order already has the most groups allowed. Delete another group's
+// settings first.
+type BetaRBACGroupOrderLimitExceededErrorDetails struct {
+	ErrorCode constant.BetaRBACGroupOrderLimitExceededErrorCode `json:"error_code" default:"rbac_group_order_limit_exceeded"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaRBACGroupOrderLimitExceededErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaRBACGroupOrderLimitExceededErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaRBACGroupOrderLimitExceededErrorDetails) ImplErrorDetailsUnion() {}
+
+// The RBAC Group is not one of the organization's groups.
+type BetaRBACGroupNotFoundErrorDetails struct {
+	ErrorCode constant.BetaRBACGroupNotFoundErrorCode `json:"error_code" default:"rbac_group_not_found"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaRBACGroupNotFoundErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaRBACGroupNotFoundErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaRBACGroupNotFoundErrorDetails) ImplErrorDetailsUnion() {}
 
 // The request set the channel up, and `settings` was then refused. The channel
 // stays set up with every setting unset.

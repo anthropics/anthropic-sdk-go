@@ -14,6 +14,7 @@ import (
 	"sync/atomic"
 	"testing"
 	"testing/iotest"
+	"testing/synctest"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go/v2"
@@ -83,6 +84,42 @@ func TestUserAgentHeader(t *testing.T) {
 	})
 	if userAgent != fmt.Sprintf("Anthropic/Go %s", internal.PackageVersion) {
 		t.Errorf("Expected User-Agent to be correct, but got: %#v", userAgent)
+	}
+}
+
+func TestEmptyBaseURLEnvCountsAsUnset(t *testing.T) {
+	t.Setenv("ANTHROPIC_BASE_URL", "")
+	var requestURL string
+	client := anthropic.NewClient(
+		option.WithAPIKey("my-anthropic-api-key"),
+		option.WithHTTPClient(&http.Client{
+			Transport: &closureTransport{
+				fn: func(req *http.Request) (*http.Response, error) {
+					requestURL = req.URL.String()
+					return &http.Response{
+						StatusCode: http.StatusOK,
+					}, nil
+				},
+			},
+		}),
+	)
+
+	_, _ = client.Messages.New(context.Background(), anthropic.MessageNewParams{
+		MaxTokens: 1024,
+		Messages: []anthropic.MessageParam{{
+			OfUser: &anthropic.UserMessageParam{
+				Content: []anthropic.ContentBlockParamUnion{{
+					OfText: &anthropic.TextBlockParam{
+						Text: "x",
+					},
+				}},
+			},
+		}},
+		Model: anthropic.ModelClaudeOpus5_5,
+	})
+
+	if want := "https://api.anthropic.com"; !strings.HasPrefix(requestURL, want) {
+		t.Errorf("Expected the request URL to start with %q, got %q", want, requestURL)
 	}
 }
 
@@ -1327,142 +1364,27 @@ func TestTelemetryPanicsStayOutOfTheCall(t *testing.T) {
 }
 
 func TestContextDeadline(t *testing.T) {
-	testTimeout := time.After(3 * time.Second)
-	testDone := make(chan struct{})
+	synctest.Test(t, func(t *testing.T) {
+		testTimeout := time.After(3 * time.Second)
+		testDone := make(chan struct{})
 
-	deadline := time.Now().Add(100 * time.Millisecond)
-	deadlineCtx, cancel := context.WithDeadline(context.Background(), deadline)
-	defer cancel()
+		deadline := time.Now().Add(100 * time.Millisecond)
+		deadlineCtx, cancel := context.WithDeadline(context.Background(), deadline)
+		defer cancel()
 
-	go func() {
-		client := anthropic.NewClient(
-			option.WithAPIKey("my-anthropic-api-key"),
-			option.WithHTTPClient(&http.Client{
-				Transport: &closureTransport{
-					fn: func(req *http.Request) (*http.Response, error) {
-						<-req.Context().Done()
-						return nil, req.Context().Err()
-					},
-				},
-			}),
-		)
-		_, err := client.Messages.New(deadlineCtx, anthropic.MessageNewParams{
-			MaxTokens: 1024,
-			Messages: []anthropic.MessageParam{{
-				OfUser: &anthropic.UserMessageParam{
-					Content: []anthropic.ContentBlockParamUnion{{
-						OfText: &anthropic.TextBlockParam{
-							Text: "x",
+		go func() {
+			client := anthropic.NewClient(
+				option.WithAPIKey("my-anthropic-api-key"),
+				option.WithHTTPClient(&http.Client{
+					Transport: &closureTransport{
+						fn: func(req *http.Request) (*http.Response, error) {
+							<-req.Context().Done()
+							return nil, req.Context().Err()
 						},
-					}},
-				},
-			}},
-			Model: anthropic.ModelClaudeOpus5_5,
-		})
-		if err == nil {
-			t.Error("expected there to be a deadline error")
-		}
-		close(testDone)
-	}()
-
-	select {
-	case <-testTimeout:
-		t.Fatal("client didn't finish in time")
-	case <-testDone:
-		if diff := time.Since(deadline); diff < -30*time.Millisecond || 30*time.Millisecond < diff {
-			t.Fatalf("client did not return within 30ms of context deadline, got %s", diff)
-		}
-	}
-}
-
-func TestContextDeadlineStreaming(t *testing.T) {
-	testTimeout := time.After(3 * time.Second)
-	testDone := make(chan struct{})
-
-	deadline := time.Now().Add(100 * time.Millisecond)
-	deadlineCtx, cancel := context.WithDeadline(context.Background(), deadline)
-	defer cancel()
-
-	go func() {
-		client := anthropic.NewClient(
-			option.WithAPIKey("my-anthropic-api-key"),
-			option.WithHTTPClient(&http.Client{
-				Transport: &closureTransport{
-					fn: func(req *http.Request) (*http.Response, error) {
-						return &http.Response{
-							StatusCode: 200,
-							Status:     "200 OK",
-							Body: io.NopCloser(
-								io.Reader(readerFunc(func([]byte) (int, error) {
-									<-req.Context().Done()
-									return 0, req.Context().Err()
-								})),
-							),
-						}, nil
 					},
-				},
-			}),
-		)
-		stream := client.Messages.NewStreaming(deadlineCtx, anthropic.MessageNewParams{
-			MaxTokens: 1024,
-			Messages: []anthropic.MessageParam{{
-				OfUser: &anthropic.UserMessageParam{
-					Content: []anthropic.ContentBlockParamUnion{{
-						OfText: &anthropic.TextBlockParam{
-							Text: "x",
-						},
-					}},
-				},
-			}},
-			Model: anthropic.ModelClaudeOpus5_5,
-		})
-		for stream.Next() {
-			_ = stream.Current()
-		}
-		if stream.Err() == nil {
-			t.Error("expected there to be a deadline error")
-		}
-		close(testDone)
-	}()
-
-	select {
-	case <-testTimeout:
-		t.Fatal("client didn't finish in time")
-	case <-testDone:
-		if diff := time.Since(deadline); diff < -30*time.Millisecond || 30*time.Millisecond < diff {
-			t.Fatalf("client did not return within 30ms of context deadline, got %s", diff)
-		}
-	}
-}
-
-func TestContextDeadlineStreamingWithRequestTimeout(t *testing.T) {
-	testTimeout := time.After(3 * time.Second)
-	testDone := make(chan struct{})
-	deadline := time.Now().Add(100 * time.Millisecond)
-
-	go func() {
-		client := anthropic.NewClient(
-			option.WithAPIKey("my-anthropic-api-key"),
-			option.WithHTTPClient(&http.Client{
-				Transport: &closureTransport{
-					fn: func(req *http.Request) (*http.Response, error) {
-						return &http.Response{
-							StatusCode: 200,
-							Status:     "200 OK",
-							Body: io.NopCloser(
-								io.Reader(readerFunc(func([]byte) (int, error) {
-									<-req.Context().Done()
-									return 0, req.Context().Err()
-								})),
-							),
-						}, nil
-					},
-				},
-			}),
-		)
-		stream := client.Messages.NewStreaming(
-			context.Background(),
-			anthropic.MessageNewParams{
+				}),
+			)
+			_, err := client.Messages.New(deadlineCtx, anthropic.MessageNewParams{
 				MaxTokens: 1024,
 				Messages: []anthropic.MessageParam{{
 					OfUser: &anthropic.UserMessageParam{
@@ -1474,26 +1396,147 @@ func TestContextDeadlineStreamingWithRequestTimeout(t *testing.T) {
 					},
 				}},
 				Model: anthropic.ModelClaudeOpus5_5,
-			},
-			option.WithRequestTimeout((100 * time.Millisecond)),
-		)
-		for stream.Next() {
-			_ = stream.Current()
-		}
-		if stream.Err() == nil {
-			t.Error("expected there to be a deadline error")
-		}
-		close(testDone)
-	}()
+			})
+			if err == nil {
+				t.Error("expected there to be a deadline error")
+			}
+			close(testDone)
+		}()
 
-	select {
-	case <-testTimeout:
-		t.Fatal("client didn't finish in time")
-	case <-testDone:
-		if diff := time.Since(deadline); diff < -30*time.Millisecond || 30*time.Millisecond < diff {
-			t.Fatalf("client did not return within 30ms of context deadline, got %s", diff)
+		select {
+		case <-testTimeout:
+			t.Fatal("client didn't finish in time")
+		case <-testDone:
+			if diff := time.Since(deadline); diff != 0 {
+				t.Fatalf("client returned %s after the context deadline, want 0s", diff)
+			}
 		}
-	}
+	})
+}
+
+func TestContextDeadlineStreaming(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		testTimeout := time.After(3 * time.Second)
+		testDone := make(chan struct{})
+
+		deadline := time.Now().Add(100 * time.Millisecond)
+		deadlineCtx, cancel := context.WithDeadline(context.Background(), deadline)
+		defer cancel()
+
+		go func() {
+			client := anthropic.NewClient(
+				option.WithAPIKey("my-anthropic-api-key"),
+				option.WithHTTPClient(&http.Client{
+					Transport: &closureTransport{
+						fn: func(req *http.Request) (*http.Response, error) {
+							return &http.Response{
+								StatusCode: 200,
+								Status:     "200 OK",
+								Body: io.NopCloser(
+									io.Reader(readerFunc(func([]byte) (int, error) {
+										<-req.Context().Done()
+										return 0, req.Context().Err()
+									})),
+								),
+							}, nil
+						},
+					},
+				}),
+			)
+			stream := client.Messages.NewStreaming(deadlineCtx, anthropic.MessageNewParams{
+				MaxTokens: 1024,
+				Messages: []anthropic.MessageParam{{
+					OfUser: &anthropic.UserMessageParam{
+						Content: []anthropic.ContentBlockParamUnion{{
+							OfText: &anthropic.TextBlockParam{
+								Text: "x",
+							},
+						}},
+					},
+				}},
+				Model: anthropic.ModelClaudeOpus5_5,
+			})
+			for stream.Next() {
+				_ = stream.Current()
+			}
+			if stream.Err() == nil {
+				t.Error("expected there to be a deadline error")
+			}
+			close(testDone)
+		}()
+
+		select {
+		case <-testTimeout:
+			t.Fatal("client didn't finish in time")
+		case <-testDone:
+			if diff := time.Since(deadline); diff != 0 {
+				t.Fatalf("client returned %s after the context deadline, want 0s", diff)
+			}
+		}
+	})
+}
+
+func TestContextDeadlineStreamingWithRequestTimeout(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		testTimeout := time.After(3 * time.Second)
+		testDone := make(chan struct{})
+		deadline := time.Now().Add(100 * time.Millisecond)
+
+		go func() {
+			client := anthropic.NewClient(
+				option.WithAPIKey("my-anthropic-api-key"),
+				option.WithHTTPClient(&http.Client{
+					Transport: &closureTransport{
+						fn: func(req *http.Request) (*http.Response, error) {
+							return &http.Response{
+								StatusCode: 200,
+								Status:     "200 OK",
+								Body: io.NopCloser(
+									io.Reader(readerFunc(func([]byte) (int, error) {
+										<-req.Context().Done()
+										return 0, req.Context().Err()
+									})),
+								),
+							}, nil
+						},
+					},
+				}),
+			)
+			stream := client.Messages.NewStreaming(
+				context.Background(),
+				anthropic.MessageNewParams{
+					MaxTokens: 1024,
+					Messages: []anthropic.MessageParam{{
+						OfUser: &anthropic.UserMessageParam{
+							Content: []anthropic.ContentBlockParamUnion{{
+								OfText: &anthropic.TextBlockParam{
+									Text: "x",
+								},
+							}},
+						},
+					}},
+					Model: anthropic.ModelClaudeOpus5_5,
+				},
+				option.WithRequestTimeout((100 * time.Millisecond)),
+			)
+			for stream.Next() {
+				_ = stream.Current()
+			}
+			if stream.Err() == nil {
+				t.Error("expected there to be a deadline error")
+			}
+			close(testDone)
+		}()
+
+		select {
+		case <-testTimeout:
+			t.Fatal("client didn't finish in time")
+		case <-testDone:
+			if diff := time.Since(deadline); diff != 0 {
+				t.Fatalf("client returned %s after the context deadline, want 0s", diff)
+			}
+		}
+	})
 }
 
 func TestStreamErrorHasNoTrailingNewline(t *testing.T) {

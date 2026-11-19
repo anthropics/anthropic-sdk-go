@@ -279,7 +279,13 @@ func (r *BetaWorkspaceRateLimitOrganizationSource) UnmarshalJSON(data []byte) er
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Rate limiter type.
+// Rate limiter type. `input_tokens_per_minute` counts every input token, cache
+// reads included. `input_tokens_per_minute_cache_aware` does not count cache
+// reads, and on current models the organization's input-token limit usually has
+// this type. A workspace limit of either type applies alongside the organization's
+// limit, not in place of it. Because cache reads count toward an
+// `input_tokens_per_minute` limit, it can reject requests that read mostly from
+// the cache while the organization's limit still has room.
 type BetaWorkspaceRateLimitType string
 
 const (
@@ -299,7 +305,13 @@ type BetaWorkspaceRateLimitUpdateValueParam struct {
 	// New limit value. Set to null to clear the workspace override and fall back to
 	// the organization limit.
 	Value param.Opt[int64] `json:"value,omitzero" api:"required"`
-	// Rate limiter type.
+	// Rate limiter type. `input_tokens_per_minute` counts every input token, cache
+	// reads included. `input_tokens_per_minute_cache_aware` does not count cache
+	// reads, and on current models the organization's input-token limit usually has
+	// this type. A workspace limit of either type applies alongside the organization's
+	// limit, not in place of it. Because cache reads count toward an
+	// `input_tokens_per_minute` limit, it can reject requests that read mostly from
+	// the cache while the organization's limit still has room.
 	//
 	// Any of "fast_itpmca", "fast_otpm", "input_tokens_per_minute",
 	// "input_tokens_per_minute_cache_aware", "output_tokens_per_minute",
@@ -325,7 +337,7 @@ type BetaWorkspaceRateLimitValue struct {
 	// `include_inherited` is `true`, and then `value` equals `org_limit`.
 	Source BetaWorkspaceRateLimitValueSourceUnion `json:"source" api:"required"`
 	// The limiter type (for example, `requests_per_minute` or
-	// `input_tokens_per_minute`).
+	// `input_tokens_per_minute_cache_aware`).
 	Type string `json:"type" api:"required"`
 	// The workspace's value for this limiter type: the workspace-level override when
 	// `source.type` is `workspace`, otherwise the organization's value.

@@ -66,7 +66,7 @@ func defaultClientOptions(credentials bool) []option.RequestOption {
 		option.WithHTTPClient(requestconfig.DefaultHTTPClient()),
 		option.WithEnvironmentProduction(),
 	}
-	if o, ok := os.LookupEnv("ANTHROPIC_BASE_URL"); ok {
+	if o, ok := os.LookupEnv("ANTHROPIC_BASE_URL"); ok && o != "" {
 		defaults = append(defaults, option.WithBaseURL(o))
 	}
 

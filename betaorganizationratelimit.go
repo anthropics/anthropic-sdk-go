@@ -330,7 +330,7 @@ func (r *BetaOrganizationRateLimitTokenCountGroup) UnmarshalJSON(data []byte) er
 
 type BetaOrganizationRateLimitValue struct {
 	// The limiter type (for example, `requests_per_minute` or
-	// `input_tokens_per_minute`).
+	// `input_tokens_per_minute_cache_aware`).
 	Type string `json:"type" api:"required"`
 	// The configured limit value for this limiter type.
 	Value int64 `json:"value" api:"required"`

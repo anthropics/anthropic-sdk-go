@@ -65,6 +65,7 @@ func NewBetaMessageService(opts ...option.RequestOption) (r BetaMessageService) 
 //   - [ErrorCodeCompactionSignatureInvalid] (HTTP 400)
 //   - [ErrorCodeCompactionTooManyToolReferences] (HTTP 400)
 //   - [ErrorCodeCompactionToolChangesMismatch] (HTTP 400)
+//   - [ErrorCodeImageDimensionsTooLarge] (HTTP 400)
 //   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 //   - [ErrorCodeRequestBodyEncodingInvalid] (HTTP 400)
 //   - [ErrorCodeRequestBodyEncodingUnsupported] (HTTP 400)
@@ -158,6 +159,7 @@ func (r *BetaMessageService) New(ctx context.Context, params BetaMessageNewParam
 //   - [ErrorCodeCompactionSignatureInvalid] (HTTP 400)
 //   - [ErrorCodeCompactionTooManyToolReferences] (HTTP 400)
 //   - [ErrorCodeCompactionToolChangesMismatch] (HTTP 400)
+//   - [ErrorCodeImageDimensionsTooLarge] (HTTP 400)
 //   - [ErrorCodeOrganizationOnHold] (HTTP 400)
 //   - [ErrorCodeRequestBodyEncodingInvalid] (HTTP 400)
 //   - [ErrorCodeRequestBodyEncodingUnsupported] (HTTP 400)
@@ -26483,6 +26485,12 @@ type BetaMessageNewParams struct {
 	// to the profile, or has not allowed your organization to bill it, the request is
 	// rejected rather than billed to you. Omit the field, or send `"bill_to": "self"`
 	// (the default), to be billed as usual.
+	//
+	// Message Batches does not currently support billing the customer behind a user
+	// profile. In a batch, omit the field or send `"bill_to": "self"`. A request in a
+	// batch that sets `"bill_to": "user_profile"` gets an `errored` result with an
+	// `invalid_request_error`, nobody is billed for it, and the batch's other requests
+	// run as usual.
 	BillingPolicy BetaBillingPolicyParam `json:"billing_policy,omitzero"`
 	// Top-level cache control automatically applies a cache_control marker to the last
 	// cacheable block in the request.

@@ -253,7 +253,8 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [CompactionNothingToSummarizeErrorDetails],
 // [CompactionSignatureInvalidErrorDetails],
 // [CompactionTooManyToolReferencesErrorDetails],
-// [CompactionToolChangesMismatchErrorDetails], [OrganizationOnHoldErrorDetails],
+// [CompactionToolChangesMismatchErrorDetails],
+// [ImageDimensionsTooLargeErrorDetails], [OrganizationOnHoldErrorDetails],
 // [RequestBodyEncodingInvalidErrorDetails],
 // [RequestBodyEncodingUnsupportedErrorDetails],
 // [ThreadAlreadyContinuedErrorDetails], [ThreadContinueInFlightErrorDetails],
@@ -329,11 +330,12 @@ type ErrorDetailsUnion struct {
 	// "compaction_content_mismatch", "compaction_incomplete_turn",
 	// "compaction_nothing_to_summarize", "compaction_signature_invalid",
 	// "compaction_too_many_tool_references", "compaction_tool_changes_mismatch",
-	// "organization_on_hold", "request_body_encoding_invalid",
-	// "request_body_encoding_unsupported", "thread_already_continued",
-	// "thread_continue_in_flight", "thread_fingerprint_mismatch",
-	// "thread_unsupported_request", "tool_name_conflict", "tool_reference_unresolved",
-	// "user_profile_required", "linked_organization_billing_unavailable",
+	// "image_dimensions_too_large", "organization_on_hold",
+	// "request_body_encoding_invalid", "request_body_encoding_unsupported",
+	// "thread_already_continued", "thread_continue_in_flight",
+	// "thread_fingerprint_mismatch", "thread_unsupported_request",
+	// "tool_name_conflict", "tool_reference_unresolved", "user_profile_required",
+	// "linked_organization_billing_unavailable",
 	// "linked_organization_spend_limit_reached",
 	// "user_profile_billing_not_authorized", "user_profile_not_billable",
 	// "thread_not_found", "skill_read_blocked_undecryptable",
@@ -371,6 +373,10 @@ type ErrorDetailsUnion struct {
 	// "slack_channel_set_up_settings_conflict", "bundle_attachment_not_supported",
 	// "bundle_on_call".
 	ErrorCode string `json:"error_code"`
+	// This field is from variant [ImageDimensionsTooLargeErrorDetails].
+	MaxSideLengthPixels int64 `json:"max_side_length_pixels"`
+	// This field is from variant [ImageDimensionsTooLargeErrorDetails].
+	Paths []string `json:"paths"`
 	// This field is from variant [OrganizationOnHoldErrorDetails].
 	AppealURL string `json:"appeal_url"`
 	// This field is from variant [ThreadUnsupportedRequestErrorDetails].
@@ -385,16 +391,18 @@ type ErrorDetailsUnion struct {
 	PluginVersionID string `json:"plugin_version_id"`
 	SlackChannelID  string `json:"slack_channel_id"`
 	JSON            struct {
-		ErrorCode       respjson.Field
-		AppealURL       respjson.Field
-		Unsupported     respjson.Field
-		Field           respjson.Field
-		CurrentState    respjson.Field
-		PluginID        respjson.Field
-		SkillName       respjson.Field
-		PluginVersionID respjson.Field
-		SlackChannelID  respjson.Field
-		raw             string
+		ErrorCode           respjson.Field
+		MaxSideLengthPixels respjson.Field
+		Paths               respjson.Field
+		AppealURL           respjson.Field
+		Unsupported         respjson.Field
+		Field               respjson.Field
+		CurrentState        respjson.Field
+		PluginID            respjson.Field
+		SkillName           respjson.Field
+		PluginVersionID     respjson.Field
+		SlackChannelID      respjson.Field
+		raw                 string
 	} `json:"-"`
 }
 
@@ -420,6 +428,7 @@ type anyErrorDetails interface {
 //	case shared.CompactionSignatureInvalidErrorDetails:
 //	case shared.CompactionTooManyToolReferencesErrorDetails:
 //	case shared.CompactionToolChangesMismatchErrorDetails:
+//	case shared.ImageDimensionsTooLargeErrorDetails:
 //	case shared.OrganizationOnHoldErrorDetails:
 //	case shared.RequestBodyEncodingInvalidErrorDetails:
 //	case shared.RequestBodyEncodingUnsupportedErrorDetails:
@@ -537,6 +546,8 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsCompactionTooManyToolReferences()
 	case "compaction_tool_changes_mismatch":
 		return u.AsCompactionToolChangesMismatch()
+	case "image_dimensions_too_large":
+		return u.AsImageDimensionsTooLarge()
 	case "organization_on_hold":
 		return u.AsOrganizationOnHold()
 	case "request_body_encoding_invalid":
@@ -774,6 +785,11 @@ func (u ErrorDetailsUnion) AsCompactionTooManyToolReferences() (v CompactionTooM
 }
 
 func (u ErrorDetailsUnion) AsCompactionToolChangesMismatch() (v CompactionToolChangesMismatchErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsImageDimensionsTooLarge() (v ImageDimensionsTooLargeErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1888,6 +1904,36 @@ func (r *CompactionToolChangesMismatchErrorDetails) UnmarshalJSON(data []byte) e
 
 func (CompactionToolChangesMismatchErrorDetails) ImplErrorDetailsUnion() {}
 
+// The longest side of one or more images in the request exceeds the image size
+// limit. Scale each image in `paths` so that neither side exceeds
+// `max_side_length_pixels`, or remove it, then retry.
+type ImageDimensionsTooLargeErrorDetails struct {
+	ErrorCode constant.ImageDimensionsTooLargeErrorCode `json:"error_code" default:"image_dimensions_too_large"`
+	// The limit the images exceeded: the largest width or height, in pixels, that an
+	// image on this request may have.
+	MaxSideLengthPixels int64 `json:"max_side_length_pixels" api:"required"`
+	// The position of every image over the limit, in the order you sent them, nested
+	// blocks included, such as `messages.0.content.1`, or
+	// `messages.0.content.1.content.0` for an image in a `tool_result` block.
+	Paths []string `json:"paths" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode           respjson.Field
+		MaxSideLengthPixels respjson.Field
+		Paths               respjson.Field
+		ExtraFields         map[string]respjson.Field
+		raw                 string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ImageDimensionsTooLargeErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ImageDimensionsTooLargeErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (ImageDimensionsTooLargeErrorDetails) ImplErrorDetailsUnion() {}
+
 // The response that `previous_message_id` names has already been continued, and
 // each response can be continued only once. Continue from the Thread's most recent
 // response `id`.
@@ -2049,7 +2095,7 @@ func (r *UserProfileRequiredErrorDetails) UnmarshalJSON(data []byte) error {
 
 func (UserProfileRequiredErrorDetails) ImplErrorDetailsUnion() {}
 
-// The customer that the named user profile represents has not authorized the
+// The customer that the request's user profile represents has not authorized the
 // caller to bill them, or the authorization that the request's credential uses has
 // ended. The response does not say which applies.
 type UserProfileBillingNotAuthorizedErrorDetails struct {
@@ -2070,8 +2116,8 @@ func (r *UserProfileBillingNotAuthorizedErrorDetails) UnmarshalJSON(data []byte)
 
 func (UserProfileBillingNotAuthorizedErrorDetails) ImplErrorDetailsUnion() {}
 
-// The caller is not allowed to bill the user profile that the request names. The
-// response gives no more specific error code and does not say what the reason is.
+// The request's user profile cannot be billed. The response gives no more specific
+// error code and does not say what the reason is.
 type UserProfileNotBillableErrorDetails struct {
 	ErrorCode constant.UserProfileNotBillableErrorCode `json:"error_code" default:"user_profile_not_billable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].

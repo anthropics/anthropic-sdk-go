@@ -3,8 +3,10 @@ package anthropic
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"slices"
+	"strings"
 
 	"github.com/anthropics/anthropic-sdk-go/v2/internal/apijson"
 	"github.com/anthropics/anthropic-sdk-go/v2/internal/paramutil"
@@ -40,7 +42,17 @@ func NewBetaOrganizationComplianceSettingService(opts ...option.RequestOption) (
 // organization, addressed without an identifier. The `state` field reflects
 // whether the Compliance API is enabled. An organization with a parent
 // organization reads the state inherited from the parent's configuration.
-func (r *BetaOrganizationComplianceSettingService) Get(ctx context.Context, opts ...option.RequestOption) (res *BetaComplianceSettings, err error) {
+func (r *BetaOrganizationComplianceSettingService) Get(ctx context.Context, query BetaOrganizationComplianceSettingGetParams, opts ...option.RequestOption) (res *BetaComplianceSettings, err error) {
+	if len(query.Betas) > 0 {
+		headerValues := make([]string, len(query.Betas))
+		for i, v := range query.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
+	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/compliance_settings"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
@@ -70,25 +82,68 @@ func (r *BetaOrganizationComplianceSettingService) Get(ctx context.Context, opts
 // [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
-func (r *BetaOrganizationComplianceSettingService) Update(ctx context.Context, body BetaOrganizationComplianceSettingUpdateParams, opts ...option.RequestOption) (res *BetaComplianceSettings, err error) {
+func (r *BetaOrganizationComplianceSettingService) Update(ctx context.Context, params BetaOrganizationComplianceSettingUpdateParams, opts ...option.RequestOption) (res *BetaComplianceSettings, err error) {
+	if len(params.Betas) > 0 {
+		headerValues := make([]string, len(params.Betas))
+		for i, v := range params.Betas {
+			headerValues[i] = fmt.Sprintf("%v", v)
+		}
+		opts = append(opts, requestconfig.RequestOptionFunc(func(cfg *requestconfig.RequestConfig) error {
+			cfg.Request.Header.Set("anthropic-beta", strings.Join(append(headerValues, cfg.Request.Header.Values("anthropic-beta")...), ","))
+			return nil
+		}))
+	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/compliance_settings"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
 	opts = append(opts, requestconfig.WithSpan("anthropic.organization.compliance_settings.update", "/v1/organizations/compliance_settings"))
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
+
+// Whether Access Transparency is on. Read-only.
+type BetaAccessTransparency struct {
+	// Any of "disabled", "enabled".
+	Type BetaAccessTransparencyType `json:"type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Type        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaAccessTransparency) RawJSON() string { return r.JSON.raw }
+func (r *BetaAccessTransparency) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaAccessTransparencyType string
+
+const (
+	BetaAccessTransparencyTypeDisabled BetaAccessTransparencyType = "disabled"
+	BetaAccessTransparencyTypeEnabled  BetaAccessTransparencyType = "enabled"
+)
 
 type BetaComplianceSettings struct {
 	// Whether the Compliance API is enabled for this organization.
 	State BetaComplianceSettingsStateUnion `json:"state" api:"required"`
 	Type  constant.ComplianceSettings      `json:"type" default:"compliance_settings"`
+	// Read-only. Whether Access Transparency is on for the organization. Returned only
+	// when the request sends the `anthropic-beta: efs-2026-10-01` header and Access
+	// Transparency is available to the organization; otherwise omitted. If the status
+	// can't be read, getting Compliance Settings returns an error; an update still
+	// saves, but then reports `disabled` whatever the real status, so get the settings
+	// again to check it.
+	AccessTransparency BetaAccessTransparency `json:"access_transparency"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		State       respjson.Field
-		Type        respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		State              respjson.Field
+		Type               respjson.Field
+		AccessTransparency respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
 	} `json:"-"`
 }
 
@@ -277,10 +332,20 @@ func init() {
 	)
 }
 
+type BetaOrganizationComplianceSettingGetParams struct {
+	// Optional. Send `efs-2026-10-01` in this header to use this endpoint's beta
+	// features: additional parameters, accepted values and response fields.
+	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
+	paramObj
+}
+
 type BetaOrganizationComplianceSettingUpdateParams struct {
 	// Desired state. Accepts the string shorthand "enabled" or "disabled" in place of
 	// the object form; the response always returns the canonical object form.
 	State BetaComplianceSettingsStateParamUnion `json:"state,omitzero" api:"required"`
+	// Optional. Send `efs-2026-10-01` in this header to use this endpoint's beta
+	// features: additional parameters, accepted values and response fields.
+	Betas []AnthropicBeta `header:"anthropic-beta,omitzero" json:"-"`
 	paramObj
 }
 

@@ -21,11 +21,14 @@ import (
 // interacting with the anthropic API. You should not instantiate this client
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
-	Options      []option.RequestOption
-	Messages     MessageService
-	Models       ModelService
-	Files        FileService
-	Skills       SkillService
+	Options  []option.RequestOption
+	Messages MessageService
+	Models   ModelService
+	Files    FileService
+	Skills   SkillService
+	// Register the end customers that your platform serves, so each request can name
+	// who it's for. To get started, see the
+	// [User profiles guide](https://platform.claude.com/docs/en/manage-claude/user-profiles).
 	UserProfiles UserProfileService
 	Organization OrganizationService
 	Beta         BetaService

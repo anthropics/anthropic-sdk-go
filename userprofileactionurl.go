@@ -36,7 +36,11 @@ func NewUserProfileActionURLService(opts ...option.RequestOption) (r UserProfile
 	return
 }
 
-// Create Action URL
+// Create a link that sends the profile's end customer to the Verification Portal.
+//
+// See
+// [Send an end customer a link to the Verification Portal](https://platform.claude.com/docs/en/manage-claude/user-profiles-verification-portal)
+// for when to create the link and what the end customer sees.
 func (r *UserProfileActionURLService) New(ctx context.Context, userProfileID string, params UserProfileActionURLNewParams, opts ...option.RequestOption) (res *UserProfileActionURL, err error) {
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))

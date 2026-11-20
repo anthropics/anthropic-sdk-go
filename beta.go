@@ -30,10 +30,13 @@ type BetaService struct {
 	Files          BetaFileService
 	Skills         BetaSkillService
 	Webhooks       BetaWebhookService
-	UserProfiles   BetaUserProfileService
-	Dreams         BetaDreamService
-	Tunnels        BetaTunnelService
-	Organization   BetaOrganizationService
+	// Register the end customers that your platform serves, so each request can name
+	// who it's for. To get started, see the
+	// [User profiles guide](https://platform.claude.com/docs/en/manage-claude/user-profiles).
+	UserProfiles BetaUserProfileService
+	Dreams       BetaDreamService
+	Tunnels      BetaTunnelService
+	Organization BetaOrganizationService
 }
 
 // NewBetaService generates a new service that applies the given options to each

@@ -266,6 +266,8 @@ type ExternalStorageDeleted string                             // Always "extern
 type BetaExternalStorageInUseErrorCode string                  // Always "external_storage_in_use"
 type BetaExternalStorageInWorkspacePolicyErrorCode string      // Always "external_storage_in_workspace_policy"
 type BetaExternalStorageNotAvailableErrorCode string           // Always "external_storage_not_available"
+type ExternalStorageFailed string                              // Always "external_storage.failed"
+type ExternalStorageRecovered string                           // Always "external_storage.recovered"
 type Failure string                                            // Always "failure"
 type Fallback string                                           // Always "fallback"
 type FallbackMessage string                                    // Always "fallback_message"
@@ -1063,6 +1065,10 @@ func (c BetaExternalStorageInWorkspacePolicyErrorCode) Default() BetaExternalSto
 }
 func (c BetaExternalStorageNotAvailableErrorCode) Default() BetaExternalStorageNotAvailableErrorCode {
 	return "external_storage_not_available"
+}
+func (c ExternalStorageFailed) Default() ExternalStorageFailed { return "external_storage.failed" }
+func (c ExternalStorageRecovered) Default() ExternalStorageRecovered {
+	return "external_storage.recovered"
 }
 func (c Failure) Default() Failure                   { return "failure" }
 func (c Fallback) Default() Fallback                 { return "fallback" }
@@ -2032,6 +2038,8 @@ func (c BetaExternalStorageInWorkspacePolicyErrorCode) MarshalJSON() ([]byte, er
 func (c BetaExternalStorageNotAvailableErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }
+func (c ExternalStorageFailed) MarshalJSON() ([]byte, error)          { return marshalString(c) }
+func (c ExternalStorageRecovered) MarshalJSON() ([]byte, error)       { return marshalString(c) }
 func (c Failure) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c Fallback) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c FallbackMessage) MarshalJSON() ([]byte, error)                { return marshalString(c) }

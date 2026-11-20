@@ -27,19 +27,22 @@ func TestBetaDeploymentNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Beta.Deployments.New(context.TODO(), anthropic.BetaDeploymentNewParams{
 		Agent: anthropic.BetaDeploymentNewParamsAgentUnion{
-			OfString: anthropic.String("string"),
+			OfBetaManagedAgentsAgents: &anthropic.BetaManagedAgentsAgentParams{
+				ID:      "agent_011CZkYpogX7uDKUyvBTophP",
+				Version: anthropic.Int(0),
+			},
 		},
-		EnvironmentID: "x",
+		EnvironmentID: "env_011CZkZ9X2dpNyB7HsEFoRfW",
 		InitialEvents: []anthropic.BetaManagedAgentsDeploymentInitialEventParamsUnion{{
 			OfUserMessage: &anthropic.BetaManagedAgentsUserMessageEventParams{
 				Content: []anthropic.BetaManagedAgentsUserMessageEventParamsContentUnion{{
 					OfText: &anthropic.BetaManagedAgentsTextBlockParam{
-						Text: "Where is my order #1234?",
+						Text: "Compile yesterday's orders into report.md.",
 					},
 				}},
 			},
 		}},
-		Name: "x",
+		Name: "Daily order report",
 		Budget: anthropic.BetaManagedAgentsBudgetLimitParam{
 			MaxListCost: anthropic.BetaMonetaryAmountParam{
 				Amount:   "2500",

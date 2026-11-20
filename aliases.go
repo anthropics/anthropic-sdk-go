@@ -199,6 +199,14 @@ const ErrorCodeExternalKeyValidationTimedOut = apierror.ErrorCodeExternalKeyVali
 // details.
 const ErrorCodeFileNotDownloadable = apierror.ErrorCodeFileNotDownloadable
 
+// The longest side of one or more images in the request exceeds the image size
+// limit. Scale each image in `paths` so that neither side exceeds
+// `max_side_length_pixels`, or remove it, then retry.
+//
+// Returned with HTTP status 400 and [shared.ImageDimensionsTooLargeErrorDetails]
+// details.
+const ErrorCodeImageDimensionsTooLarge = apierror.ErrorCodeImageDimensionsTooLarge
+
 // `config.type` differs from the environment's stored type, which cannot change
 // after creation.
 //
@@ -940,6 +948,13 @@ type CompactionTooManyToolReferencesErrorDetails = shared.CompactionTooManyToolR
 //
 // This is an alias to an internal type.
 type CompactionToolChangesMismatchErrorDetails = shared.CompactionToolChangesMismatchErrorDetails
+
+// The longest side of one or more images in the request exceeds the image size
+// limit. Scale each image in `paths` so that neither side exceeds
+// `max_side_length_pixels`, or remove it, then retry.
+//
+// This is an alias to an internal type.
+type ImageDimensionsTooLargeErrorDetails = shared.ImageDimensionsTooLargeErrorDetails
 
 // The response that `previous_message_id` names has already been continued, and
 // each response can be continued only once. Continue from the Thread's most recent

@@ -341,6 +341,14 @@ const (
 	// details.
 	ErrorCodeFileNotDownloadable ErrorCode = "file_not_downloadable"
 
+	// The longest side of one or more images in the request exceeds the image size
+	// limit. Scale each image in `paths` so that neither side exceeds
+	// `max_side_length_pixels`, or remove it, then retry.
+	//
+	// Returned with HTTP status 400 and [shared.ImageDimensionsTooLargeErrorDetails]
+	// details.
+	ErrorCodeImageDimensionsTooLarge ErrorCode = "image_dimensions_too_large"
+
 	// `config.type` differs from the environment's stored type, which cannot change
 	// after creation.
 	//

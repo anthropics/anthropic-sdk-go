@@ -281,6 +281,7 @@ type High string                                               // Always "high"
 type HoldKey string                                            // Always "hold_key"
 type Hover string                                              // Always "hover"
 type Image string                                              // Always "image"
+type ImageDimensionsTooLargeErrorCode string                   // Always "image_dimensions_too_large"
 type Include string                                            // Always "include"
 type Inline string                                             // Always "inline"
 type InputJSONDelta string                                     // Always "input_json_delta"
@@ -1039,10 +1040,13 @@ func (c Grep) Default() Grep                           { return "grep" }
 func (c BetaHeartbeatPreconditionFailedErrorCode) Default() BetaHeartbeatPreconditionFailedErrorCode {
 	return "heartbeat_precondition_failed"
 }
-func (c High) Default() High                     { return "high" }
-func (c HoldKey) Default() HoldKey               { return "hold_key" }
-func (c Hover) Default() Hover                   { return "hover" }
-func (c Image) Default() Image                   { return "image" }
+func (c High) Default() High       { return "high" }
+func (c HoldKey) Default() HoldKey { return "hold_key" }
+func (c Hover) Default() Hover     { return "hover" }
+func (c Image) Default() Image     { return "image" }
+func (c ImageDimensionsTooLargeErrorCode) Default() ImageDimensionsTooLargeErrorCode {
+	return "image_dimensions_too_large"
+}
 func (c Include) Default() Include               { return "include" }
 func (c Inline) Default() Inline                 { return "inline" }
 func (c InputJSONDelta) Default() InputJSONDelta { return "input_json_delta" }
@@ -1931,6 +1935,7 @@ func (c High) MarshalJSON() ([]byte, error)                                 { re
 func (c HoldKey) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Hover) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c Image) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
+func (c ImageDimensionsTooLargeErrorCode) MarshalJSON() ([]byte, error)     { return marshalString(c) }
 func (c Include) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Inline) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c InputJSONDelta) MarshalJSON() ([]byte, error)                       { return marshalString(c) }

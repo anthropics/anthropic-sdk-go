@@ -270,9 +270,9 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [ContractSpendLimitReachedErrorDetails],
 // [EnforcedSpendLimitReachedErrorDetails], [RampLimitExceededErrorDetails],
 // [CMEKKeyUnreachableErrorDetails], [CompactionUnavailableErrorDetails],
-// [StorageQuotaExceededErrorDetails], [FileNotDownloadableErrorDetails],
-// [FileExpiredErrorDetails], [CMEKContextUnavailableErrorDetails],
-// [OrgAPIKeyLimitExceededErrorDetails],
+// [WorkspaceHumanReviewDisabledErrorDetails], [StorageQuotaExceededErrorDetails],
+// [FileNotDownloadableErrorDetails], [FileExpiredErrorDetails],
+// [CMEKContextUnavailableErrorDetails], [OrgAPIKeyLimitExceededErrorDetails],
 // [WorkspaceAPIKeyLimitExceededErrorDetails],
 // [SandboxEgressRestrictedErrorDetails], [UserProfileNotFoundErrorDetails],
 // [ExternalKeyInWorkspacePolicyErrorDetails], [AlreadyMemberErrorDetails],
@@ -360,8 +360,9 @@ type ErrorDetailsUnion struct {
 	// "thread_not_found", "skill_read_blocked_undecryptable",
 	// "request_body_too_large_after_decoding", "contract_spend_limit_reached",
 	// "enforced_spend_limit_reached", "ramp_limit_exceeded", "cmek_key_unreachable",
-	// "compaction_unavailable", "storage_quota_exceeded", "file_not_downloadable",
-	// "file_expired", "cmek_context_unavailable", "org_api_key_limit_exceeded",
+	// "compaction_unavailable", "workspace_human_review_disabled",
+	// "storage_quota_exceeded", "file_not_downloadable", "file_expired",
+	// "cmek_context_unavailable", "org_api_key_limit_exceeded",
 	// "workspace_api_key_limit_exceeded", "sandbox_egress_restricted",
 	// "user_profile_not_found", "external_key_in_workspace_policy", "already_member",
 	// "cannot_invite_emails_with_unverified_domains", "email_domain_not_allowed",
@@ -485,6 +486,7 @@ type anyErrorDetails interface {
 //	case shared.RampLimitExceededErrorDetails:
 //	case shared.CMEKKeyUnreachableErrorDetails:
 //	case shared.CompactionUnavailableErrorDetails:
+//	case shared.WorkspaceHumanReviewDisabledErrorDetails:
 //	case shared.StorageQuotaExceededErrorDetails:
 //	case shared.FileNotDownloadableErrorDetails:
 //	case shared.FileExpiredErrorDetails:
@@ -650,6 +652,8 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsCMEKKeyUnreachable()
 	case "compaction_unavailable":
 		return u.AsCompactionUnavailable()
+	case "workspace_human_review_disabled":
+		return u.AsWorkspaceHumanReviewDisabled()
 	case "storage_quota_exceeded":
 		return u.AsStorageQuotaExceeded()
 	case "file_not_downloadable":
@@ -1006,6 +1010,11 @@ func (u ErrorDetailsUnion) AsCMEKKeyUnreachable() (v CMEKKeyUnreachableErrorDeta
 }
 
 func (u ErrorDetailsUnion) AsCompactionUnavailable() (v CompactionUnavailableErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsWorkspaceHumanReviewDisabled() (v WorkspaceHumanReviewDisabledErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1952,6 +1961,26 @@ func (r *SandboxEgressRestrictedErrorDetails) UnmarshalJSON(data []byte) error {
 }
 
 func (SandboxEgressRestrictedErrorDetails) ImplErrorDetailsUnion() {}
+
+// The request's Workspace has Human Review turned off, and this operation is not
+// available there. Use a Workspace with Human Review on.
+type WorkspaceHumanReviewDisabledErrorDetails struct {
+	ErrorCode constant.WorkspaceHumanReviewDisabledErrorCode `json:"error_code" default:"workspace_human_review_disabled"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkspaceHumanReviewDisabledErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *WorkspaceHumanReviewDisabledErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (WorkspaceHumanReviewDisabledErrorDetails) ImplErrorDetailsUnion() {}
 
 // The tools available after a message exceed a limit on their number or their
 // size.

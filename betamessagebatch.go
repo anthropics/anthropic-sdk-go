@@ -56,6 +56,7 @@ func NewBetaMessageBatchService(opts ...option.RequestOption) (r BetaMessageBatc
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
 //   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
 //   - [ErrorCodeOrganizationOnHold] (HTTP 400)
+//   - [ErrorCodeWorkspaceHumanReviewDisabled] (HTTP 400)
 //   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429)
 func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBatchNewParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
 	if len(params.Betas) > 0 {

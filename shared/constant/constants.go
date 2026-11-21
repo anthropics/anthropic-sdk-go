@@ -688,6 +688,7 @@ type WorkspaceAPIKeyLimitExceededErrorCode string              // Always "worksp
 type WorkspaceArchivedError string                             // Always "workspace_archived_error"
 type BetaWorkspaceChangedConcurrentlyErrorCode string          // Always "workspace_changed_concurrently"
 type WorkspaceCreatedIncompleteErrorCode string                // Always "workspace_created_incomplete"
+type WorkspaceHumanReviewDisabledErrorCode string              // Always "workspace_human_review_disabled"
 type WorkspaceMember string                                    // Always "workspace_member"
 type WorkspaceMemberDeleted string                             // Always "workspace_member_deleted"
 type WorkspaceMemberLimitExceededErrorCode string              // Always "workspace_member_limit_exceeded"
@@ -1746,6 +1747,9 @@ func (c BetaWorkspaceChangedConcurrentlyErrorCode) Default() BetaWorkspaceChange
 func (c WorkspaceCreatedIncompleteErrorCode) Default() WorkspaceCreatedIncompleteErrorCode {
 	return "workspace_created_incomplete"
 }
+func (c WorkspaceHumanReviewDisabledErrorCode) Default() WorkspaceHumanReviewDisabledErrorCode {
+	return "workspace_human_review_disabled"
+}
 func (c WorkspaceMember) Default() WorkspaceMember               { return "workspace_member" }
 func (c WorkspaceMemberDeleted) Default() WorkspaceMemberDeleted { return "workspace_member_deleted" }
 func (c WorkspaceMemberLimitExceededErrorCode) Default() WorkspaceMemberLimitExceededErrorCode {
@@ -2514,6 +2518,7 @@ func (c BetaWorkspaceChangedConcurrentlyErrorCode) MarshalJSON() ([]byte, error)
 	return marshalString(c)
 }
 func (c WorkspaceCreatedIncompleteErrorCode) MarshalJSON() ([]byte, error)   { return marshalString(c) }
+func (c WorkspaceHumanReviewDisabledErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
 func (c WorkspaceMember) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c WorkspaceMemberDeleted) MarshalJSON() ([]byte, error)                { return marshalString(c) }
 func (c WorkspaceMemberLimitExceededErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }

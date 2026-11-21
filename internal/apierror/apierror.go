@@ -710,6 +710,13 @@ const (
 	// [shared.WorkspaceAPIKeyLimitExceededErrorDetails] details.
 	ErrorCodeWorkspaceAPIKeyLimitExceeded ErrorCode = "workspace_api_key_limit_exceeded"
 
+	// The request's Workspace has Human Review turned off, and this operation is not
+	// available there. Use a Workspace with Human Review on.
+	//
+	// Returned with HTTP status 400 and
+	// [shared.WorkspaceHumanReviewDisabledErrorDetails] details.
+	ErrorCodeWorkspaceHumanReviewDisabled ErrorCode = "workspace_human_review_disabled"
+
 	// The workspace has reached the member limit that Anthropic set for it.
 	//
 	// Returned with HTTP status 400 and

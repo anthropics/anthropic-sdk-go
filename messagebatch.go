@@ -56,6 +56,7 @@ func NewMessageBatchService(opts ...option.RequestOption) (r MessageBatchService
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
 //   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
 //   - [ErrorCodeOrganizationOnHold] (HTTP 400)
+//   - [ErrorCodeWorkspaceHumanReviewDisabled] (HTTP 400)
 //   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429)
 func (r *MessageBatchService) New(ctx context.Context, params MessageBatchNewParams, opts ...option.RequestOption) (res *MessageBatch, err error) {
 	if !param.IsOmitted(params.UserProfileID) {

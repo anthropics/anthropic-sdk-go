@@ -35,6 +35,7 @@
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#RequestBodyEncodingUnsupportedErrorDetails">RequestBodyEncodingUnsupportedErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#RequestBodyTooLargeAfterDecodingErrorDetails">RequestBodyTooLargeAfterDecodingErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#SandboxEgressRestrictedErrorDetails">SandboxEgressRestrictedErrorDetails</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared">shared</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/shared#WorkspaceHumanReviewDisabledErrorDetails">WorkspaceHumanReviewDisabledErrorDetails</a>
 - <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#ErrorCode">ErrorCode</a>
 
 # Messages

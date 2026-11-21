@@ -568,6 +568,13 @@ const ErrorCodeUserProfileRequired = apierror.ErrorCodeUserProfileRequired
 // [shared.WorkspaceAPIKeyLimitExceededErrorDetails] details.
 const ErrorCodeWorkspaceAPIKeyLimitExceeded = apierror.ErrorCodeWorkspaceAPIKeyLimitExceeded
 
+// The request's Workspace has Human Review turned off, and this operation is not
+// available there. Use a Workspace with Human Review on.
+//
+// Returned with HTTP status 400 and
+// [shared.WorkspaceHumanReviewDisabledErrorDetails] details.
+const ErrorCodeWorkspaceHumanReviewDisabled = apierror.ErrorCodeWorkspaceHumanReviewDisabled
+
 // The workspace has reached the member limit that Anthropic set for it.
 //
 // Returned with HTTP status 400 and
@@ -1084,6 +1091,12 @@ type RequestBodyTooLargeAfterDecodingErrorDetails = shared.RequestBodyTooLargeAf
 //
 // This is an alias to an internal type.
 type SandboxEgressRestrictedErrorDetails = shared.SandboxEgressRestrictedErrorDetails
+
+// The request's Workspace has Human Review turned off, and this operation is not
+// available there. Use a Workspace with Human Review on.
+//
+// This is an alias to an internal type.
+type WorkspaceHumanReviewDisabledErrorDetails = shared.WorkspaceHumanReviewDisabledErrorDetails
 
 // The tools available after a message exceed a limit on their number or their
 // size.

@@ -542,8 +542,7 @@ func (r *BetaExternalStorageMemberParam) UnmarshalJSON(data []byte) error {
 
 type BetaInferenceDataPrivacy struct {
 	// The Workspace's human review setting. Human review is off only while this is
-	// `disabled` and Anthropic's approval stands. If Anthropic withdraws approval,
-	// review is back on, though this field still reads `disabled`.
+	// `disabled` and Anthropic's approval stands.
 	HumanReview BetaAnthropicHumanReview `json:"human_review"`
 	// Where the data Anthropic's safeguards systems retain for the Workspace goes.
 	// `external` sends it to the External Storage that `external_storage_id` names.

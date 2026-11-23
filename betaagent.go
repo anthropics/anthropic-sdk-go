@@ -3184,8 +3184,18 @@ const (
 	BetaManagedAgentsModelClaudeHaiku4_5          BetaManagedAgentsModel = "claude-haiku-4-5"
 	BetaManagedAgentsModelClaudeHaiku4_5_20251001 BetaManagedAgentsModel = "claude-haiku-4-5-20251001"
 	// Powerful intelligence for long-running agents and coding
+	//
+	// Deprecated: Will reach end-of-life on January 22, 2027. Please migrate to
+	// claude-opus-5-5. Visit
+	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
+	// information.
 	BetaManagedAgentsModelClaudeOpus4_5 BetaManagedAgentsModel = "claude-opus-4-5"
 	// Powerful intelligence for long-running agents and coding
+	//
+	// Deprecated: Will reach end-of-life on January 22, 2027. Please migrate to
+	// claude-opus-5-5. Visit
+	// https://docs.anthropic.com/en/docs/resources/model-deprecations for more
+	// information.
 	BetaManagedAgentsModelClaudeOpus4_5_20251101 BetaManagedAgentsModel = "claude-opus-4-5-20251101"
 	// High-performance model for agents and coding
 	//

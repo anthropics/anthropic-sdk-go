@@ -45,6 +45,12 @@ func NewBetaOrganizationAnalyticsCostService(opts ...option.RequestOption) (r Be
 // With no `group_by[]` and no `time_bucket_width`, a single row aggregates the
 // whole range. Includes all cost, whether or not it is attributable to a seat
 // user. Requires an API key with the `read:analytics` scope, or an Admin API key.
+// This endpoint is in beta and is not available to organizations with HIPAA
+// readiness enabled: their API requests return a 400 error. A parent
+// organization's report across its child organizations leaves out the child
+// organizations that have HIPAA readiness enabled. If the parent has child
+// organizations and all of them have HIPAA readiness enabled, the request returns
+// a 400 error.
 func (r *BetaOrganizationAnalyticsCostService) List(ctx context.Context, params BetaOrganizationAnalyticsCostListParams, opts ...option.RequestOption) (res *pagination.ReportPageCursor[BetaAnalyticsCostItem], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -82,6 +88,12 @@ func (r *BetaOrganizationAnalyticsCostService) List(ctx context.Context, params 
 // With no `group_by[]` and no `time_bucket_width`, a single row aggregates the
 // whole range. Includes all cost, whether or not it is attributable to a seat
 // user. Requires an API key with the `read:analytics` scope, or an Admin API key.
+// This endpoint is in beta and is not available to organizations with HIPAA
+// readiness enabled: their API requests return a 400 error. A parent
+// organization's report across its child organizations leaves out the child
+// organizations that have HIPAA readiness enabled. If the parent has child
+// organizations and all of them have HIPAA readiness enabled, the request returns
+// a 400 error.
 func (r *BetaOrganizationAnalyticsCostService) ListAutoPaging(ctx context.Context, params BetaOrganizationAnalyticsCostListParams, opts ...option.RequestOption) *pagination.ReportPageCursorAutoPager[BetaAnalyticsCostItem] {
 	return pagination.NewReportPageCursorAutoPager(r.List(ctx, params, opts...))
 }
@@ -179,8 +191,7 @@ type BetaAnalyticsCostGroup struct {
 	// query without `group_by[]`.
 	RBACGroupID string `json:"rbac_group_id" api:"required"`
 	// Service tier the usage was served at. Populated only when `service_tier` is in
-	// `group_by[]`; null for usage with no service tier (for example, code execution)
-	// and for Claude Enterprise usage.
+	// `group_by[]`; null for usage with no service tier (for example, code execution).
 	//
 	// Any of "batch", "flex", "flex_discount", "priority", "priority_on_demand",
 	// "standard".
@@ -206,11 +217,12 @@ type BetaAnalyticsCostGroup struct {
 	TokenType BetaAnalyticsTokenType `json:"token_type" api:"required"`
 	// User profile the usage was attributed to, as a tagged `uprof_` ID. Populated
 	// only when `user_profile_id` is in `group_by[]`; null for usage that named no
-	// profile and for Claude Enterprise usage.
+	// profile.
 	UserProfileID string `json:"user_profile_id" api:"required"`
-	// Workspace the usage occurred in, as a tagged workspace ID, including the
-	// organization's default workspace. Populated only when `workspace_id` is in
-	// `group_by[]`; null for Claude Enterprise usage.
+	// Workspace the usage occurred in, as a tagged workspace ID, including a Claude
+	// Platform organization's default workspace. Populated only when `workspace_id` is
+	// in `group_by[]`; null for usage in a Claude Enterprise organization's default
+	// workspace, which is its only workspace.
 	WorkspaceID string `json:"workspace_id" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -375,14 +387,13 @@ type BetaOrganizationAnalyticsCostListParams struct {
 	// `group_by[]=actor_type` to break out per-kind values.
 	ActorTypes []BetaAnalyticsActorType `query:"actor_types,omitzero" json:"-"`
 	// Filter to usage incurred by sessions of specific Claude Managed Agents agents.
-	// Use `group_by[]=agent_id` to break out per-agent values. Claude Platform
-	// organizations only.
+	// Use `group_by[]=agent_id` to break out per-agent values.
 	AgentIDs []string `query:"agent_ids,omitzero" json:"-"`
 	// Filter to usage authenticated by specific API keys, by tagged API key ID
 	// (`apikey_...`), whichever identity the usage is attributed to. Include an empty
 	// entry (`api_key_ids[]=`) to also match usage that no API key authenticated. Use
 	// `group_by[]=api_key_id` to break out per-key values; usage without a key has a
-	// null `api_key_id`. Claude Platform organizations only.
+	// null `api_key_id`.
 	APIKeyIDs []string `query:"api_key_ids,omitzero" json:"-"`
 	// Filter to Claude Tag (Claude in Slack) usage in specific spend categories. Usage
 	// with no category never matches. Use `group_by[]=claude_tag_category` to break
@@ -398,11 +409,11 @@ type BetaOrganizationAnalyticsCostListParams struct {
 	ContextWindows []BetaAnalyticsContextWindow `query:"context_windows,omitzero" json:"-"`
 	// Filter to usage incurred by Claude Managed Agents sessions that specific
 	// deployments started. Use `group_by[]=deployment_id` to break out per-deployment
-	// values. Claude Platform organizations only.
+	// values.
 	DeploymentIDs []string `query:"deployment_ids,omitzero" json:"-"`
 	// Filter to usage incurred by Claude Managed Agents sessions that ran in specific
 	// environments. Use `group_by[]=environment_id` to break out per-environment
-	// values. Claude Platform organizations only.
+	// values.
 	EnvironmentIDs []string `query:"environment_ids,omitzero" json:"-"`
 	// Dimensions to break cost out by (at most 5, not counting `cost_type` and
 	// `token_type`): one row per combination of their values with cost in the range
@@ -423,8 +434,10 @@ type BetaOrganizationAnalyticsCostListParams struct {
 	Models []string `query:"models,omitzero" json:"-"`
 	// Filter a parent organization's report to specific child organizations, by
 	// organization UUID or `org_` ID; an ID that is not one of its child organizations
-	// matches nothing. Requires an API key created at the parent organization level.
-	// Use `group_by[]=organization_id` to break out per-organization values.
+	// matches nothing. The report leaves out child organizations with HIPAA readiness
+	// enabled, and naming one returns a 400 error. Requires an API key created at the
+	// parent organization level. Use `group_by[]=organization_id` to break out
+	// per-organization values.
 	OrganizationIDs []string `query:"organization_ids,omitzero" json:"-"`
 	// Product surfaces to include. Defaults to all products.
 	Products []BetaAnalyticsUsageCostProductFilter `query:"products,omitzero" json:"-"`
@@ -434,12 +447,11 @@ type BetaOrganizationAnalyticsCostListParams struct {
 	// group attribution never matches.
 	RBACGroupIDs []string `query:"rbac_group_ids,omitzero" json:"-"`
 	// Filter to specific service tiers. Use `group_by[]=service_tier` to break out
-	// per-tier values. Claude Platform organizations only; matches nothing for a
-	// Claude Enterprise organization.
+	// per-tier values.
 	ServiceTiers []BetaAnalyticsServiceTier `query:"service_tiers,omitzero" json:"-"`
 	// Filter to usage incurred by specific Claude Managed Agents sessions, by tagged
 	// session ID (`sesn_...`). Use `group_by[]=session_id` to break out per-session
-	// values. Claude Platform organizations only.
+	// values.
 	SessionIDs []string `query:"session_ids,omitzero" json:"-"`
 	// Filter to usage originating from specific Slack channels. Use
 	// `group_by[]=slack_channel_id` to break out per-channel values.
@@ -449,11 +461,9 @@ type BetaOrganizationAnalyticsCostListParams struct {
 	Speeds []BetaAnalyticsSpeed `query:"speeds,omitzero" json:"-"`
 	// Filter to usage attributed to specific user profiles, by tagged user profile ID
 	// (`uprof_...`). Use `group_by[]=user_profile_id` to break out per-profile values.
-	// Claude Platform organizations only.
 	UserProfileIDs []string `query:"user_profile_ids,omitzero" json:"-"`
 	// Filter to usage in specific workspaces, by tagged workspace ID (`wrkspc_...`).
-	// Use `group_by[]=workspace_id` to break out per-workspace values. Claude Platform
-	// organizations only; matches nothing for a Claude Enterprise organization.
+	// Use `group_by[]=workspace_id` to break out per-workspace values.
 	WorkspaceIDs []string `query:"workspace_ids,omitzero" json:"-"`
 	// Sort direction of the `order_by` metric, or of the time buckets when `order_by`
 	// is `time` and `time_bucket_width` is set. Defaults to `desc`.

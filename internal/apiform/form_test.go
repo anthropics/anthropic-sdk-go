@@ -364,6 +364,35 @@ Content-Disposition: form-data; name="date-time"
 		},
 	},
 
+	"datetime_with_fraction": {
+		`--xxx
+Content-Disposition: form-data; name="date"
+
+2006-01-02
+--xxx
+Content-Disposition: form-data; name="date-time"
+
+2006-01-02T15:04:05.117Z
+--xxx--
+`,
+		DateTime{
+			Date:     time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC),
+			DateTime: time.Date(2006, time.January, 2, 15, 4, 5, 117_000_999, time.UTC),
+		},
+	},
+
+	"datetime_without_format_tag": {
+		`--xxx
+Content-Disposition: form-data; name="at"
+
+2006-01-02T15:04:05.117Z
+--xxx--
+`,
+		struct {
+			At time.Time `form:"at"`
+		}{time.Date(2006, time.January, 2, 15, 4, 5, 117_000_999, time.UTC)},
+	},
+
 	"date_map_struct": {
 		`--xxx
 Content-Disposition: form-data; name="dates.a"

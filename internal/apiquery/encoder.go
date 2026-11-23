@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	shimjson "github.com/anthropics/anthropic-sdk-go/v2/internal/encoding/json"
 	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
 )
 
@@ -170,7 +171,7 @@ func (e *encoder) newStructTypeEncoder(t reflect.Type) encoderFunc {
 			if ok {
 				switch dateFormat {
 				case "date-time":
-					e.dateFormat = time.RFC3339
+					e.dateFormat = shimjson.TimeLayout("date-time")
 				case "date":
 					e.dateFormat = "2006-01-02"
 				}

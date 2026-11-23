@@ -400,6 +400,21 @@ var tests = map[string]struct {
 		},
 	},
 
+	"datetime_with_fraction": {
+		`{"date":"2006-01-02","date-time":"2006-01-02T15:04:05.117Z"}`,
+		DateTime{
+			Date:     time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC),
+			DateTime: time.Date(2006, time.January, 2, 15, 4, 5, 117_000_000, time.UTC),
+		},
+	},
+
+	"datetime_without_format_tag": {
+		`{"at":"2006-01-02T15:04:05.117Z"}`,
+		struct {
+			At time.Time `json:"at"`
+		}{time.Date(2006, time.January, 2, 15, 4, 5, 117_000_000, time.UTC)},
+	},
+
 	"date_map_struct": {
 		`{"dates":{"a":"2006-01-02"}}`,
 		DateMap{Dates: map[string]time.Time{"a": time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC)}},

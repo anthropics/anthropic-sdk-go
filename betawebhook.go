@@ -532,7 +532,9 @@ func (r *UnwrapWebhookEvent) UnmarshalJSON(data []byte) error {
 // [BetaWebhookUserProfileEnforcementActionResolvedEventData],
 // [BetaWebhookUserProfileProgramStatusUpdatedEventData],
 // [BetaWebhookExternalKeyFailedEventData],
-// [BetaWebhookExternalKeyRecoveredEventData].
+// [BetaWebhookExternalKeyRecoveredEventData],
+// [BetaWebhookExternalStorageFailedEventData],
+// [BetaWebhookExternalStorageRecoveredEventData].
 //
 // Use the [BetaWebhookEventDataUnion.AsAny] method to switch on the variant.
 //
@@ -558,7 +560,8 @@ type BetaWebhookEventDataUnion struct {
 	// "user_profile.enforcement_action_opened",
 	// "user_profile.enforcement_action_resolved",
 	// "user_profile.program_status_updated", "external_key.failed",
-	// "external_key.recovered".
+	// "external_key.recovered", "external_storage.failed",
+	// "external_storage.recovered".
 	Type                string `json:"type"`
 	WorkspaceID         string `json:"workspace_id"`
 	SessionThreadID     string `json:"session_thread_id"`
@@ -632,6 +635,8 @@ func (BetaWebhookUserProfileEnforcementActionResolvedEventData) implBetaWebhookE
 func (BetaWebhookUserProfileProgramStatusUpdatedEventData) implBetaWebhookEventDataUnion()      {}
 func (BetaWebhookExternalKeyFailedEventData) implBetaWebhookEventDataUnion()                    {}
 func (BetaWebhookExternalKeyRecoveredEventData) implBetaWebhookEventDataUnion()                 {}
+func (BetaWebhookExternalStorageFailedEventData) implBetaWebhookEventDataUnion()                {}
+func (BetaWebhookExternalStorageRecoveredEventData) implBetaWebhookEventDataUnion()             {}
 
 // Use the following switch statement to find the correct variant
 //
@@ -685,6 +690,8 @@ func (BetaWebhookExternalKeyRecoveredEventData) implBetaWebhookEventDataUnion() 
 //	case anthropic.BetaWebhookUserProfileProgramStatusUpdatedEventData:
 //	case anthropic.BetaWebhookExternalKeyFailedEventData:
 //	case anthropic.BetaWebhookExternalKeyRecoveredEventData:
+//	case anthropic.BetaWebhookExternalStorageFailedEventData:
+//	case anthropic.BetaWebhookExternalStorageRecoveredEventData:
 //	default:
 //	  fmt.Errorf("no variant present")
 //	}
@@ -788,6 +795,10 @@ func (u BetaWebhookEventDataUnion) AsAny() anyBetaWebhookEventData {
 		return u.AsExternalKeyFailed()
 	case "external_key.recovered":
 		return u.AsExternalKeyRecovered()
+	case "external_storage.failed":
+		return u.AsExternalStorageFailed()
+	case "external_storage.recovered":
+		return u.AsExternalStorageRecovered()
 	}
 	return nil
 }
@@ -1037,6 +1048,16 @@ func (u BetaWebhookEventDataUnion) AsExternalKeyRecovered() (v BetaWebhookExtern
 	return
 }
 
+func (u BetaWebhookEventDataUnion) AsExternalStorageFailed() (v BetaWebhookExternalStorageFailedEventData) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u BetaWebhookEventDataUnion) AsExternalStorageRecovered() (v BetaWebhookExternalStorageRecoveredEventData) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 // Returns the unmodified JSON received from the API
 func (u BetaWebhookEventDataUnion) RawJSON() string { return u.JSON.raw }
 
@@ -1083,6 +1104,50 @@ type BetaWebhookExternalKeyRecoveredEventData struct {
 // Returns the unmodified JSON received from the API
 func (r BetaWebhookExternalKeyRecoveredEventData) RawJSON() string { return r.JSON.raw }
 func (r *BetaWebhookExternalKeyRecoveredEventData) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaWebhookExternalStorageFailedEventData struct {
+	// ID (`estrg_...`) of the External Storage whose bucket failed Anthropic's check
+	// or passes it again.
+	ID             string                         `json:"id" api:"required"`
+	OrganizationID string                         `json:"organization_id" api:"required"`
+	Type           constant.ExternalStorageFailed `json:"type" default:"external_storage.failed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID             respjson.Field
+		OrganizationID respjson.Field
+		Type           respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaWebhookExternalStorageFailedEventData) RawJSON() string { return r.JSON.raw }
+func (r *BetaWebhookExternalStorageFailedEventData) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type BetaWebhookExternalStorageRecoveredEventData struct {
+	// ID (`estrg_...`) of the External Storage whose bucket failed Anthropic's check
+	// or passes it again.
+	ID             string                            `json:"id" api:"required"`
+	OrganizationID string                            `json:"organization_id" api:"required"`
+	Type           constant.ExternalStorageRecovered `json:"type" default:"external_storage.recovered"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID             respjson.Field
+		OrganizationID respjson.Field
+		Type           respjson.Field
+		ExtraFields    map[string]respjson.Field
+		raw            string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaWebhookExternalStorageRecoveredEventData) RawJSON() string { return r.JSON.raw }
+func (r *BetaWebhookExternalStorageRecoveredEventData) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

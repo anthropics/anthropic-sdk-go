@@ -37,7 +37,11 @@ func NewBetaUserProfileActionURLService(opts ...option.RequestOption) (r BetaUse
 	return
 }
 
-// Create Action URL
+// Create a link that sends the profile's end customer to the Verification Portal.
+//
+// See
+// [Send an end customer a link to the Verification Portal](https://platform.claude.com/docs/en/manage-claude/user-profiles-verification-portal)
+// for when to create the link and what the end customer sees.
 func (r *BetaUserProfileActionURLService) New(ctx context.Context, userProfileID string, params BetaUserProfileActionURLNewParams, opts ...option.RequestOption) (res *BetaUserProfileActionURL, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))

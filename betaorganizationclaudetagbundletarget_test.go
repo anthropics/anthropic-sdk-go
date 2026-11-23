@@ -30,7 +30,7 @@ func TestBetaOrganizationClaudeTagBundleTargetNewWithOptionalParams(t *testing.T
 		anthropic.BetaOrganizationClaudeTagBundleTargetNewParams{
 			Target: anthropic.BetaClaudeTagBundleTargetCreateUnionParam{
 				OfSlackChannel: &anthropic.BetaClaudeTagSlackChannelBundleTargetCreateParam{
-					SlackChannelID: "xxxxxxxx",
+					SlackChannelID: "slch_01SvpyRQK3nN6eH9uhRA7n1q",
 				},
 			},
 			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},

@@ -36,6 +36,17 @@ func TestBetaOrganizationWorkspaceNewWithOptionalParams(t *testing.T) {
 		},
 		DisplayColor:  anthropic.String("#6C5BB9"),
 		ExternalKeyID: anthropic.String("ekey_01SDCCSbTxrXDpWc1phhtcfK"),
+		InferenceDataPrivacy: anthropic.BetaInferenceDataPrivacyCreateParam{
+			HumanReview: anthropic.BetaAnthropicHumanReviewParam{
+				Type: anthropic.BetaAnthropicHumanReviewParamTypeDisabled,
+			},
+			SafeguardsStorage: anthropic.BetaStorageMemberParamUnion{
+				OfInternal: &anthropic.BetaInternalStorageParam{},
+			},
+			TranscriptsStorage: anthropic.BetaStorageMemberParamUnion{
+				OfInternal: &anthropic.BetaInternalStorageParam{},
+			},
+		},
 		Tags: map[string]string{
 			"env":  "prod",
 			"team": "platform",
@@ -52,7 +63,7 @@ func TestBetaOrganizationWorkspaceNewWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestBetaOrganizationWorkspaceGet(t *testing.T) {
+func TestBetaOrganizationWorkspaceGetWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -65,7 +76,13 @@ func TestBetaOrganizationWorkspaceGet(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 		option.WithQuery("beta", "true"),
 	)
-	_, err := client.Beta.Organization.Workspaces.Get(context.TODO(), "workspace_id")
+	_, err := client.Beta.Organization.Workspaces.Get(
+		context.TODO(),
+		"workspace_id",
+		anthropic.BetaOrganizationWorkspaceGetParams{
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
+		},
+	)
 	if err != nil {
 		var apierr *anthropic.Error
 		if errors.As(err, &apierr) {
@@ -100,12 +117,24 @@ func TestBetaOrganizationWorkspaceUpdateWithOptionalParams(t *testing.T) {
 			},
 			DisplayColor:  anthropic.String("#6C5BB9"),
 			ExternalKeyID: anthropic.String("ekey_01SDCCSbTxrXDpWc1phhtcfK"),
-			Name:          anthropic.String("Workspace Name"),
+			InferenceDataPrivacy: anthropic.BetaInferenceDataPrivacyUpdateParam{
+				HumanReview: anthropic.BetaAnthropicHumanReviewParam{
+					Type: anthropic.BetaAnthropicHumanReviewParamTypeDisabled,
+				},
+				SafeguardsStorage: anthropic.BetaStorageMemberParamUnion{
+					OfInternal: &anthropic.BetaInternalStorageParam{},
+				},
+				TranscriptsStorage: anthropic.BetaStorageMemberParamUnion{
+					OfInternal: &anthropic.BetaInternalStorageParam{},
+				},
+			},
+			Name: anthropic.String("Workspace Name"),
 			Tags: map[string]string{
 				"env":  "prod",
 				"team": "platform",
 			},
 			UserProfileID: anthropic.String("uprof_01SDCCSbTxrXDpWc1phhtcfK"),
+			Betas:         []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)
 	if err != nil {
@@ -137,6 +166,7 @@ func TestBetaOrganizationWorkspaceListWithOptionalParams(t *testing.T) {
 		IncludeArchived: anthropic.Bool(true),
 		IncludeDefault:  anthropic.Bool(true),
 		Limit:           anthropic.Int(1),
+		Betas:           []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error
@@ -147,7 +177,7 @@ func TestBetaOrganizationWorkspaceListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestBetaOrganizationWorkspaceArchive(t *testing.T) {
+func TestBetaOrganizationWorkspaceArchiveWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -160,7 +190,13 @@ func TestBetaOrganizationWorkspaceArchive(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 		option.WithQuery("beta", "true"),
 	)
-	_, err := client.Beta.Organization.Workspaces.Archive(context.TODO(), "workspace_id")
+	_, err := client.Beta.Organization.Workspaces.Archive(
+		context.TODO(),
+		"workspace_id",
+		anthropic.BetaOrganizationWorkspaceArchiveParams{
+			Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
+		},
+	)
 	if err != nil {
 		var apierr *anthropic.Error
 		if errors.As(err, &apierr) {

@@ -57,6 +57,7 @@ func NewOrganizationWorkspaceService(opts ...option.RequestOption) (r Organizati
 //   - [ErrorCodeWorkspacePolicyViolation] (HTTP 400)
 //   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 //   - [ErrorCodeExternalKeyChanged] (HTTP 409)
+//   - [ErrorCodeWorkspaceCreatedIncomplete] (HTTP 503)
 func (r *OrganizationWorkspaceService) New(ctx context.Context, body OrganizationWorkspaceNewParams, opts ...option.RequestOption) (res *Workspace, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organizations/workspaces"
@@ -87,10 +88,12 @@ func (r *OrganizationWorkspaceService) Get(ctx context.Context, workspaceID stri
 //   - [ErrorCodeExternalKeyValidationFailed] (HTTP 400)
 //   - [ErrorCodeExternalKeyValidationTimedOut] (HTTP 400)
 //   - [ErrorCodeKeyProfileMismatch] (HTTP 400)
+//   - [ErrorCodeStorageProfileMismatch] (HTTP 400)
 //   - [ErrorCodeUserProfileNotFound] (HTTP 400)
 //   - [ErrorCodeWorkspacePolicyViolation] (HTTP 400)
 //   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
 //   - [ErrorCodeExternalKeyChanged] (HTTP 409)
+//   - [ErrorCodeChangeOutcomeUnknown] (HTTP 503)
 func (r *OrganizationWorkspaceService) Update(ctx context.Context, workspaceID string, body OrganizationWorkspaceUpdateParams, opts ...option.RequestOption) (res *Workspace, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {
@@ -133,6 +136,7 @@ func (r *OrganizationWorkspaceService) ListAutoPaging(ctx context.Context, query
 // [apierror.Error.ErrorCode] against these values.
 //
 //   - [ErrorCodeSandboxEgressRestricted] (HTTP 403)
+//   - [ErrorCodeStorageAttachedDuringArchive] (HTTP 409)
 func (r *OrganizationWorkspaceService) Archive(ctx context.Context, workspaceID string, opts ...option.RequestOption) (res *Workspace, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {

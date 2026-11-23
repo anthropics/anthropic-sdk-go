@@ -20,6 +20,10 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
+// Register the end customers that your platform serves, so each request can name
+// who it's for. To get started, see the
+// [User profiles guide](https://platform.claude.com/docs/en/manage-claude/user-profiles).
+//
 // UserProfileService contains methods and other services that help with
 // interacting with the anthropic API.
 //
@@ -41,7 +45,12 @@ func NewUserProfileService(opts ...option.RequestOption) (r UserProfileService) 
 	return
 }
 
-// Create User Profile
+// Register one of your end customers and get the ID to send on the requests you
+// make for them.
+//
+// See the
+// [User profiles guide](https://platform.claude.com/docs/en/manage-claude/user-profiles#create-a-profile-for-each-end-customer)
+// for what to send.
 func (r *UserProfileService) New(ctx context.Context, params UserProfileNewParams, opts ...option.RequestOption) (res *UserProfile, err error) {
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -53,7 +62,11 @@ func (r *UserProfileService) New(ctx context.Context, params UserProfileNewParam
 	return res, err
 }
 
-// Get User Profile
+// Get a user profile by ID to check the details stored for it.
+//
+// See the
+// [User profiles guide](https://platform.claude.com/docs/en/manage-claude/user-profiles)
+// for how to set up and manage profiles.
 func (r *UserProfileService) Get(ctx context.Context, userProfileID string, query UserProfileGetParams, opts ...option.RequestOption) (res *UserProfile, err error) {
 	if !param.IsOmitted(query.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", query.WorkspaceID.Value)))
@@ -69,7 +82,12 @@ func (r *UserProfileService) Get(ctx context.Context, userProfileID string, quer
 	return res, err
 }
 
-// Update User Profile
+// Change the details of a user profile, leaving the fields that you don't send as
+// they are.
+//
+// See the
+// [User profiles guide](https://platform.claude.com/docs/en/manage-claude/user-profiles#update-a-profile)
+// for how each field is updated.
 func (r *UserProfileService) Update(ctx context.Context, userProfileID string, params UserProfileUpdateParams, opts ...option.RequestOption) (res *UserProfile, err error) {
 	if !param.IsOmitted(params.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", params.WorkspaceID.Value)))
@@ -85,7 +103,11 @@ func (r *UserProfileService) Update(ctx context.Context, userProfileID string, p
 	return res, err
 }
 
-// List User Profiles
+// List the user profiles in your organization, newest first by default.
+//
+// See the
+// [User profiles guide](https://platform.claude.com/docs/en/manage-claude/user-profiles)
+// for how to set up and manage profiles.
 func (r *UserProfileService) List(ctx context.Context, params UserProfileListParams, opts ...option.RequestOption) (res *pagination.PageCursor[UserProfile], err error) {
 	var raw *http.Response
 	if !param.IsOmitted(params.WorkspaceID) {
@@ -107,12 +129,20 @@ func (r *UserProfileService) List(ctx context.Context, params UserProfileListPar
 	return res, nil
 }
 
-// List User Profiles
+// List the user profiles in your organization, newest first by default.
+//
+// See the
+// [User profiles guide](https://platform.claude.com/docs/en/manage-claude/user-profiles)
+// for how to set up and manage profiles.
 func (r *UserProfileService) ListAutoPaging(ctx context.Context, params UserProfileListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[UserProfile] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }
 
-// Delete User Profile
+// Delete a user profile, for example when the end customer closes their account.
+//
+// Stop sending the profile's ID first. See the
+// [User profiles guide](https://platform.claude.com/docs/en/manage-claude/user-profiles#delete-a-profile)
+// for what happens after a delete.
 func (r *UserProfileService) Delete(ctx context.Context, userProfileID string, body UserProfileDeleteParams, opts ...option.RequestOption) (res *DeletedUserProfile, err error) {
 	if !param.IsOmitted(body.WorkspaceID) {
 		opts = append(opts, option.WithHeader("anthropic-workspace-id", fmt.Sprintf("%v", body.WorkspaceID.Value)))

@@ -30,10 +30,13 @@ type BetaService struct {
 	Files          BetaFileService
 	Skills         BetaSkillService
 	Webhooks       BetaWebhookService
-	UserProfiles   BetaUserProfileService
-	Dreams         BetaDreamService
-	Tunnels        BetaTunnelService
-	Organization   BetaOrganizationService
+	// Register the end customers that your platform serves, so each request can name
+	// who it's for. To get started, see the
+	// [User profiles guide](https://platform.claude.com/docs/en/manage-claude/user-profiles).
+	UserProfiles BetaUserProfileService
+	Dreams       BetaDreamService
+	Tunnels      BetaTunnelService
+	Organization BetaOrganizationService
 }
 
 // NewBetaService generates a new service that applies the given options to each
@@ -139,6 +142,7 @@ const (
 	// Deprecated: This value is no longer needed. Remove it from your requests.
 	AnthropicBetaCEUserManagement2026_07_13            AnthropicBeta = "ce-user-management-2026-07-13"
 	AnthropicBetaCEClaudeCodeManagedSettings2026_10_06 AnthropicBeta = "ce-claude-code-managed-settings-2026-10-06"
+	AnthropicBetaEfs2026_10_01                         AnthropicBeta = "efs-2026-10-01"
 	AnthropicBetaUserProfilesBilling2026_10_01         AnthropicBeta = "user-profiles-billing-2026-10-01"
 )
 

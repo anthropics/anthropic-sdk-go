@@ -262,7 +262,7 @@ func TestOpenTelemetryResourceIDs(t *testing.T) {
 			return err
 		}},
 		{"anthropic.organization.workspaces.retrieve GET /v1/organizations/workspaces/{workspace_id}?beta=true", []string{"wrkspc_1"}, func(c anthropic.Client) error {
-			_, err := c.Beta.Organization.Workspaces.Get(ctx, "wrkspc_1")
+			_, err := c.Beta.Organization.Workspaces.Get(ctx, "wrkspc_1", anthropic.BetaOrganizationWorkspaceGetParams{})
 			return err
 		}},
 		{"anthropic.organization.workspaces.members.add POST /v1/organizations/workspaces/{workspace_id}/members?beta=true", []string{"wrkspc_1"}, func(c anthropic.Client) error {

@@ -113,7 +113,7 @@ func TestOrganizationWorkspaceServiceAccountAdd(t *testing.T) {
 		context.TODO(),
 		"workspace_id",
 		anthropic.OrganizationWorkspaceServiceAccountAddParams{
-			ServiceAccountID: "service_account_id",
+			ServiceAccountID: "svac_01SDCCSbTxrXDpWc1phhtcfK",
 			WorkspaceRole:    anthropic.NoBillingWorkspaceRoleWorkspaceAdmin,
 		},
 	)

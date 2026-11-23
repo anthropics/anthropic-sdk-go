@@ -44,10 +44,9 @@ func NewBetaOrganizationPluginShareService(opts ...option.RequestOption) (r Beta
 // of the organization, to an RBAC Group, or to one member — most recently granted
 // first.
 //
-// Shares are read-only in this API: members give and withdraw them in claude.ai,
-// and who gave a share is recorded on the Compliance API activity feed rather than
-// on the share. An organization-owned Plugin has installation settings instead, so
-// this path returns 404 for one.
+// Shares are read-only in this API: members give and withdraw them in claude.ai.
+// The Plugin's `owner` gave each share listed. An organization-owned Plugin has
+// installation settings instead of shares, so this path returns 404 for one.
 //
 // **Accepted credentials:** an Admin API key with the `read:plugins` or
 // `read:org_audit` scope, or a Compliance Access Key with the
@@ -96,10 +95,9 @@ func (r *BetaOrganizationPluginShareService) List(ctx context.Context, pluginID 
 // of the organization, to an RBAC Group, or to one member — most recently granted
 // first.
 //
-// Shares are read-only in this API: members give and withdraw them in claude.ai,
-// and who gave a share is recorded on the Compliance API activity feed rather than
-// on the share. An organization-owned Plugin has installation settings instead, so
-// this path returns 404 for one.
+// Shares are read-only in this API: members give and withdraw them in claude.ai.
+// The Plugin's `owner` gave each share listed. An organization-owned Plugin has
+// installation settings instead of shares, so this path returns 404 for one.
 //
 // **Accepted credentials:** an Admin API key with the `read:plugins` or
 // `read:org_audit` scope, or a Compliance Access Key with the
@@ -116,8 +114,8 @@ func (r *BetaOrganizationPluginShareService) ListAutoPaging(ctx context.Context,
 }
 
 // One share the owner of a member-owned Plugin has given. Shares are read-only in
-// this API and have no ID of their own; who gave a share is recorded on the
-// Compliance API activity feed, not here.
+// this API and have no ID of their own. The Plugin's `owner` is the member who
+// gave the share.
 type BetaPluginShare struct {
 	// When the share was given; a share whose role is later changed in claude.ai is
 	// re-granted and carries the time of that change.

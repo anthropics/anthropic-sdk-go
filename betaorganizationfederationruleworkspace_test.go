@@ -59,7 +59,7 @@ func TestBetaOrganizationFederationRuleWorkspaceAddWithOptionalParams(t *testing
 		context.TODO(),
 		"federation_rule_id",
 		anthropic.BetaOrganizationFederationRuleWorkspaceAddParams{
-			WorkspaceID: "workspace_id",
+			WorkspaceID: "wrkspc_01JwQvzr7rXLA5AGx3HKfFUJ",
 			Betas:       []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},
 	)

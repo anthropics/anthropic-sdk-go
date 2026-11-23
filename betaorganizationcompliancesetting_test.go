@@ -11,7 +11,7 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/v2/option"
 )
 
-func TestBetaOrganizationComplianceSettingGet(t *testing.T) {
+func TestBetaOrganizationComplianceSettingGetWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -24,7 +24,9 @@ func TestBetaOrganizationComplianceSettingGet(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 		option.WithQuery("beta", "true"),
 	)
-	_, err := client.Beta.Organization.ComplianceSettings.Get(context.TODO())
+	_, err := client.Beta.Organization.ComplianceSettings.Get(context.TODO(), anthropic.BetaOrganizationComplianceSettingGetParams{
+		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
+	})
 	if err != nil {
 		var apierr *anthropic.Error
 		if errors.As(err, &apierr) {
@@ -34,7 +36,7 @@ func TestBetaOrganizationComplianceSettingGet(t *testing.T) {
 	}
 }
 
-func TestBetaOrganizationComplianceSettingUpdate(t *testing.T) {
+func TestBetaOrganizationComplianceSettingUpdateWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -51,6 +53,7 @@ func TestBetaOrganizationComplianceSettingUpdate(t *testing.T) {
 		State: anthropic.BetaComplianceSettingsStateParamUnion{
 			OfEnabled: &anthropic.BetaComplianceSettingsStateEnabledParam{},
 		},
+		Betas: []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {
 		var apierr *anthropic.Error

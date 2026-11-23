@@ -305,6 +305,7 @@ type BetaNewOrganizationWebhookEndpoint struct {
 	// The event types delivered to the endpoint.
 	//
 	// Any of "external_key.failed", "external_key.recovered",
+	// "external_storage.failed", "external_storage.recovered",
 	// "user_profile.enforcement_action_opened",
 	// "user_profile.enforcement_action_resolved",
 	// "user_profile.program_status_updated".
@@ -361,6 +362,7 @@ type BetaOrganizationWebhookEndpoint struct {
 	// The event types delivered to the endpoint.
 	//
 	// Any of "external_key.failed", "external_key.recovered",
+	// "external_storage.failed", "external_storage.recovered",
 	// "user_profile.enforcement_action_opened",
 	// "user_profile.enforcement_action_resolved",
 	// "user_profile.program_status_updated".
@@ -428,6 +430,7 @@ type BetaOrganizationWebhookNewParams struct {
 	// The event types to deliver to the endpoint. Must list at least one.
 	//
 	// Any of "external_key.failed", "external_key.recovered",
+	// "external_storage.failed", "external_storage.recovered",
 	// "user_profile.enforcement_action_opened",
 	// "user_profile.enforcement_action_resolved",
 	// "user_profile.program_status_updated".
@@ -470,6 +473,7 @@ type BetaOrganizationWebhookUpdateParams struct {
 	// list leaves it unchanged.
 	//
 	// Any of "external_key.failed", "external_key.recovered",
+	// "external_storage.failed", "external_storage.recovered",
 	// "user_profile.enforcement_action_opened",
 	// "user_profile.enforcement_action_resolved",
 	// "user_profile.program_status_updated".

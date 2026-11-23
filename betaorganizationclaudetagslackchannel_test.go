@@ -26,8 +26,8 @@ func TestBetaOrganizationClaudeTagSlackChannelNewWithOptionalParams(t *testing.T
 	)
 	_, err := client.Beta.Organization.ClaudeTag.SlackChannels.New(context.TODO(), anthropic.BetaOrganizationClaudeTagSlackChannelNewParams{
 		Slack: anthropic.BetaClaudeTagSlackChannelIdentifiersParam{
-			ChannelID:   "xx",
-			WorkspaceID: "xx",
+			ChannelID:   "C0456EFGH",
+			WorkspaceID: "T0123ABCD",
 		},
 		Settings: anthropic.BetaClaudeTagSettingsCreateParam{
 			Enabled:       anthropic.Bool(true),

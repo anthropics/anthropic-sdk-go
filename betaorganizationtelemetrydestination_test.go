@@ -25,7 +25,7 @@ func TestBetaOrganizationTelemetryDestinationNewWithOptionalParams(t *testing.T)
 		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.TelemetryDestinations.New(context.TODO(), anthropic.BetaOrganizationTelemetryDestinationNewParams{
-		EndpointURL: "x",
+		EndpointURL: "https://gateway.example.com",
 		Workspaces: anthropic.BetaTelemetryDestinationWorkspacesParamsUnion{
 			OfAll: &anthropic.BetaTelemetryDestinationWorkspacesAllParams{},
 		},

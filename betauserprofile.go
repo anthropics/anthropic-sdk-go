@@ -20,6 +20,10 @@ import (
 	"github.com/anthropics/anthropic-sdk-go/v2/shared/constant"
 )
 
+// Register the end customers that your platform serves, so each request can name
+// who it's for. To get started, see the
+// [User profiles guide](https://platform.claude.com/docs/en/manage-claude/user-profiles).
+//
 // BetaUserProfileService contains methods and other services that help with
 // interacting with the anthropic API.
 //
@@ -41,7 +45,12 @@ func NewBetaUserProfileService(opts ...option.RequestOption) (r BetaUserProfileS
 	return
 }
 
-// Create User Profile
+// Register one of your end customers and get the ID to send on the requests you
+// make for them.
+//
+// See the
+// [User profiles guide](https://platform.claude.com/docs/en/manage-claude/user-profiles#create-a-profile-for-each-end-customer)
+// for what to send.
 func (r *BetaUserProfileService) New(ctx context.Context, params BetaUserProfileNewParams, opts ...option.RequestOption) (res *BetaUserProfile, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -65,7 +74,11 @@ func (r *BetaUserProfileService) New(ctx context.Context, params BetaUserProfile
 	return res, err
 }
 
-// Get User Profile
+// Get a user profile by ID to check the details stored for it.
+//
+// See the
+// [User profiles guide](https://platform.claude.com/docs/en/manage-claude/user-profiles)
+// for how to set up and manage profiles.
 func (r *BetaUserProfileService) Get(ctx context.Context, userProfileID string, query BetaUserProfileGetParams, opts ...option.RequestOption) (res *BetaUserProfile, err error) {
 	if len(query.Betas) > 0 {
 		headerValues := make([]string, len(query.Betas))
@@ -93,7 +106,12 @@ func (r *BetaUserProfileService) Get(ctx context.Context, userProfileID string, 
 	return res, err
 }
 
-// Update User Profile
+// Change the details of a user profile, leaving the fields that you don't send as
+// they are.
+//
+// See the
+// [User profiles guide](https://platform.claude.com/docs/en/manage-claude/user-profiles#update-a-profile)
+// for how each field is updated.
 func (r *BetaUserProfileService) Update(ctx context.Context, userProfileID string, params BetaUserProfileUpdateParams, opts ...option.RequestOption) (res *BetaUserProfile, err error) {
 	if len(params.Betas) > 0 {
 		headerValues := make([]string, len(params.Betas))
@@ -121,7 +139,11 @@ func (r *BetaUserProfileService) Update(ctx context.Context, userProfileID strin
 	return res, err
 }
 
-// List User Profiles
+// List the user profiles in your organization, newest first by default.
+//
+// See the
+// [User profiles guide](https://platform.claude.com/docs/en/manage-claude/user-profiles)
+// for how to set up and manage profiles.
 func (r *BetaUserProfileService) List(ctx context.Context, params BetaUserProfileListParams, opts ...option.RequestOption) (res *pagination.PageCursor[BetaUserProfile], err error) {
 	var raw *http.Response
 	if len(params.Betas) > 0 {
@@ -154,12 +176,20 @@ func (r *BetaUserProfileService) List(ctx context.Context, params BetaUserProfil
 	return res, nil
 }
 
-// List User Profiles
+// List the user profiles in your organization, newest first by default.
+//
+// See the
+// [User profiles guide](https://platform.claude.com/docs/en/manage-claude/user-profiles)
+// for how to set up and manage profiles.
 func (r *BetaUserProfileService) ListAutoPaging(ctx context.Context, params BetaUserProfileListParams, opts ...option.RequestOption) *pagination.PageCursorAutoPager[BetaUserProfile] {
 	return pagination.NewPageCursorAutoPager(r.List(ctx, params, opts...))
 }
 
-// Delete User Profile
+// Delete a user profile, for example when the end customer closes their account.
+//
+// Stop sending the profile's ID first. See the
+// [User profiles guide](https://platform.claude.com/docs/en/manage-claude/user-profiles#delete-a-profile)
+// for what happens after a delete.
 func (r *BetaUserProfileService) Delete(ctx context.Context, userProfileID string, body BetaUserProfileDeleteParams, opts ...option.RequestOption) (res *BetaDeletedUserProfile, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))
@@ -187,7 +217,12 @@ func (r *BetaUserProfileService) Delete(ctx context.Context, userProfileID strin
 	return res, err
 }
 
-// Create Enrollment URL
+// Create a link that sends the profile's end customer to the Verification Portal
+// from Claude Platform on AWS.
+//
+// On the Claude API, create an action URL instead. See
+// [Send an end customer a link to the Verification Portal](https://platform.claude.com/docs/en/manage-claude/user-profiles-verification-portal)
+// for when to create the link and what the end customer sees.
 func (r *BetaUserProfileService) NewEnrollmentURL(ctx context.Context, userProfileID string, body BetaUserProfileNewEnrollmentURLParams, opts ...option.RequestOption) (res *BetaUserProfileEnrollmentURL, err error) {
 	if len(body.Betas) > 0 {
 		headerValues := make([]string, len(body.Betas))

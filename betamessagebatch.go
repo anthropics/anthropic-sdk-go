@@ -56,6 +56,7 @@ func NewBetaMessageBatchService(opts ...option.RequestOption) (r BetaMessageBatc
 //   - [ErrorCodeClaudeCodeKeyCreatorNotMember] (HTTP 400)
 //   - [ErrorCodeCMEKKeyDisabled] (HTTP 400)
 //   - [ErrorCodeOrganizationOnHold] (HTTP 400)
+//   - [ErrorCodeWorkspaceHumanReviewDisabled] (HTTP 400)
 //   - [ErrorCodeEnforcedSpendLimitReached] (HTTP 429)
 func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBatchNewParams, opts ...option.RequestOption) (res *BetaMessageBatch, err error) {
 	if len(params.Betas) > 0 {
@@ -77,6 +78,7 @@ func (r *BetaMessageBatchService) New(ctx context.Context, params BetaMessageBat
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/messages/batches"
 	opts = append(opts, requestconfig.WithQualifiers(map[string]string{"beta": "true"}))
+	opts = append(opts, requestconfig.WithConservativeRetries())
 	opts = append(opts, requestconfig.WithSpan("anthropic.messages.batches.create", "/v1/messages/batches"), messageBatchesCreateSpan(len(params.Requests)), requestconfig.WithSpanCreatedID("anthropic.message.batch.id", &res, func(created *BetaMessageBatch) string { return created.ID }))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err

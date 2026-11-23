@@ -120,7 +120,7 @@ func TestBetaOrganizationWorkspaceServiceAccountAddWithOptionalParams(t *testing
 		context.TODO(),
 		"workspace_id",
 		anthropic.BetaOrganizationWorkspaceServiceAccountAddParams{
-			ServiceAccountID: "service_account_id",
+			ServiceAccountID: "svac_01SDCCSbTxrXDpWc1phhtcfK",
 			WorkspaceRole:    anthropic.BetaNoBillingWorkspaceRoleWorkspaceAdmin,
 			Betas:            []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 		},

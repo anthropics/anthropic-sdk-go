@@ -25,8 +25,8 @@ func TestBetaOrganizationFederationIssuerNewWithOptionalParams(t *testing.T) {
 		option.WithQuery("beta", "true"),
 	)
 	_, err := client.Beta.Organization.Federation.Issuers.New(context.TODO(), anthropic.BetaOrganizationFederationIssuerNewParams{
-		IssuerURL: "x",
-		Name:      "x",
+		IssuerURL: "https://token.actions.githubusercontent.com",
+		Name:      "github-actions",
 		CheckJTI:  anthropic.Bool(true),
 		JWKS: anthropic.BetaOrganizationFederationIssuerNewParamsJWKSUnion{
 			OfDiscovery: &anthropic.BetaJWKSDiscoveryParam{

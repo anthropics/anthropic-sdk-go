@@ -24,17 +24,20 @@ func TestOrganizationFederationRuleNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Organization.Federation.Rules.New(context.TODO(), anthropic.OrganizationFederationRuleNewParams{
-		IssuerID: "issuer_id",
+		IssuerID: "fdis_01SDCCSbTxrXDpWc1phhtcfK",
 		Match: anthropic.FederationRuleMatchParam{
 			Audience: anthropic.String("audience"),
 			Claims: map[string]string{
-				"foo": "string",
+				"event_name":          "push",
+				"ref":                 "refs/heads/main",
+				"repository_id":       "123456789",
+				"repository_owner_id": "987654321",
 			},
 			Condition:     anthropic.String("condition"),
 			SubjectPrefix: anthropic.String("subject_prefix"),
 		},
-		Name:       "x",
-		OAuthScope: "x",
+		Name:       "prod-deploy-pipeline",
+		OAuthScope: "workspace:developer",
 		Target: anthropic.ServiceAccountTargetParam{
 			ServiceAccountID:   "svac_01SDCCSbTxrXDpWc1phhtcfK",
 			ServiceAccountName: anthropic.String("service_account_name"),
@@ -42,7 +45,7 @@ func TestOrganizationFederationRuleNewWithOptionalParams(t *testing.T) {
 		AppliesToAllWorkspaces: anthropic.Bool(true),
 		Description:            anthropic.String("description"),
 		TokenLifetimeSeconds:   anthropic.Int(60),
-		WorkspaceID:            anthropic.String("workspace_id"),
+		WorkspaceID:            anthropic.String("wrkspc_01JwQvzr7rXLA5AGx3HKfFUJ"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

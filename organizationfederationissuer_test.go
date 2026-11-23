@@ -24,8 +24,8 @@ func TestOrganizationFederationIssuerNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("my-anthropic-api-key"),
 	)
 	_, err := client.Organization.Federation.Issuers.New(context.TODO(), anthropic.OrganizationFederationIssuerNewParams{
-		IssuerURL: "x",
-		Name:      "x",
+		IssuerURL: "https://token.actions.githubusercontent.com",
+		Name:      "github-actions",
 		CheckJTI:  anthropic.Bool(true),
 		JWKS: anthropic.OrganizationFederationIssuerNewParamsJWKSUnion{
 			OfDiscovery: &anthropic.JWKSDiscoveryParam{

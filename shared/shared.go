@@ -270,9 +270,9 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [ContractSpendLimitReachedErrorDetails],
 // [EnforcedSpendLimitReachedErrorDetails], [RampLimitExceededErrorDetails],
 // [CMEKKeyUnreachableErrorDetails], [CompactionUnavailableErrorDetails],
-// [StorageQuotaExceededErrorDetails], [FileNotDownloadableErrorDetails],
-// [FileExpiredErrorDetails], [CMEKContextUnavailableErrorDetails],
-// [OrgAPIKeyLimitExceededErrorDetails],
+// [WorkspaceHumanReviewDisabledErrorDetails], [StorageQuotaExceededErrorDetails],
+// [FileNotDownloadableErrorDetails], [FileExpiredErrorDetails],
+// [CMEKContextUnavailableErrorDetails], [OrgAPIKeyLimitExceededErrorDetails],
 // [WorkspaceAPIKeyLimitExceededErrorDetails],
 // [SandboxEgressRestrictedErrorDetails], [UserProfileNotFoundErrorDetails],
 // [ExternalKeyInWorkspacePolicyErrorDetails], [AlreadyMemberErrorDetails],
@@ -284,6 +284,8 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [ExternalKeyValidationFailedErrorDetails],
 // [ExternalKeyValidationTimedOutErrorDetails], [KeyProfileMismatchErrorDetails],
 // [WorkspacePolicyViolationErrorDetails], [ExternalKeyChangedErrorDetails],
+// [WorkspaceCreatedIncompleteErrorDetails], [StorageProfileMismatchErrorDetails],
+// [ChangeOutcomeUnknownErrorDetails], [StorageAttachedDuringArchiveErrorDetails],
 // [WorkspaceMemberLimitExceededErrorDetails],
 // [OrganizationTypeNotSupportedErrorDetails],
 // [ParentOrganizationRequiredErrorDetails], [RBACRoleNotFoundErrorDetails],
@@ -292,13 +294,30 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [BetaInvalidConfigTypeChangeErrorDetails],
 // [BetaEnvironmentUpdateDisabledErrorDetails],
 // [BetaHeartbeatPreconditionFailedErrorDetails],
-// [BetaInvalidMetadataErrorDetails], [BetaCannotSignOutPrimaryOwnerErrorDetails],
+// [BetaInvalidMetadataErrorDetails], [BetaGrantRequiredErrorDetails],
+// [BetaOrganizationNotEligibleErrorDetails], [BetaProviderNotAllowedErrorDetails],
+// [BetaUnsupportedRegionErrorDetails], [BetaStorageAlreadyRegisteredErrorDetails],
+// [BetaAuthorizationCheckUnavailableErrorDetails],
+// [BetaInvalidStorageARNErrorDetails], [BetaExternalStorageInUseErrorDetails],
+// [BetaExternalStorageInWorkspacePolicyErrorDetails],
+// [BetaStorageVerificationFailedErrorDetails],
+// [BetaCannotSignOutPrimaryOwnerErrorDetails],
 // [BetaCannotSignOutSelfErrorDetails],
 // [BetaOrganizationNotEnrolledInBetaErrorDetails],
 // [BetaCannotSignOutManagedMemberErrorDetails],
 // [BetaCannotSignOutMembershipAdminErrorDetails],
 // [BetaCannotSignOutOwnerErrorDetails],
 // [BetaCannotSignOutPrivilegedMemberErrorDetails],
+// [BetaApprovalRequiredErrorDetails],
+// [BetaExternalStorageNotAvailableErrorDetails],
+// [BetaHumanReviewNotAvailableErrorDetails],
+// [BetaHumanReviewOnWithExternalStorageErrorDetails],
+// [BetaStorageNotAttachableErrorDetails],
+// [BetaTranscriptsStorageRequiredErrorDetails],
+// [BetaStorageAttachLimitReachedErrorDetails],
+// [BetaStorageProfileStillRequiredErrorDetails],
+// [BetaStorageChangedConcurrentlyErrorDetails],
+// [BetaWorkspaceChangedConcurrentlyErrorDetails],
 // [BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails],
 // [BetaUnsupportedCharsetErrorDetails], [BetaPluginNameTakenErrorDetails],
 // [BetaSkillNameTakenErrorDetails], [BetaRegistrationPendingErrorDetails],
@@ -341,8 +360,9 @@ type ErrorDetailsUnion struct {
 	// "thread_not_found", "skill_read_blocked_undecryptable",
 	// "request_body_too_large_after_decoding", "contract_spend_limit_reached",
 	// "enforced_spend_limit_reached", "ramp_limit_exceeded", "cmek_key_unreachable",
-	// "compaction_unavailable", "storage_quota_exceeded", "file_not_downloadable",
-	// "file_expired", "cmek_context_unavailable", "org_api_key_limit_exceeded",
+	// "compaction_unavailable", "workspace_human_review_disabled",
+	// "storage_quota_exceeded", "file_not_downloadable", "file_expired",
+	// "cmek_context_unavailable", "org_api_key_limit_exceeded",
 	// "workspace_api_key_limit_exceeded", "sandbox_egress_restricted",
 	// "user_profile_not_found", "external_key_in_workspace_policy", "already_member",
 	// "cannot_invite_emails_with_unverified_domains", "email_domain_not_allowed",
@@ -351,23 +371,33 @@ type ErrorDetailsUnion struct {
 	// "cannot_remove_last_member", "concurrent_membership_change",
 	// "external_key_validation_failed", "external_key_validation_timed_out",
 	// "key_profile_mismatch", "workspace_policy_violation", "external_key_changed",
+	// "workspace_created_incomplete", "storage_profile_mismatch",
+	// "change_outcome_unknown", "storage_attached_during_archive",
 	// "workspace_member_limit_exceeded", "organization_type_not_supported",
 	// "parent_organization_required", "rbac_role_not_found",
 	// "environment_create_disabled", "environment_archived",
 	// "invalid_config_type_change", "environment_update_disabled",
-	// "heartbeat_precondition_failed", "invalid_metadata",
+	// "heartbeat_precondition_failed", "invalid_metadata", "grant_required",
+	// "organization_not_eligible", "provider_not_allowed", "unsupported_region",
+	// "storage_already_registered", "authorization_check_unavailable",
+	// "invalid_storage_arn", "external_storage_in_use",
+	// "external_storage_in_workspace_policy", "storage_verification_failed",
 	// "cannot_sign_out_primary_owner", "cannot_sign_out_self",
 	// "organization_not_enrolled_in_beta", "cannot_sign_out_managed_member",
 	// "cannot_sign_out_membership_admin", "cannot_sign_out_owner",
-	// "cannot_sign_out_privileged_member",
-	// "spend_limits_admin_api_writes_not_enabled", "unsupported_charset",
-	// "plugin_name_taken", "skill_name_taken", "registration_pending", "scan_failed",
-	// "scan_pending", "request_body_timeout", "settings_document_limit_exceeded",
-	// "settings_history_limit_exceeded", "cmek_feature_unsupported",
-	// "rbac_group_managed_settings_not_found", "rbac_group_order_limit_exceeded",
-	// "rbac_group_not_found", "slack_channel_set_up_settings_refused",
-	// "api_key_scope_missing", "claude_tag_writes_not_enabled",
-	// "compliance_configuration_restricted",
+	// "cannot_sign_out_privileged_member", "approval_required",
+	// "external_storage_not_available", "human_review_not_available",
+	// "human_review_on_with_external_storage", "storage_not_attachable",
+	// "transcripts_storage_required", "storage_attach_limit_reached",
+	// "storage_profile_still_required", "storage_changed_concurrently",
+	// "workspace_changed_concurrently", "spend_limits_admin_api_writes_not_enabled",
+	// "unsupported_charset", "plugin_name_taken", "skill_name_taken",
+	// "registration_pending", "scan_failed", "scan_pending", "request_body_timeout",
+	// "settings_document_limit_exceeded", "settings_history_limit_exceeded",
+	// "cmek_feature_unsupported", "rbac_group_managed_settings_not_found",
+	// "rbac_group_order_limit_exceeded", "rbac_group_not_found",
+	// "slack_channel_set_up_settings_refused", "api_key_scope_missing",
+	// "claude_tag_writes_not_enabled", "compliance_configuration_restricted",
 	// "organization_level_scoped_api_key_required", "environment_not_found",
 	// "slack_channel_set_up_environment_not_found",
 	// "slack_channel_set_up_settings_conflict", "bundle_attachment_not_supported",
@@ -381,11 +411,14 @@ type ErrorDetailsUnion struct {
 	AppealURL string `json:"appeal_url"`
 	// This field is from variant [ThreadUnsupportedRequestErrorDetails].
 	Unsupported []ThreadUnsupportedFeatureName `json:"unsupported"`
-	// This field is from variant [WorkspacePolicyViolationErrorDetails].
-	Field WorkspacePolicyField `json:"field"`
+	Field       string                         `json:"field"`
+	// This field is from variant [WorkspaceCreatedIncompleteErrorDetails].
+	WorkspaceID string `json:"workspace_id"`
 	// This field is from variant [BetaHeartbeatPreconditionFailedErrorDetails].
 	CurrentState BetaWorkLeaseState `json:"current_state"`
-	PluginID     string             `json:"plugin_id"`
+	// This field is from variant [BetaStorageVerificationFailedErrorDetails].
+	FailedChecks []BetaExternalStorageFailedCheck `json:"failed_checks"`
+	PluginID     string                           `json:"plugin_id"`
 	// This field is from variant [BetaSkillNameTakenErrorDetails].
 	SkillName       string `json:"skill_name"`
 	PluginVersionID string `json:"plugin_version_id"`
@@ -397,7 +430,9 @@ type ErrorDetailsUnion struct {
 		AppealURL           respjson.Field
 		Unsupported         respjson.Field
 		Field               respjson.Field
+		WorkspaceID         respjson.Field
 		CurrentState        respjson.Field
+		FailedChecks        respjson.Field
 		PluginID            respjson.Field
 		SkillName           respjson.Field
 		PluginVersionID     respjson.Field
@@ -451,6 +486,7 @@ type anyErrorDetails interface {
 //	case shared.RampLimitExceededErrorDetails:
 //	case shared.CMEKKeyUnreachableErrorDetails:
 //	case shared.CompactionUnavailableErrorDetails:
+//	case shared.WorkspaceHumanReviewDisabledErrorDetails:
 //	case shared.StorageQuotaExceededErrorDetails:
 //	case shared.FileNotDownloadableErrorDetails:
 //	case shared.FileExpiredErrorDetails:
@@ -474,6 +510,10 @@ type anyErrorDetails interface {
 //	case shared.KeyProfileMismatchErrorDetails:
 //	case shared.WorkspacePolicyViolationErrorDetails:
 //	case shared.ExternalKeyChangedErrorDetails:
+//	case shared.WorkspaceCreatedIncompleteErrorDetails:
+//	case shared.StorageProfileMismatchErrorDetails:
+//	case shared.ChangeOutcomeUnknownErrorDetails:
+//	case shared.StorageAttachedDuringArchiveErrorDetails:
 //	case shared.WorkspaceMemberLimitExceededErrorDetails:
 //	case shared.OrganizationTypeNotSupportedErrorDetails:
 //	case shared.ParentOrganizationRequiredErrorDetails:
@@ -484,6 +524,16 @@ type anyErrorDetails interface {
 //	case shared.BetaEnvironmentUpdateDisabledErrorDetails:
 //	case shared.BetaHeartbeatPreconditionFailedErrorDetails:
 //	case shared.BetaInvalidMetadataErrorDetails:
+//	case shared.BetaGrantRequiredErrorDetails:
+//	case shared.BetaOrganizationNotEligibleErrorDetails:
+//	case shared.BetaProviderNotAllowedErrorDetails:
+//	case shared.BetaUnsupportedRegionErrorDetails:
+//	case shared.BetaStorageAlreadyRegisteredErrorDetails:
+//	case shared.BetaAuthorizationCheckUnavailableErrorDetails:
+//	case shared.BetaInvalidStorageARNErrorDetails:
+//	case shared.BetaExternalStorageInUseErrorDetails:
+//	case shared.BetaExternalStorageInWorkspacePolicyErrorDetails:
+//	case shared.BetaStorageVerificationFailedErrorDetails:
 //	case shared.BetaCannotSignOutPrimaryOwnerErrorDetails:
 //	case shared.BetaCannotSignOutSelfErrorDetails:
 //	case shared.BetaOrganizationNotEnrolledInBetaErrorDetails:
@@ -491,6 +541,16 @@ type anyErrorDetails interface {
 //	case shared.BetaCannotSignOutMembershipAdminErrorDetails:
 //	case shared.BetaCannotSignOutOwnerErrorDetails:
 //	case shared.BetaCannotSignOutPrivilegedMemberErrorDetails:
+//	case shared.BetaApprovalRequiredErrorDetails:
+//	case shared.BetaExternalStorageNotAvailableErrorDetails:
+//	case shared.BetaHumanReviewNotAvailableErrorDetails:
+//	case shared.BetaHumanReviewOnWithExternalStorageErrorDetails:
+//	case shared.BetaStorageNotAttachableErrorDetails:
+//	case shared.BetaTranscriptsStorageRequiredErrorDetails:
+//	case shared.BetaStorageAttachLimitReachedErrorDetails:
+//	case shared.BetaStorageProfileStillRequiredErrorDetails:
+//	case shared.BetaStorageChangedConcurrentlyErrorDetails:
+//	case shared.BetaWorkspaceChangedConcurrentlyErrorDetails:
 //	case shared.BetaSpendLimitsAdminAPIWritesNotEnabledErrorDetails:
 //	case shared.BetaUnsupportedCharsetErrorDetails:
 //	case shared.BetaPluginNameTakenErrorDetails:
@@ -592,6 +652,8 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsCMEKKeyUnreachable()
 	case "compaction_unavailable":
 		return u.AsCompactionUnavailable()
+	case "workspace_human_review_disabled":
+		return u.AsWorkspaceHumanReviewDisabled()
 	case "storage_quota_exceeded":
 		return u.AsStorageQuotaExceeded()
 	case "file_not_downloadable":
@@ -638,6 +700,14 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsWorkspacePolicyViolation()
 	case "external_key_changed":
 		return u.AsExternalKeyChanged()
+	case "workspace_created_incomplete":
+		return u.AsWorkspaceCreatedIncomplete()
+	case "storage_profile_mismatch":
+		return u.AsStorageProfileMismatch()
+	case "change_outcome_unknown":
+		return u.AsChangeOutcomeUnknown()
+	case "storage_attached_during_archive":
+		return u.AsStorageAttachedDuringArchive()
 	case "workspace_member_limit_exceeded":
 		return u.AsWorkspaceMemberLimitExceeded()
 	case "organization_type_not_supported":
@@ -658,6 +728,26 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsHeartbeatPreconditionFailed()
 	case "invalid_metadata":
 		return u.AsInvalidMetadata()
+	case "grant_required":
+		return u.AsGrantRequired()
+	case "organization_not_eligible":
+		return u.AsOrganizationNotEligible()
+	case "provider_not_allowed":
+		return u.AsProviderNotAllowed()
+	case "unsupported_region":
+		return u.AsUnsupportedRegion()
+	case "storage_already_registered":
+		return u.AsStorageAlreadyRegistered()
+	case "authorization_check_unavailable":
+		return u.AsAuthorizationCheckUnavailable()
+	case "invalid_storage_arn":
+		return u.AsInvalidStorageARN()
+	case "external_storage_in_use":
+		return u.AsExternalStorageInUse()
+	case "external_storage_in_workspace_policy":
+		return u.AsExternalStorageInWorkspacePolicy()
+	case "storage_verification_failed":
+		return u.AsStorageVerificationFailed()
 	case "cannot_sign_out_primary_owner":
 		return u.AsCannotSignOutPrimaryOwner()
 	case "cannot_sign_out_self":
@@ -672,6 +762,26 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsCannotSignOutOwner()
 	case "cannot_sign_out_privileged_member":
 		return u.AsCannotSignOutPrivilegedMember()
+	case "approval_required":
+		return u.AsApprovalRequired()
+	case "external_storage_not_available":
+		return u.AsExternalStorageNotAvailable()
+	case "human_review_not_available":
+		return u.AsHumanReviewNotAvailable()
+	case "human_review_on_with_external_storage":
+		return u.AsHumanReviewOnWithExternalStorage()
+	case "storage_not_attachable":
+		return u.AsStorageNotAttachable()
+	case "transcripts_storage_required":
+		return u.AsTranscriptsStorageRequired()
+	case "storage_attach_limit_reached":
+		return u.AsStorageAttachLimitReached()
+	case "storage_profile_still_required":
+		return u.AsStorageProfileStillRequired()
+	case "storage_changed_concurrently":
+		return u.AsStorageChangedConcurrently()
+	case "workspace_changed_concurrently":
+		return u.AsWorkspaceChangedConcurrently()
 	case "spend_limits_admin_api_writes_not_enabled":
 		return u.AsSpendLimitsAdminAPIWritesNotEnabled()
 	case "unsupported_charset":
@@ -904,6 +1014,11 @@ func (u ErrorDetailsUnion) AsCompactionUnavailable() (v CompactionUnavailableErr
 	return
 }
 
+func (u ErrorDetailsUnion) AsWorkspaceHumanReviewDisabled() (v WorkspaceHumanReviewDisabledErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 func (u ErrorDetailsUnion) AsStorageQuotaExceeded() (v StorageQuotaExceededErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
@@ -1019,6 +1134,26 @@ func (u ErrorDetailsUnion) AsExternalKeyChanged() (v ExternalKeyChangedErrorDeta
 	return
 }
 
+func (u ErrorDetailsUnion) AsWorkspaceCreatedIncomplete() (v WorkspaceCreatedIncompleteErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsStorageProfileMismatch() (v StorageProfileMismatchErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsChangeOutcomeUnknown() (v ChangeOutcomeUnknownErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsStorageAttachedDuringArchive() (v StorageAttachedDuringArchiveErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 func (u ErrorDetailsUnion) AsWorkspaceMemberLimitExceeded() (v WorkspaceMemberLimitExceededErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
@@ -1069,6 +1204,56 @@ func (u ErrorDetailsUnion) AsInvalidMetadata() (v BetaInvalidMetadataErrorDetail
 	return
 }
 
+func (u ErrorDetailsUnion) AsGrantRequired() (v BetaGrantRequiredErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsOrganizationNotEligible() (v BetaOrganizationNotEligibleErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsProviderNotAllowed() (v BetaProviderNotAllowedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsUnsupportedRegion() (v BetaUnsupportedRegionErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsStorageAlreadyRegistered() (v BetaStorageAlreadyRegisteredErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsAuthorizationCheckUnavailable() (v BetaAuthorizationCheckUnavailableErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsInvalidStorageARN() (v BetaInvalidStorageARNErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsExternalStorageInUse() (v BetaExternalStorageInUseErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsExternalStorageInWorkspacePolicy() (v BetaExternalStorageInWorkspacePolicyErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsStorageVerificationFailed() (v BetaStorageVerificationFailedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
 func (u ErrorDetailsUnion) AsCannotSignOutPrimaryOwner() (v BetaCannotSignOutPrimaryOwnerErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
@@ -1100,6 +1285,56 @@ func (u ErrorDetailsUnion) AsCannotSignOutOwner() (v BetaCannotSignOutOwnerError
 }
 
 func (u ErrorDetailsUnion) AsCannotSignOutPrivilegedMember() (v BetaCannotSignOutPrivilegedMemberErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsApprovalRequired() (v BetaApprovalRequiredErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsExternalStorageNotAvailable() (v BetaExternalStorageNotAvailableErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsHumanReviewNotAvailable() (v BetaHumanReviewNotAvailableErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsHumanReviewOnWithExternalStorage() (v BetaHumanReviewOnWithExternalStorageErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsStorageNotAttachable() (v BetaStorageNotAttachableErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsTranscriptsStorageRequired() (v BetaTranscriptsStorageRequiredErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsStorageAttachLimitReached() (v BetaStorageAttachLimitReachedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsStorageProfileStillRequired() (v BetaStorageProfileStillRequiredErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsStorageChangedConcurrently() (v BetaStorageChangedConcurrentlyErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsWorkspaceChangedConcurrently() (v BetaWorkspaceChangedConcurrentlyErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -1726,6 +1961,26 @@ func (r *SandboxEgressRestrictedErrorDetails) UnmarshalJSON(data []byte) error {
 }
 
 func (SandboxEgressRestrictedErrorDetails) ImplErrorDetailsUnion() {}
+
+// The request's Workspace has Human Review turned off, and this operation is not
+// available there. Use a Workspace with Human Review on.
+type WorkspaceHumanReviewDisabledErrorDetails struct {
+	ErrorCode constant.WorkspaceHumanReviewDisabledErrorCode `json:"error_code" default:"workspace_human_review_disabled"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkspaceHumanReviewDisabledErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *WorkspaceHumanReviewDisabledErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (WorkspaceHumanReviewDisabledErrorDetails) ImplErrorDetailsUnion() {}
 
 // The tools available after a message exceed a limit on their number or their
 // size.
@@ -2583,7 +2838,7 @@ func (KeyProfileMismatchErrorDetails) ImplErrorDetailsUnion() {}
 // Console.
 type WorkspacePolicyViolationErrorDetails struct {
 	ErrorCode constant.WorkspacePolicyViolationErrorCode `json:"error_code" default:"workspace_policy_violation"`
-	// The request field the broken rule applies to.
+	// The request field the broken rule applies to. Other values may be returned.
 	//
 	// Any of "external_key_id".
 	Field WorkspacePolicyField `json:"field" api:"required"`
@@ -2629,6 +2884,94 @@ func (r *ExternalKeyChangedErrorDetails) UnmarshalJSON(data []byte) error {
 }
 
 func (ExternalKeyChangedErrorDetails) ImplErrorDetailsUnion() {}
+
+// The Workspace was created, but some of what the request asked for did not take
+// effect, or may not have. Don't send the create again. The error's `message` says
+// what to do with the Workspace at `workspace_id`.
+type WorkspaceCreatedIncompleteErrorDetails struct {
+	ErrorCode constant.WorkspaceCreatedIncompleteErrorCode `json:"error_code" default:"workspace_created_incomplete"`
+	// ID of the Workspace the request created.
+	WorkspaceID string `json:"workspace_id" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		WorkspaceID respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkspaceCreatedIncompleteErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *WorkspaceCreatedIncompleteErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (WorkspaceCreatedIncompleteErrorDetails) ImplErrorDetailsUnion() {}
+
+// The Workspace's storage and its user profile don't match: the Workspace and its
+// storage must have the same user profile, or both have none.
+type StorageProfileMismatchErrorDetails struct {
+	ErrorCode constant.StorageProfileMismatchErrorCode `json:"error_code" default:"storage_profile_mismatch"`
+	// The storage setting that doesn't match the Workspace's user profile.
+	Field string `json:"field" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		Field       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r StorageProfileMismatchErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *StorageProfileMismatchErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (StorageProfileMismatchErrorDetails) ImplErrorDetailsUnion() {}
+
+// Some of the request's changes may have been saved and others not. Send the same
+// request again to finish it; changes already saved aren't repeated.
+type ChangeOutcomeUnknownErrorDetails struct {
+	ErrorCode constant.ChangeOutcomeUnknownErrorCode `json:"error_code" default:"change_outcome_unknown"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ChangeOutcomeUnknownErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *ChangeOutcomeUnknownErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (ChangeOutcomeUnknownErrorDetails) ImplErrorDetailsUnion() {}
+
+// The Workspace was archived, but External Storage was attached to it during the
+// archive and is still attached. To detach it, archive the Workspace again as a
+// caller with the `org:external-storage:use` permission.
+type StorageAttachedDuringArchiveErrorDetails struct {
+	ErrorCode constant.StorageAttachedDuringArchiveErrorCode `json:"error_code" default:"storage_attached_during_archive"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r StorageAttachedDuringArchiveErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *StorageAttachedDuringArchiveErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (StorageAttachedDuringArchiveErrorDetails) ImplErrorDetailsUnion() {}
 
 // The workspace has reached the member limit that Anthropic set for it.
 type WorkspaceMemberLimitExceededErrorDetails struct {
@@ -2830,6 +3173,322 @@ func (r *BetaInvalidMetadataErrorDetails) UnmarshalJSON(data []byte) error {
 
 func (BetaInvalidMetadataErrorDetails) ImplErrorDetailsUnion() {}
 
+// Anthropic has not approved External Storage for the organization, for the
+// Workspace or, for storage bound to a user profile, for that user profile.
+// Contact your Anthropic account team.
+type BetaGrantRequiredErrorDetails struct {
+	ErrorCode constant.BetaGrantRequiredErrorCode `json:"error_code" default:"grant_required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaGrantRequiredErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaGrantRequiredErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaGrantRequiredErrorDetails) ImplErrorDetailsUnion() {}
+
+// The feature isn't offered to this organization. The error's `message` names the
+// kind of organization or, when it names none, says to contact your Anthropic
+// account team.
+type BetaOrganizationNotEligibleErrorDetails struct {
+	ErrorCode constant.BetaOrganizationNotEligibleErrorCode `json:"error_code" default:"organization_not_eligible"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaOrganizationNotEligibleErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaOrganizationNotEligibleErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaOrganizationNotEligibleErrorDetails) ImplErrorDetailsUnion() {}
+
+// The request can't use External Storage on this cloud provider. The error's
+// message says why.
+type BetaProviderNotAllowedErrorDetails struct {
+	ErrorCode constant.BetaProviderNotAllowedErrorCode `json:"error_code" default:"provider_not_allowed"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaProviderNotAllowedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaProviderNotAllowedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaProviderNotAllowedErrorDetails) ImplErrorDetailsUnion() {}
+
+// `provider_config.region` is not a region where External Storage is available.
+type BetaUnsupportedRegionErrorDetails struct {
+	ErrorCode constant.BetaUnsupportedRegionErrorCode `json:"error_code" default:"unsupported_region"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaUnsupportedRegionErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaUnsupportedRegionErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaUnsupportedRegionErrorDetails) ImplErrorDetailsUnion() {}
+
+// The organization already has External Storage for this bucket that it has not
+// deleted. List the organization's External Storage to find it.
+type BetaStorageAlreadyRegisteredErrorDetails struct {
+	ErrorCode constant.BetaStorageAlreadyRegisteredErrorCode `json:"error_code" default:"storage_already_registered"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaStorageAlreadyRegisteredErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaStorageAlreadyRegisteredErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaStorageAlreadyRegisteredErrorDetails) ImplErrorDetailsUnion() {}
+
+// One of the organization's approvals from Anthropic could not be read right now,
+// so nothing was done. Retry after the `Retry-After` delay.
+type BetaAuthorizationCheckUnavailableErrorDetails struct {
+	ErrorCode constant.BetaAuthorizationCheckUnavailableErrorCode `json:"error_code" default:"authorization_check_unavailable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaAuthorizationCheckUnavailableErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaAuthorizationCheckUnavailableErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaAuthorizationCheckUnavailableErrorDetails) ImplErrorDetailsUnion() {}
+
+// On Claude Platform on AWS, the External Storage ID in the request is neither a
+// bucket ARN nor an `estrg_` ID, or is the `estrg_` ID of AWS storage. Name AWS
+// storage by its bucket ARN, `arn:<partition>:s3:::<bucket_name>`, which responses
+// return as its `id`.
+type BetaInvalidStorageARNErrorDetails struct {
+	ErrorCode constant.BetaInvalidStorageARNErrorCode `json:"error_code" default:"invalid_storage_arn"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaInvalidStorageARNErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaInvalidStorageARNErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaInvalidStorageARNErrorDetails) ImplErrorDetailsUnion() {}
+
+// The External Storage is `active` or `draining`, so this delete didn't erase it.
+// The message says what to do next. On `draining` storage this delete may have
+// started a removal that can't be undone: get the storage and read
+// `status.removal_started`.
+type BetaExternalStorageInUseErrorDetails struct {
+	ErrorCode constant.BetaExternalStorageInUseErrorCode `json:"error_code" default:"external_storage_in_use"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaExternalStorageInUseErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaExternalStorageInUseErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaExternalStorageInUseErrorDetails) ImplErrorDetailsUnion() {}
+
+// The External Storage can't be deleted while an Enterprise Frontier Safeguards
+// workspace policy lists it as allowed storage.
+type BetaExternalStorageInWorkspacePolicyErrorDetails struct {
+	ErrorCode constant.BetaExternalStorageInWorkspacePolicyErrorCode `json:"error_code" default:"external_storage_in_workspace_policy"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaExternalStorageInWorkspacePolicyErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaExternalStorageInWorkspacePolicyErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaExternalStorageInWorkspacePolicyErrorDetails) ImplErrorDetailsUnion() {}
+
+// The External Storage failed verification, so the request changed nothing.
+// `failed_checks` lists what to fix.
+type BetaStorageVerificationFailedErrorDetails struct {
+	ErrorCode constant.BetaStorageVerificationFailedErrorCode `json:"error_code" default:"storage_verification_failed"`
+	// One entry for each check that failed.
+	FailedChecks []BetaExternalStorageFailedCheck `json:"failed_checks" api:"required"`
+	// The request field at fault. Sent when the refused request is a Workspace's
+	// create or update.
+	Field string `json:"field" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode    respjson.Field
+		FailedChecks respjson.Field
+		Field        respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaStorageVerificationFailedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaStorageVerificationFailedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaStorageVerificationFailedErrorDetails) ImplErrorDetailsUnion() {}
+
+// One check that an External Storage's verification failed.
+type BetaExternalStorageFailedCheck struct {
+	// Name of the check that failed, such as `versioning`, for code to branch on. New
+	// names may be added; `other` is a check this API does not name. The value is a
+	// name with no data of its own.
+	//
+	// Any of "already_registered", "assume_role", "bucket_empty",
+	// "bucket_not_confirmed", "bucket_policy", "bucket_settings",
+	// "default_encryption", "deletion_policy", "encryption", "grant_mismatch",
+	// "key_usable", "kms_key_refused", "lifecycle_no_archive", "lifecycle_rules",
+	// "lifecycle_template", "location_mismatch", "object_lock", "other",
+	// "ownership_enforced", "probe_failed", "probe_object", "probe_storage_class",
+	// "public_access_block", "region", "replication", "request_metrics",
+	// "request_payment", "transcripts_support", "trust_ingest_role",
+	// "trust_maintenance_role", "trust_media_erasure_role", "trust_read_role",
+	// "trust_transcripts_role", "trust_transcripts_verify_role", "trust_verify_role",
+	// "versioning".
+	Check BetaExternalStorageFailedCheckCheck `json:"check" api:"required"`
+	// What failed and how to fix it, in plain words.
+	Message string `json:"message" api:"required"`
+	// The part of your access grant that the check is about, such as `ingest`: on AWS,
+	// one of the IAM roles your setup created; on Google Cloud, the grant to one of
+	// Anthropic's service accounts. `null` when the check is not about one. New names
+	// may be added. The value is a name with no data of its own.
+	//
+	// Any of "ingest", "maintenance", "media_erasure", "read", "transcripts",
+	// "transcripts_verify", "verify".
+	Role BetaExternalStorageFailedCheckRole `json:"role" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Check       respjson.Field
+		Message     respjson.Field
+		Role        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaExternalStorageFailedCheck) RawJSON() string { return r.JSON.raw }
+func (r *BetaExternalStorageFailedCheck) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Name of the check that failed, such as `versioning`, for code to branch on. New
+// names may be added; `other` is a check this API does not name. The value is a
+// name with no data of its own.
+type BetaExternalStorageFailedCheckCheck string
+
+const (
+	BetaExternalStorageFailedCheckCheckAlreadyRegistered          BetaExternalStorageFailedCheckCheck = "already_registered"
+	BetaExternalStorageFailedCheckCheckAssumeRole                 BetaExternalStorageFailedCheckCheck = "assume_role"
+	BetaExternalStorageFailedCheckCheckBucketEmpty                BetaExternalStorageFailedCheckCheck = "bucket_empty"
+	BetaExternalStorageFailedCheckCheckBucketNotConfirmed         BetaExternalStorageFailedCheckCheck = "bucket_not_confirmed"
+	BetaExternalStorageFailedCheckCheckBucketPolicy               BetaExternalStorageFailedCheckCheck = "bucket_policy"
+	BetaExternalStorageFailedCheckCheckBucketSettings             BetaExternalStorageFailedCheckCheck = "bucket_settings"
+	BetaExternalStorageFailedCheckCheckDefaultEncryption          BetaExternalStorageFailedCheckCheck = "default_encryption"
+	BetaExternalStorageFailedCheckCheckDeletionPolicy             BetaExternalStorageFailedCheckCheck = "deletion_policy"
+	BetaExternalStorageFailedCheckCheckEncryption                 BetaExternalStorageFailedCheckCheck = "encryption"
+	BetaExternalStorageFailedCheckCheckGrantMismatch              BetaExternalStorageFailedCheckCheck = "grant_mismatch"
+	BetaExternalStorageFailedCheckCheckKeyUsable                  BetaExternalStorageFailedCheckCheck = "key_usable"
+	BetaExternalStorageFailedCheckCheckKMSKeyRefused              BetaExternalStorageFailedCheckCheck = "kms_key_refused"
+	BetaExternalStorageFailedCheckCheckLifecycleNoArchive         BetaExternalStorageFailedCheckCheck = "lifecycle_no_archive"
+	BetaExternalStorageFailedCheckCheckLifecycleRules             BetaExternalStorageFailedCheckCheck = "lifecycle_rules"
+	BetaExternalStorageFailedCheckCheckLifecycleTemplate          BetaExternalStorageFailedCheckCheck = "lifecycle_template"
+	BetaExternalStorageFailedCheckCheckLocationMismatch           BetaExternalStorageFailedCheckCheck = "location_mismatch"
+	BetaExternalStorageFailedCheckCheckObjectLock                 BetaExternalStorageFailedCheckCheck = "object_lock"
+	BetaExternalStorageFailedCheckCheckOther                      BetaExternalStorageFailedCheckCheck = "other"
+	BetaExternalStorageFailedCheckCheckOwnershipEnforced          BetaExternalStorageFailedCheckCheck = "ownership_enforced"
+	BetaExternalStorageFailedCheckCheckProbeFailed                BetaExternalStorageFailedCheckCheck = "probe_failed"
+	BetaExternalStorageFailedCheckCheckProbeObject                BetaExternalStorageFailedCheckCheck = "probe_object"
+	BetaExternalStorageFailedCheckCheckProbeStorageClass          BetaExternalStorageFailedCheckCheck = "probe_storage_class"
+	BetaExternalStorageFailedCheckCheckPublicAccessBlock          BetaExternalStorageFailedCheckCheck = "public_access_block"
+	BetaExternalStorageFailedCheckCheckRegion                     BetaExternalStorageFailedCheckCheck = "region"
+	BetaExternalStorageFailedCheckCheckReplication                BetaExternalStorageFailedCheckCheck = "replication"
+	BetaExternalStorageFailedCheckCheckRequestMetrics             BetaExternalStorageFailedCheckCheck = "request_metrics"
+	BetaExternalStorageFailedCheckCheckRequestPayment             BetaExternalStorageFailedCheckCheck = "request_payment"
+	BetaExternalStorageFailedCheckCheckTranscriptsSupport         BetaExternalStorageFailedCheckCheck = "transcripts_support"
+	BetaExternalStorageFailedCheckCheckTrustIngestRole            BetaExternalStorageFailedCheckCheck = "trust_ingest_role"
+	BetaExternalStorageFailedCheckCheckTrustMaintenanceRole       BetaExternalStorageFailedCheckCheck = "trust_maintenance_role"
+	BetaExternalStorageFailedCheckCheckTrustMediaErasureRole      BetaExternalStorageFailedCheckCheck = "trust_media_erasure_role"
+	BetaExternalStorageFailedCheckCheckTrustReadRole              BetaExternalStorageFailedCheckCheck = "trust_read_role"
+	BetaExternalStorageFailedCheckCheckTrustTranscriptsRole       BetaExternalStorageFailedCheckCheck = "trust_transcripts_role"
+	BetaExternalStorageFailedCheckCheckTrustTranscriptsVerifyRole BetaExternalStorageFailedCheckCheck = "trust_transcripts_verify_role"
+	BetaExternalStorageFailedCheckCheckTrustVerifyRole            BetaExternalStorageFailedCheckCheck = "trust_verify_role"
+	BetaExternalStorageFailedCheckCheckVersioning                 BetaExternalStorageFailedCheckCheck = "versioning"
+)
+
+// The part of your access grant that the check is about, such as `ingest`: on AWS,
+// one of the IAM roles your setup created; on Google Cloud, the grant to one of
+// Anthropic's service accounts. `null` when the check is not about one. New names
+// may be added. The value is a name with no data of its own.
+type BetaExternalStorageFailedCheckRole string
+
+const (
+	BetaExternalStorageFailedCheckRoleIngest            BetaExternalStorageFailedCheckRole = "ingest"
+	BetaExternalStorageFailedCheckRoleMaintenance       BetaExternalStorageFailedCheckRole = "maintenance"
+	BetaExternalStorageFailedCheckRoleMediaErasure      BetaExternalStorageFailedCheckRole = "media_erasure"
+	BetaExternalStorageFailedCheckRoleRead              BetaExternalStorageFailedCheckRole = "read"
+	BetaExternalStorageFailedCheckRoleTranscripts       BetaExternalStorageFailedCheckRole = "transcripts"
+	BetaExternalStorageFailedCheckRoleTranscriptsVerify BetaExternalStorageFailedCheckRole = "transcripts_verify"
+	BetaExternalStorageFailedCheckRoleVerify            BetaExternalStorageFailedCheckRole = "verify"
+)
+
 // The member is the organization's primary owner, whom no API key or token can
 // sign out.
 type BetaCannotSignOutPrimaryOwnerErrorDetails struct {
@@ -2969,6 +3628,239 @@ func (r *BetaCannotSignOutPrivilegedMemberErrorDetails) UnmarshalJSON(data []byt
 }
 
 func (BetaCannotSignOutPrivilegedMemberErrorDetails) ImplErrorDetailsUnion() {}
+
+// Turning human review off needs Anthropic's approval for the organization, and
+// the organization doesn't have it. Contact Anthropic support to request approval.
+type BetaApprovalRequiredErrorDetails struct {
+	ErrorCode constant.BetaApprovalRequiredErrorCode `json:"error_code" default:"approval_required"`
+	// The request field that needs the approval.
+	Field string `json:"field" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		Field       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaApprovalRequiredErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaApprovalRequiredErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaApprovalRequiredErrorDetails) ImplErrorDetailsUnion() {}
+
+// External Storage isn't available for this Workspace, so only `internal` storage
+// is accepted. The error's `message` says why.
+type BetaExternalStorageNotAvailableErrorDetails struct {
+	ErrorCode constant.BetaExternalStorageNotAvailableErrorCode `json:"error_code" default:"external_storage_not_available"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaExternalStorageNotAvailableErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaExternalStorageNotAvailableErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaExternalStorageNotAvailableErrorDetails) ImplErrorDetailsUnion() {}
+
+// Human review can't be set as requested on this Workspace, so the request changed
+// nothing. The error's `message` says what to do instead.
+type BetaHumanReviewNotAvailableErrorDetails struct {
+	ErrorCode constant.BetaHumanReviewNotAvailableErrorCode `json:"error_code" default:"human_review_not_available"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaHumanReviewNotAvailableErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaHumanReviewNotAvailableErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaHumanReviewNotAvailableErrorDetails) ImplErrorDetailsUnion() {}
+
+// The request would leave the Workspace with
+// `inference_data_privacy.safeguards_storage` set to External Storage and
+// `inference_data_privacy.human_review` enabled. Anthropic doesn't offer human
+// review of data in a customer's own storage. Set `human_review` to `disabled`, or
+// `safeguards_storage` to `internal`.
+type BetaHumanReviewOnWithExternalStorageErrorDetails struct {
+	ErrorCode constant.BetaHumanReviewOnWithExternalStorageErrorCode `json:"error_code" default:"human_review_on_with_external_storage"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaHumanReviewOnWithExternalStorageErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaHumanReviewOnWithExternalStorageErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaHumanReviewOnWithExternalStorageErrorDetails) ImplErrorDetailsUnion() {}
+
+// This External Storage can't be attached to the setting named in `field`. The
+// error's `message` says why.
+type BetaStorageNotAttachableErrorDetails struct {
+	ErrorCode constant.BetaStorageNotAttachableErrorCode `json:"error_code" default:"storage_not_attachable"`
+	// The request field at fault.
+	Field string `json:"field" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		Field       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaStorageNotAttachableErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaStorageNotAttachableErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaStorageNotAttachableErrorDetails) ImplErrorDetailsUnion() {}
+
+// In an organization managed through AWS or Google Cloud, the request would leave
+// the Workspace with `inference_data_privacy.human_review` disabled and
+// `inference_data_privacy.transcripts_storage` not set to External Storage. With
+// human review disabled, the organization reviews its own flagged requests, and it
+// receives them only in that storage.
+type BetaTranscriptsStorageRequiredErrorDetails struct {
+	ErrorCode constant.BetaTranscriptsStorageRequiredErrorCode `json:"error_code" default:"transcripts_storage_required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaTranscriptsStorageRequiredErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaTranscriptsStorageRequiredErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaTranscriptsStorageRequiredErrorDetails) ImplErrorDetailsUnion() {}
+
+// The Workspace has reached its limit of 100 different External Storage resources
+// attached over its lifetime. Detached storage counts toward the limit until it is
+// deleted.
+type BetaStorageAttachLimitReachedErrorDetails struct {
+	ErrorCode constant.BetaStorageAttachLimitReachedErrorCode `json:"error_code" default:"storage_attach_limit_reached"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaStorageAttachLimitReachedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaStorageAttachLimitReachedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaStorageAttachLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
+
+// This storage is bound to a different user profile from storage the Workspace has
+// attached, or from active or draining storage it once had for safeguards data.
+// Detaching storage the Workspace uses only for transcripts clears this. Detaching
+// safeguards storage doesn't, so use a new Workspace instead.
+type BetaStorageProfileStillRequiredErrorDetails struct {
+	ErrorCode constant.BetaStorageProfileStillRequiredErrorCode `json:"error_code" default:"storage_profile_still_required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaStorageProfileStillRequiredErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaStorageProfileStillRequiredErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaStorageProfileStillRequiredErrorDetails) ImplErrorDetailsUnion() {}
+
+// Another request changed this storage setting while this one was running, so this
+// request left it as it is. Read the Workspace and send the request again if you
+// still want the change.
+type BetaStorageChangedConcurrentlyErrorDetails struct {
+	ErrorCode constant.BetaStorageChangedConcurrentlyErrorCode `json:"error_code" default:"storage_changed_concurrently"`
+	// The storage setting that changed.
+	Field string `json:"field" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		Field       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaStorageChangedConcurrentlyErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaStorageChangedConcurrentlyErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaStorageChangedConcurrentlyErrorDetails) ImplErrorDetailsUnion() {}
+
+// Another request changed the Workspace, so this request left the setting named in
+// `field` as it is. The error's `message` says which of this request's other
+// changes are in place. Read the Workspace and send the request again if you still
+// want the change.
+type BetaWorkspaceChangedConcurrentlyErrorDetails struct {
+	ErrorCode constant.BetaWorkspaceChangedConcurrentlyErrorCode `json:"error_code" default:"workspace_changed_concurrently"`
+	// The request field whose change was refused. Other values may be returned. The
+	// value is a name with no data of its own.
+	//
+	// Any of "inference_data_privacy.human_review".
+	Field BetaWorkspaceChangedConcurrentlyField `json:"field" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		Field       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaWorkspaceChangedConcurrentlyErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaWorkspaceChangedConcurrentlyErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaWorkspaceChangedConcurrentlyErrorDetails) ImplErrorDetailsUnion() {}
+
+type BetaWorkspaceChangedConcurrentlyField string
+
+const (
+	BetaWorkspaceChangedConcurrentlyFieldInferenceDataPrivacyHumanReview BetaWorkspaceChangedConcurrentlyField = "inference_data_privacy.human_review"
+)
 
 // The organization cannot retrieve, set or delete spend limits with an Admin API
 // credential.

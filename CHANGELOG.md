@@ -1,5 +1,38 @@
 # Changelog
 
+## [2.14.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.13.0...v2.14.0) (2026-11-23)
+
+### Features
+
+* **api:** add an error code to Message Batches creation
+* **api:** add External Storage to the Admin API beta
+* **api:** add webhook events for external storage failure and recovery
+
+
+### Bug Fixes
+
+* **api:** change the type of ErrorDetailsUnion.Field to string
+
+  To compare it with a `WorkspacePolicyField` value, use `AsWorkspacePolicyViolation().Field`. The beta methods `Workspaces.Get`, `Workspaces.Archive` and `ComplianceSettings.Get` now take a params argument.
+
+* **client:** don't retry a message batch create that may have succeeded
+
+  Creating a message batch is now retried only after a 429 or when no connection could be made. After a timeout, a dropped connection or a 5xx error such as 529, the call returns the error. List your batches before you send it again.
+
+
+### Chores
+
+* **api:** mark Claude Opus 4.5 as deprecated (end-of-life January 22, 2027)
+* **docs:** clarify when plugin archive downloads are recorded and who gave a share
+* **docs:** correct organization-type notes in usage and cost reports
+* **docs:** describe the user profile endpoints and link to the guide
+* **docs:** use realistic example values in more request bodies
+
+
+### Documentation
+
+* **api:** shorten the human_review description
+
 ## [2.13.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.12.0...v2.13.0) (2026-11-20)
 
 ### Features

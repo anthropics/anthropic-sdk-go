@@ -143,6 +143,7 @@ const (
 	AnthropicBetaCEUserManagement2026_07_13            AnthropicBeta = "ce-user-management-2026-07-13"
 	AnthropicBetaCEClaudeCodeManagedSettings2026_10_06 AnthropicBeta = "ce-claude-code-managed-settings-2026-10-06"
 	AnthropicBetaEfs2026_10_01                         AnthropicBeta = "efs-2026-10-01"
+	AnthropicBetaGoogleManagedDataControls2026_09_01   AnthropicBeta = "google-managed-data-controls-2026-09-01"
 	AnthropicBetaUserProfilesBilling2026_10_01         AnthropicBeta = "user-profiles-billing-2026-10-01"
 )
 

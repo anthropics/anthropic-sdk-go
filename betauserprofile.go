@@ -33,6 +33,7 @@ import (
 type BetaUserProfileService struct {
 	Options    []option.RequestOption
 	ActionURLs BetaUserProfileActionURLService
+	Providers  BetaUserProfileProviderService
 }
 
 // NewBetaUserProfileService generates a new service that applies the given options
@@ -42,6 +43,7 @@ func NewBetaUserProfileService(opts ...option.RequestOption) (r BetaUserProfileS
 	r = BetaUserProfileService{}
 	r.Options = opts
 	r.ActionURLs = NewBetaUserProfileActionURLService(opts...)
+	r.Providers = NewBetaUserProfileProviderService(opts...)
 	return
 }
 

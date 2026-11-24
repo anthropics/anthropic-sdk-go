@@ -2542,6 +2542,54 @@ Methods:
 
 - <code title="post /v1/user_profiles/{user_profile_id}/action_urls">client.Beta.UserProfiles.ActionURLs.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaUserProfileActionURLService.New">New</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, userProfileID <a href="https://pkg.go.dev/builtin#string">string</a>, params <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaUserProfileActionURLNewParams">BetaUserProfileActionURLNewParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaUserProfileActionURL">BetaUserProfileActionURL</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 
+### Providers
+
+#### Google
+
+##### DataControls
+
+Params Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedBucketReferenceParam">BetaGoogleManagedBucketReferenceParam</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedCMEKControlParamsUnion">BetaGoogleManagedCMEKControlParamsUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedCMEKDisabledParams">BetaGoogleManagedCMEKDisabledParams</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedCMEKEnabledParams">BetaGoogleManagedCMEKEnabledParams</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedStorageControlParamsUnion">BetaGoogleManagedStorageControlParamsUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedStorageDisabledParams">BetaGoogleManagedStorageDisabledParams</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedStorageEnabledParams">BetaGoogleManagedStorageEnabledParams</a>
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedBucketReference">BetaGoogleManagedBucketReference</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedCMEKControlUnion">BetaGoogleManagedCMEKControlUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedCMEKDisabled">BetaGoogleManagedCMEKDisabled</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedCMEKEnabled">BetaGoogleManagedCMEKEnabled</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedCMEKRegionActive">BetaGoogleManagedCMEKRegionActive</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedCMEKRegionFailed">BetaGoogleManagedCMEKRegionFailed</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedCMEKRegionNotConfigured">BetaGoogleManagedCMEKRegionNotConfigured</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedCMEKRegionPending">BetaGoogleManagedCMEKRegionPending</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedCMEKRegionStatusUnion">BetaGoogleManagedCMEKRegionStatusUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedCMEKRegionSuspended">BetaGoogleManagedCMEKRegionSuspended</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedDataControls">BetaGoogleManagedDataControls</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedRetiredBucket">BetaGoogleManagedRetiredBucket</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedRetiredKey">BetaGoogleManagedRetiredKey</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedStorageBucket">BetaGoogleManagedStorageBucket</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedStorageControlUnion">BetaGoogleManagedStorageControlUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedStorageDisabled">BetaGoogleManagedStorageDisabled</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedStorageEnabled">BetaGoogleManagedStorageEnabled</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedStorageFailedCheck">BetaGoogleManagedStorageFailedCheck</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedStorageRegionActive">BetaGoogleManagedStorageRegionActive</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedStorageRegionFailed">BetaGoogleManagedStorageRegionFailed</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedStorageRegionNotConfigured">BetaGoogleManagedStorageRegionNotConfigured</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedStorageRegionPending">BetaGoogleManagedStorageRegionPending</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedStorageRegionStatusUnion">BetaGoogleManagedStorageRegionStatusUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedStorageRegionSuspended">BetaGoogleManagedStorageRegionSuspended</a>
+
+Methods:
+
+- <code title="get /v1/user_profiles/{user_profile_id}/providers/google/data_controls">client.Beta.UserProfiles.Providers.Google.DataControls.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaUserProfileProviderGoogleDataControlService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, userProfileID <a href="https://pkg.go.dev/builtin#string">string</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaUserProfileProviderGoogleDataControlGetParams">BetaUserProfileProviderGoogleDataControlGetParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedDataControls">BetaGoogleManagedDataControls</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="post /v1/user_profiles/{user_profile_id}/providers/google/data_controls">client.Beta.UserProfiles.Providers.Google.DataControls.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaUserProfileProviderGoogleDataControlService.Update">Update</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, userProfileID <a href="https://pkg.go.dev/builtin#string">string</a>, params <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaUserProfileProviderGoogleDataControlUpdateParams">BetaUserProfileProviderGoogleDataControlUpdateParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaGoogleManagedDataControls">BetaGoogleManagedDataControls</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
 ## Dreams
 
 Params Types:

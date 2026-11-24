@@ -268,6 +268,7 @@ type BetaExternalStorageInWorkspacePolicyErrorCode string      // Always "extern
 type BetaExternalStorageNotAvailableErrorCode string           // Always "external_storage_not_available"
 type ExternalStorageFailed string                              // Always "external_storage.failed"
 type ExternalStorageRecovered string                           // Always "external_storage.recovered"
+type Failed string                                             // Always "failed"
 type Failure string                                            // Always "failure"
 type Fallback string                                           // Always "fallback"
 type FallbackMessage string                                    // Always "fallback_message"
@@ -288,6 +289,7 @@ type GCP string                                                // Always "gcp"
 type GetPageText string                                        // Always "get_page_text"
 type GitHubRepository string                                   // Always "github_repository"
 type Glob string                                               // Always "glob"
+type GoogleManagedDataControls string                          // Always "google_managed_data_controls"
 type BetaGrantRequiredErrorCode string                         // Always "grant_required"
 type Grep string                                               // Always "grep"
 type BetaHeartbeatPreconditionFailedErrorCode string           // Always "heartbeat_precondition_failed"
@@ -374,6 +376,7 @@ type Navigate string                                           // Always "naviga
 type NewTab string                                             // Always "new_tab"
 type None string                                               // Always "none"
 type NotApplied string                                         // Always "not_applied"
+type NotConfigured string                                      // Always "not_configured"
 type NotFoundError string                                      // Always "not_found_error"
 type Object string                                             // Always "object"
 type OIDC string                                               // Always "oidc"
@@ -393,6 +396,7 @@ type OutcomeEvaluation string                                  // Always "outcom
 type OverloadedError string                                    // Always "overloaded_error"
 type PageLocation string                                       // Always "page_location"
 type ParentOrganizationRequiredErrorCode string                // Always "parent_organization_required"
+type Pending string                                            // Always "pending"
 type PendingConfiguration string                               // Always "pending_configuration"
 type PermissionError string                                    // Always "permission_error"
 type Plugin string                                             // Always "plugin"
@@ -549,6 +553,7 @@ type StrReplaceEditor string                                   // Always "str_re
 type Succeeded string                                          // Always "succeeded"
 type Success string                                            // Always "success"
 type Summarize string                                          // Always "summarize"
+type Suspended string                                          // Always "suspended"
 type SustainedFailure string                                   // Always "sustained_failure"
 type SwitchTab string                                          // Always "switch_tab"
 type System string                                             // Always "system"
@@ -1071,6 +1076,7 @@ func (c ExternalStorageFailed) Default() ExternalStorageFailed { return "externa
 func (c ExternalStorageRecovered) Default() ExternalStorageRecovered {
 	return "external_storage.recovered"
 }
+func (c Failed) Default() Failed                     { return "failed" }
 func (c Failure) Default() Failure                   { return "failure" }
 func (c Fallback) Default() Fallback                 { return "fallback" }
 func (c FallbackMessage) Default() FallbackMessage   { return "fallback_message" }
@@ -1088,15 +1094,18 @@ func (c FileExpiredErrorCode) Default() FileExpiredErrorCode { return "file_expi
 func (c FileNotDownloadableErrorCode) Default() FileNotDownloadableErrorCode {
 	return "file_not_downloadable"
 }
-func (c FileNotFoundError) Default() FileNotFoundError                   { return "file_not_found_error" }
-func (c FileUpload) Default() FileUpload                                 { return "file_upload" }
-func (c Files) Default() Files                                           { return "files" }
-func (c Find) Default() Find                                             { return "find" }
-func (c FormInput) Default() FormInput                                   { return "form_input" }
-func (c GCP) Default() GCP                                               { return "gcp" }
-func (c GetPageText) Default() GetPageText                               { return "get_page_text" }
-func (c GitHubRepository) Default() GitHubRepository                     { return "github_repository" }
-func (c Glob) Default() Glob                                             { return "glob" }
+func (c FileNotFoundError) Default() FileNotFoundError { return "file_not_found_error" }
+func (c FileUpload) Default() FileUpload               { return "file_upload" }
+func (c Files) Default() Files                         { return "files" }
+func (c Find) Default() Find                           { return "find" }
+func (c FormInput) Default() FormInput                 { return "form_input" }
+func (c GCP) Default() GCP                             { return "gcp" }
+func (c GetPageText) Default() GetPageText             { return "get_page_text" }
+func (c GitHubRepository) Default() GitHubRepository   { return "github_repository" }
+func (c Glob) Default() Glob                           { return "glob" }
+func (c GoogleManagedDataControls) Default() GoogleManagedDataControls {
+	return "google_managed_data_controls"
+}
 func (c BetaGrantRequiredErrorCode) Default() BetaGrantRequiredErrorCode { return "grant_required" }
 func (c Grep) Default() Grep                                             { return "grep" }
 func (c BetaHeartbeatPreconditionFailedErrorCode) Default() BetaHeartbeatPreconditionFailedErrorCode {
@@ -1219,6 +1228,7 @@ func (c Navigate) Default() Navigate                     { return "navigate" }
 func (c NewTab) Default() NewTab                         { return "new_tab" }
 func (c None) Default() None                             { return "none" }
 func (c NotApplied) Default() NotApplied                 { return "not_applied" }
+func (c NotConfigured) Default() NotConfigured           { return "not_configured" }
 func (c NotFoundError) Default() NotFoundError           { return "not_found_error" }
 func (c Object) Default() Object                         { return "object" }
 func (c OIDC) Default() OIDC                             { return "oidc" }
@@ -1256,6 +1266,7 @@ func (c PageLocation) Default() PageLocation           { return "page_location" 
 func (c ParentOrganizationRequiredErrorCode) Default() ParentOrganizationRequiredErrorCode {
 	return "parent_organization_required"
 }
+func (c Pending) Default() Pending                           { return "pending" }
 func (c PendingConfiguration) Default() PendingConfiguration { return "pending_configuration" }
 func (c PermissionError) Default() PermissionError           { return "permission_error" }
 func (c Plugin) Default() Plugin                             { return "plugin" }
@@ -1528,6 +1539,7 @@ func (c StrReplaceEditor) Default() StrReplaceEditor         { return "str_repla
 func (c Succeeded) Default() Succeeded                       { return "succeeded" }
 func (c Success) Default() Success                           { return "success" }
 func (c Summarize) Default() Summarize                       { return "summarize" }
+func (c Suspended) Default() Suspended                       { return "suspended" }
 func (c SustainedFailure) Default() SustainedFailure         { return "sustained_failure" }
 func (c SwitchTab) Default() SwitchTab                       { return "switch_tab" }
 func (c System) Default() System                             { return "system" }
@@ -2044,6 +2056,7 @@ func (c BetaExternalStorageNotAvailableErrorCode) MarshalJSON() ([]byte, error) 
 }
 func (c ExternalStorageFailed) MarshalJSON() ([]byte, error)          { return marshalString(c) }
 func (c ExternalStorageRecovered) MarshalJSON() ([]byte, error)       { return marshalString(c) }
+func (c Failed) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c Failure) MarshalJSON() ([]byte, error)                        { return marshalString(c) }
 func (c Fallback) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c FallbackMessage) MarshalJSON() ([]byte, error)                { return marshalString(c) }
@@ -2064,6 +2077,7 @@ func (c GCP) MarshalJSON() ([]byte, error)                            { return m
 func (c GetPageText) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
 func (c GitHubRepository) MarshalJSON() ([]byte, error)               { return marshalString(c) }
 func (c Glob) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
+func (c GoogleManagedDataControls) MarshalJSON() ([]byte, error)      { return marshalString(c) }
 func (c BetaGrantRequiredErrorCode) MarshalJSON() ([]byte, error)     { return marshalString(c) }
 func (c Grep) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c BetaHeartbeatPreconditionFailedErrorCode) MarshalJSON() ([]byte, error) {
@@ -2158,6 +2172,7 @@ func (c Navigate) MarshalJSON() ([]byte, error)                        { return 
 func (c NewTab) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c None) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c NotApplied) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c NotConfigured) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c NotFoundError) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c Object) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c OIDC) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
@@ -2181,6 +2196,7 @@ func (c OutcomeEvaluation) MarshalJSON() ([]byte, error)                     { r
 func (c OverloadedError) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c PageLocation) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c ParentOrganizationRequiredErrorCode) MarshalJSON() ([]byte, error)   { return marshalString(c) }
+func (c Pending) MarshalJSON() ([]byte, error)                               { return marshalString(c) }
 func (c PendingConfiguration) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c PermissionError) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c Plugin) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
@@ -2369,6 +2385,7 @@ func (c StrReplaceEditor) MarshalJSON() ([]byte, error)                     { re
 func (c Succeeded) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Success) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
 func (c Summarize) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c Suspended) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c SustainedFailure) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c SwitchTab) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c System) MarshalJSON() ([]byte, error)                               { return marshalString(c) }

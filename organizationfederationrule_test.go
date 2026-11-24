@@ -45,7 +45,7 @@ func TestOrganizationFederationRuleNewWithOptionalParams(t *testing.T) {
 		AppliesToAllWorkspaces: anthropic.Bool(true),
 		Description:            anthropic.String("description"),
 		TokenLifetimeSeconds:   anthropic.Int(60),
-		WorkspaceID:            anthropic.String("wrkspc_01JwQvzr7rXLA5AGx3HKfFUJ"),
+		WorkspaceID:            anthropic.String("wrkspc_01AbCdEfGhJkLmNpQrStUvWx"),
 	})
 	if err != nil {
 		var apierr *anthropic.Error

@@ -30,7 +30,7 @@ func TestBetaOrganizationAnalyticsCostListWithOptionalParams(t *testing.T) {
 		ActorIDs:            []string{"user_01WxYzAbCdEfGhJkMnPqRsTu"},
 		ActorTypes:          []anthropic.BetaAnalyticsActorType{anthropic.BetaAnalyticsActorTypeServiceAccountActor},
 		AgentIDs:            []string{"agent_01VHd3EAGJ6PLkP9LM7DDu3f"},
-		APIKeyIDs:           []string{"apikey_01Rj2N8SVvo6BePZj99NhmiT"},
+		APIKeyIDs:           []string{"apikey_01BcDeFgHjKmNpQrStUvWxYz"},
 		ClaudeTagCategories: []anthropic.BetaAnalyticsClaudeTagCategory{anthropic.BetaAnalyticsClaudeTagCategoryEngaged},
 		ClaudeTagUserIDs:    []string{"U0123ABCDEF"},
 		ContextWindows:      []anthropic.BetaAnalyticsContextWindow{anthropic.BetaAnalyticsContextWindowFrom0To200k},
@@ -54,7 +54,7 @@ func TestBetaOrganizationAnalyticsCostListWithOptionalParams(t *testing.T) {
 		Speeds:              []anthropic.BetaAnalyticsSpeed{anthropic.BetaAnalyticsSpeedFast},
 		TimeBucketWidth:     anthropic.BetaAnalyticsTimeBucketWidthDay,
 		UserProfileIDs:      []string{"uprof_01M33NeYUQK2WV9PpYcsPHLi"},
-		WorkspaceIDs:        []string{"wrkspc_01JwQvzr7rXLA5AGx3HKfFUJ"},
+		WorkspaceIDs:        []string{"wrkspc_01AbCdEfGhJkLmNpQrStUvWx"},
 		Betas:               []anthropic.AnthropicBeta{anthropic.AnthropicBetaComputerUse2024_10_22},
 	})
 	if err != nil {

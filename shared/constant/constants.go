@@ -134,6 +134,7 @@ type ClearToolUses20250919 string                                  // Always "cl
 type ClientSecretBasic string                                      // Always "client_secret_basic"
 type ClientSecretPost string                                       // Always "client_secret_post"
 type CloseTab string                                               // Always "close_tab"
+type Closed string                                                 // Always "closed"
 type Cloud string                                                  // Always "cloud"
 type CMEKContextUnavailableErrorCode string                        // Always "cmek_context_unavailable"
 type BetaCMEKFeatureUnsupportedErrorCode string                    // Always "cmek_feature_unsupported"
@@ -166,6 +167,9 @@ type CompactionToolChangesMismatchErrorCode string                 // Always "co
 type CompactionUnavailableErrorCode string                         // Always "compaction_unavailable"
 type Completed string                                              // Always "completed"
 type BetaComplianceConfigurationRestrictedErrorCode string         // Always "compliance_configuration_restricted"
+type ComplianceReviewCase string                                   // Always "compliance_review_case"
+type ComplianceReviewItem string                                   // Always "compliance_review_item"
+type ComplianceReviewNotice string                                 // Always "compliance_review_notice"
 type ComplianceSettings string                                     // Always "compliance_settings"
 type Computer string                                               // Always "computer"
 type Computer20241022 string                                       // Always "computer_20241022"
@@ -190,6 +194,7 @@ type ContractSpendLimitReachedErrorCode string                     // Always "co
 type Coordinate string                                             // Always "coordinate"
 type Coordinator string                                            // Always "coordinator"
 type Create string                                                 // Always "create"
+type CreateMessage string                                          // Always "create_message"
 type CreateNew string                                              // Always "create_new"
 type CredentialHostUnreachableError string                         // Always "credential_host_unreachable_error"
 type Cron string                                                   // Always "cron"
@@ -382,11 +387,13 @@ type Navigate string                                               // Always "na
 type NewTab string                                                 // Always "new_tab"
 type None string                                                   // Always "none"
 type NotApplied string                                             // Always "not_applied"
+type NotCaptured string                                            // Always "not_captured"
 type NotConfigured string                                          // Always "not_configured"
 type NotFoundError string                                          // Always "not_found_error"
 type Object string                                                 // Always "object"
 type OIDC string                                                   // Always "oidc"
 type Only string                                                   // Always "only"
+type Open string                                                   // Always "open"
 type OrgAPIKeyLimitExceededErrorCode string                        // Always "org_api_key_limit_exceeded"
 type OrgMemberLimitExceededErrorCode string                        // Always "org_member_limit_exceeded"
 type Organization string                                           // Always "organization"
@@ -461,6 +468,7 @@ type Restriction string                                            // Always "re
 type RetriesExhausted string                                       // Always "retries_exhausted"
 type Retrying string                                               // Always "retrying"
 type RightClick string                                             // Always "right_click"
+type SafeguardsReview string                                       // Always "safeguards_review"
 type SandboxEgressRestrictedErrorCode string                       // Always "sandbox_egress_restricted"
 type BetaScanFailedErrorCode string                                // Always "scan_failed"
 type BetaScanPendingErrorCode string                               // Always "scan_pending"
@@ -556,6 +564,7 @@ type StorageProfileMismatchErrorCode string                        // Always "st
 type BetaStorageProfileStillRequiredErrorCode string               // Always "storage_profile_still_required"
 type StorageQuotaExceededErrorCode string                          // Always "storage_quota_exceeded"
 type BetaStorageVerificationFailedErrorCode string                 // Always "storage_verification_failed"
+type StoredCopyUnavailable string                                  // Always "stored_copy_unavailable"
 type StrReplace string                                             // Always "str_replace"
 type StrReplaceBasedEditTool string                                // Always "str_replace_based_edit_tool"
 type StrReplaceEditor string                                       // Always "str_replace_editor"
@@ -873,6 +882,7 @@ func (c ClearToolUses20250919) Default() ClearToolUses20250919 { return "clear_t
 func (c ClientSecretBasic) Default() ClientSecretBasic         { return "client_secret_basic" }
 func (c ClientSecretPost) Default() ClientSecretPost           { return "client_secret_post" }
 func (c CloseTab) Default() CloseTab                           { return "close_tab" }
+func (c Closed) Default() Closed                               { return "closed" }
 func (c Cloud) Default() Cloud                                 { return "cloud" }
 func (c CMEKContextUnavailableErrorCode) Default() CMEKContextUnavailableErrorCode {
 	return "cmek_context_unavailable"
@@ -941,11 +951,14 @@ func (c Completed) Default() Completed { return "completed" }
 func (c BetaComplianceConfigurationRestrictedErrorCode) Default() BetaComplianceConfigurationRestrictedErrorCode {
 	return "compliance_configuration_restricted"
 }
-func (c ComplianceSettings) Default() ComplianceSettings { return "compliance_settings" }
-func (c Computer) Default() Computer                     { return "computer" }
-func (c Computer20241022) Default() Computer20241022     { return "computer_20241022" }
-func (c Computer20250124) Default() Computer20250124     { return "computer_20250124" }
-func (c Computer20251124) Default() Computer20251124     { return "computer_20251124" }
+func (c ComplianceReviewCase) Default() ComplianceReviewCase     { return "compliance_review_case" }
+func (c ComplianceReviewItem) Default() ComplianceReviewItem     { return "compliance_review_item" }
+func (c ComplianceReviewNotice) Default() ComplianceReviewNotice { return "compliance_review_notice" }
+func (c ComplianceSettings) Default() ComplianceSettings         { return "compliance_settings" }
+func (c Computer) Default() Computer                             { return "computer" }
+func (c Computer20241022) Default() Computer20241022             { return "computer_20241022" }
+func (c Computer20250124) Default() Computer20250124             { return "computer_20250124" }
+func (c Computer20251124) Default() Computer20251124             { return "computer_20251124" }
 func (c ComputerToolset20260801) Default() ComputerToolset20260801 {
 	return "computer_toolset_20260801"
 }
@@ -968,10 +981,11 @@ func (c Continue) Default() Continue                         { return "continue"
 func (c ContractSpendLimitReachedErrorCode) Default() ContractSpendLimitReachedErrorCode {
 	return "contract_spend_limit_reached"
 }
-func (c Coordinate) Default() Coordinate   { return "coordinate" }
-func (c Coordinator) Default() Coordinator { return "coordinator" }
-func (c Create) Default() Create           { return "create" }
-func (c CreateNew) Default() CreateNew     { return "create_new" }
+func (c Coordinate) Default() Coordinate       { return "coordinate" }
+func (c Coordinator) Default() Coordinator     { return "coordinator" }
+func (c Create) Default() Create               { return "create" }
+func (c CreateMessage) Default() CreateMessage { return "create_message" }
+func (c CreateNew) Default() CreateNew         { return "create_new" }
 func (c CredentialHostUnreachableError) Default() CredentialHostUnreachableError {
 	return "credential_host_unreachable_error"
 }
@@ -1255,11 +1269,13 @@ func (c Navigate) Default() Navigate                     { return "navigate" }
 func (c NewTab) Default() NewTab                         { return "new_tab" }
 func (c None) Default() None                             { return "none" }
 func (c NotApplied) Default() NotApplied                 { return "not_applied" }
+func (c NotCaptured) Default() NotCaptured               { return "not_captured" }
 func (c NotConfigured) Default() NotConfigured           { return "not_configured" }
 func (c NotFoundError) Default() NotFoundError           { return "not_found_error" }
 func (c Object) Default() Object                         { return "object" }
 func (c OIDC) Default() OIDC                             { return "oidc" }
 func (c Only) Default() Only                             { return "only" }
+func (c Open) Default() Open                             { return "open" }
 func (c OrgAPIKeyLimitExceededErrorCode) Default() OrgAPIKeyLimitExceededErrorCode {
 	return "org_api_key_limit_exceeded"
 }
@@ -1396,6 +1412,7 @@ func (c Restriction) Default() Restriction           { return "restriction" }
 func (c RetriesExhausted) Default() RetriesExhausted { return "retries_exhausted" }
 func (c Retrying) Default() Retrying                 { return "retrying" }
 func (c RightClick) Default() RightClick             { return "right_click" }
+func (c SafeguardsReview) Default() SafeguardsReview { return "safeguards_review" }
 func (c SandboxEgressRestrictedErrorCode) Default() SandboxEgressRestrictedErrorCode {
 	return "sandbox_egress_restricted"
 }
@@ -1565,7 +1582,8 @@ func (c StorageQuotaExceededErrorCode) Default() StorageQuotaExceededErrorCode {
 func (c BetaStorageVerificationFailedErrorCode) Default() BetaStorageVerificationFailedErrorCode {
 	return "storage_verification_failed"
 }
-func (c StrReplace) Default() StrReplace { return "str_replace" }
+func (c StoredCopyUnavailable) Default() StoredCopyUnavailable { return "stored_copy_unavailable" }
+func (c StrReplace) Default() StrReplace                       { return "str_replace" }
 func (c StrReplaceBasedEditTool) Default() StrReplaceBasedEditTool {
 	return "str_replace_based_edit_tool"
 }
@@ -1940,6 +1958,7 @@ func (c ClearToolUses20250919) MarshalJSON() ([]byte, error)                 { r
 func (c ClientSecretBasic) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c ClientSecretPost) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
 func (c CloseTab) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
+func (c Closed) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
 func (c Cloud) MarshalJSON() ([]byte, error)                                 { return marshalString(c) }
 func (c CMEKContextUnavailableErrorCode) MarshalJSON() ([]byte, error)       { return marshalString(c) }
 func (c BetaCMEKFeatureUnsupportedErrorCode) MarshalJSON() ([]byte, error)   { return marshalString(c) }
@@ -1978,6 +1997,9 @@ func (c Completed) MarshalJSON() ([]byte, error)                      { return m
 func (c BetaComplianceConfigurationRestrictedErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }
+func (c ComplianceReviewCase) MarshalJSON() ([]byte, error)                { return marshalString(c) }
+func (c ComplianceReviewItem) MarshalJSON() ([]byte, error)                { return marshalString(c) }
+func (c ComplianceReviewNotice) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c ComplianceSettings) MarshalJSON() ([]byte, error)                  { return marshalString(c) }
 func (c Computer) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Computer20241022) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
@@ -2002,6 +2024,7 @@ func (c ContractSpendLimitReachedErrorCode) MarshalJSON() ([]byte, error)  { ret
 func (c Coordinate) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c Coordinator) MarshalJSON() ([]byte, error)                         { return marshalString(c) }
 func (c Create) MarshalJSON() ([]byte, error)                              { return marshalString(c) }
+func (c CreateMessage) MarshalJSON() ([]byte, error)                       { return marshalString(c) }
 func (c CreateNew) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c CredentialHostUnreachableError) MarshalJSON() ([]byte, error)      { return marshalString(c) }
 func (c Cron) MarshalJSON() ([]byte, error)                                { return marshalString(c) }
@@ -2216,11 +2239,13 @@ func (c Navigate) MarshalJSON() ([]byte, error)                        { return 
 func (c NewTab) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c None) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c NotApplied) MarshalJSON() ([]byte, error)                      { return marshalString(c) }
+func (c NotCaptured) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c NotConfigured) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c NotFoundError) MarshalJSON() ([]byte, error)                   { return marshalString(c) }
 func (c Object) MarshalJSON() ([]byte, error)                          { return marshalString(c) }
 func (c OIDC) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c Only) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
+func (c Open) MarshalJSON() ([]byte, error)                            { return marshalString(c) }
 func (c OrgAPIKeyLimitExceededErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
 func (c OrgMemberLimitExceededErrorCode) MarshalJSON() ([]byte, error) { return marshalString(c) }
 func (c Organization) MarshalJSON() ([]byte, error)                    { return marshalString(c) }
@@ -2309,6 +2334,7 @@ func (c Restriction) MarshalJSON() ([]byte, error)                          { re
 func (c RetriesExhausted) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c Retrying) MarshalJSON() ([]byte, error)                             { return marshalString(c) }
 func (c RightClick) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
+func (c SafeguardsReview) MarshalJSON() ([]byte, error)                     { return marshalString(c) }
 func (c SandboxEgressRestrictedErrorCode) MarshalJSON() ([]byte, error)     { return marshalString(c) }
 func (c BetaScanFailedErrorCode) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c BetaScanPendingErrorCode) MarshalJSON() ([]byte, error)             { return marshalString(c) }
@@ -2426,6 +2452,7 @@ func (c StorageQuotaExceededErrorCode) MarshalJSON() ([]byte, error) { return ma
 func (c BetaStorageVerificationFailedErrorCode) MarshalJSON() ([]byte, error) {
 	return marshalString(c)
 }
+func (c StoredCopyUnavailable) MarshalJSON() ([]byte, error)                { return marshalString(c) }
 func (c StrReplace) MarshalJSON() ([]byte, error)                           { return marshalString(c) }
 func (c StrReplaceBasedEditTool) MarshalJSON() ([]byte, error)              { return marshalString(c) }
 func (c StrReplaceEditor) MarshalJSON() ([]byte, error)                     { return marshalString(c) }

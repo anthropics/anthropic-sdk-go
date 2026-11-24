@@ -74,6 +74,9 @@ TEST_PATHS=(
 	betadream_test.go
 	betatunnel_test.go
 	betatunnelcertificate_test.go
+	betacompliancereviewcase_test.go
+	betacompliancereviewnotice_test.go
+	betacompliancereviewitem_test.go
 	betaorganization_test.go
 	betaorganizationapikey_test.go
 	betaorganizationexternalkey_test.go

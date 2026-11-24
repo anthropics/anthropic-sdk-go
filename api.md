@@ -2663,6 +2663,75 @@ Methods:
 - <code title="get /v1/tunnels/{tunnel_id}/certificates">client.Beta.Tunnels.Certificates.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaTunnelCertificateService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, tunnelID <a href="https://pkg.go.dev/builtin#string">string</a>, params <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaTunnelCertificateListParams">BetaTunnelCertificateListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaTunnelCertificate">BetaTunnelCertificate</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 - <code title="post /v1/tunnels/{tunnel_id}/certificates/{certificate_id}/archive">client.Beta.Tunnels.Certificates.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaTunnelCertificateService.Archive">Archive</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, certificateID <a href="https://pkg.go.dev/builtin#string">string</a>, params <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaTunnelCertificateArchiveParams">BetaTunnelCertificateArchiveParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaTunnelCertificate">BetaTunnelCertificate</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 
+## Compliance
+
+### Review
+
+Params Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewOrder">BetaComplianceReviewOrder</a>
+
+#### Cases
+
+Params Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewCaseOrderBy">BetaComplianceReviewCaseOrderBy</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewCaseStatusFilter">BetaComplianceReviewCaseStatusFilter</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewDetermination">BetaComplianceReviewDetermination</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewVerdictParam">BetaComplianceReviewVerdictParam</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewViolatedPolicyCategory">BetaComplianceReviewViolatedPolicyCategory</a>
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewCase">BetaComplianceReviewCase</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewCaseCloseReason">BetaComplianceReviewCaseCloseReason</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewCaseClosed">BetaComplianceReviewCaseClosed</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewCaseOpen">BetaComplianceReviewCaseOpen</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewCaseStatusUnion">BetaComplianceReviewCaseStatusUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewEnforcementAction">BetaComplianceReviewEnforcementAction</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewPolicyCategory">BetaComplianceReviewPolicyCategory</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewTranscript">BetaComplianceReviewTranscript</a>
+
+Methods:
+
+- <code title="get /v1/compliance/review/cases/{case_id}">client.Beta.Compliance.Review.Cases.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewCaseService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, caseID <a href="https://pkg.go.dev/builtin#string">string</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewCaseGetParams">BetaComplianceReviewCaseGetParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewCase">BetaComplianceReviewCase</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="get /v1/compliance/review/cases">client.Beta.Compliance.Review.Cases.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewCaseService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, params <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewCaseListParams">BetaComplianceReviewCaseListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewCase">BetaComplianceReviewCase</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="post /v1/compliance/review/cases/{case_id}/respond">client.Beta.Compliance.Review.Cases.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewCaseService.Respond">Respond</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, caseID <a href="https://pkg.go.dev/builtin#string">string</a>, params <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewCaseRespondParams">BetaComplianceReviewCaseRespondParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewCase">BetaComplianceReviewCase</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+#### Notices
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewNotice">BetaComplianceReviewNotice</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewNoticeKind">BetaComplianceReviewNoticeKind</a>
+
+Methods:
+
+- <code title="get /v1/compliance/review/notices">client.Beta.Compliance.Review.Notices.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewNoticeService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, params <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewNoticeListParams">BetaComplianceReviewNoticeListParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2/packages/pagination#PageCursor">PageCursor</a>[<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewNotice">BetaComplianceReviewNotice</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
+#### Items
+
+Response Types:
+
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewActorUnion">BetaComplianceReviewActorUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewAPIActor">BetaComplianceReviewAPIActor</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewContentNotCaptured">BetaComplianceReviewContentNotCaptured</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewContentUnavailableReasonUnion">BetaComplianceReviewContentUnavailableReasonUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewCreateMessageContent">BetaComplianceReviewCreateMessageContent</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewItem">BetaComplianceReviewItem</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewItemDetailsUnion">BetaComplianceReviewItemDetailsUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewMessageContentUnion">BetaComplianceReviewMessageContentUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewMessageDetails">BetaComplianceReviewMessageDetails</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewReadReasonUnion">BetaComplianceReviewReadReasonUnion</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewSafeguardsReason">BetaComplianceReviewSafeguardsReason</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewServiceAccountActor">BetaComplianceReviewServiceAccountActor</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewStoredCopyUnavailable">BetaComplianceReviewStoredCopyUnavailable</a>
+- <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewUserActor">BetaComplianceReviewUserActor</a>
+
+Methods:
+
+- <code title="get /v1/compliance/review/items/{item_id}">client.Beta.Compliance.Review.Items.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewItemService.Get">Get</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, itemID <a href="https://pkg.go.dev/builtin#string">string</a>, query <a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewItemGetParams">BetaComplianceReviewItemGetParams</a>) (\*<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2">anthropic</a>.<a href="https://pkg.go.dev/github.com/anthropics/anthropic-sdk-go/v2#BetaComplianceReviewItem">BetaComplianceReviewItem</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+
 ## Organization
 
 Response Types:

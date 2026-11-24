@@ -36,6 +36,7 @@ type BetaService struct {
 	UserProfiles BetaUserProfileService
 	Dreams       BetaDreamService
 	Tunnels      BetaTunnelService
+	Compliance   BetaComplianceService
 	Organization BetaOrganizationService
 }
 
@@ -60,6 +61,7 @@ func NewBetaService(opts ...option.RequestOption) (r BetaService) {
 	r.UserProfiles = NewBetaUserProfileService(opts...)
 	r.Dreams = NewBetaDreamService(opts...)
 	r.Tunnels = NewBetaTunnelService(opts...)
+	r.Compliance = NewBetaComplianceService(opts...)
 	r.Organization = NewBetaOrganizationService(opts...)
 	return
 }

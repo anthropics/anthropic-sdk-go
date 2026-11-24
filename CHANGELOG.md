@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.15.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.14.0...v2.15.0) (2026-11-24)
+
+### Features
+
+* **api:** add Google-managed data controls for Google Cloud projects
+* **api:** add Google-managed data controls for user profiles
+* **api:** add support for compliance review cases, notices, and items
+
+
+### Bug Fixes
+
+* **client:** send fractional seconds in date-time params
+
+
+### Chores
+
+* **docs:** name both causes of the tool use limit error
+* **docs:** update example workspace and API key IDs
+
 ## [2.14.0](https://github.com/anthropics/anthropic-sdk-go/compare/v2.13.0...v2.14.0) (2026-11-23)
 
 ### Features

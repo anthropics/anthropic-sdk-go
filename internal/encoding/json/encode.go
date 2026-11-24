@@ -383,13 +383,19 @@ func typeEncoder(t reflect.Type) encoderFunc {
 	// indirect func before we build it. This type waits on the
 	// real func (f) to be ready and then calls it. This indirect
 	// func is only used for recursive types.
+	//
+	// EDIT(begin): wait on a mutex instead of a sync.WaitGroup. A WaitGroup
+	// that is first used inside a testing/synctest bubble is associated with
+	// that bubble, and calling Wait on it from a goroutine outside the bubble
+	// panics. A Mutex is never associated with a bubble.
 	var (
-		wg sync.WaitGroup
-		f  encoderFunc
+		ready sync.Mutex
+		f     encoderFunc
 	)
-	wg.Add(1)
+	ready.Lock()
 	fi, loaded := encoderCache.LoadOrStore(t, encoderFunc(func(e *encodeState, v reflect.Value, opts encOpts) {
-		wg.Wait()
+		ready.Lock()
+		ready.Unlock()
 		f(e, v, opts)
 	}))
 	if loaded {
@@ -398,7 +404,8 @@ func typeEncoder(t reflect.Type) encoderFunc {
 
 	// Compute the real encoder and replace the indirect func with it.
 	f = newTypeEncoder(t, true)
-	wg.Done()
+	ready.Unlock()
+	// EDIT(end)
 	encoderCache.Store(t, f)
 	return f
 }

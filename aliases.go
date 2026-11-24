@@ -112,6 +112,14 @@ const ErrorCodeCMEKKeyDisabled = apierror.ErrorCodeCMEKKeyDisabled
 // details.
 const ErrorCodeCMEKKeyNetworkBlocked = apierror.ErrorCodeCMEKKeyNetworkBlocked
 
+// Anthropic has not approved customer-managed encryption keys for the
+// organization, project or user profile this request applies to, or has paused or
+// withdrawn its approval. If you did not expect this, contact Anthropic.
+//
+// Returned with HTTP status 400 and [shared.BetaCMEKNotApprovedErrorDetails]
+// details.
+const ErrorCodeBetaCMEKNotApproved = apierror.ErrorCodeBetaCMEKNotApproved
+
 // `messages` holds more than one `compaction` block with content. Send only the
 // block the conversation returned last.
 //
@@ -185,6 +193,20 @@ const ErrorCodeBetaEnvironmentArchived = apierror.ErrorCodeBetaEnvironmentArchiv
 // [shared.ExternalKeyInWorkspacePolicyErrorDetails] details.
 const ErrorCodeExternalKeyInWorkspacePolicy = apierror.ErrorCodeExternalKeyInWorkspacePolicy
 
+// The organization has no active External Key with this ID. The message names the
+// field.
+//
+// Returned with HTTP status 400 and [shared.BetaExternalKeyNotFoundErrorDetails]
+// details.
+const ErrorCodeBetaExternalKeyNotFound = apierror.ErrorCodeBetaExternalKeyNotFound
+
+// The External Key is held by a key management service that this endpoint does not
+// take. The message names the field and the service it takes.
+//
+// Returned with HTTP status 400 and
+// [shared.BetaExternalKeyProviderMismatchErrorDetails] details.
+const ErrorCodeBetaExternalKeyProviderMismatch = apierror.ErrorCodeBetaExternalKeyProviderMismatch
+
 // The External Key failed Anthropic's validation, so the request was refused. The
 // message gives the reason, if there is one.
 //
@@ -228,6 +250,13 @@ const ErrorCodeBetaExternalStorageNotAvailable = apierror.ErrorCodeBetaExternalS
 // Returned with HTTP status 400 and [shared.FileNotDownloadableErrorDetails]
 // details.
 const ErrorCodeFileNotDownloadable = apierror.ErrorCodeFileNotDownloadable
+
+// The organization has not proved that it owns the Google Cloud project that holds
+// the key or bucket. The message names the field.
+//
+// Returned with HTTP status 400 and [shared.BetaGCPProjectNotVerifiedErrorDetails]
+// details.
+const ErrorCodeBetaGCPProjectNotVerified = apierror.ErrorCodeBetaGCPProjectNotVerified
 
 // Anthropic has not approved External Storage for the organization, for the
 // Workspace or, for storage bound to a user profile, for that user profile.
@@ -381,6 +410,13 @@ const ErrorCodeBetaRBACGroupOrderLimitExceeded = apierror.ErrorCodeBetaRBACGroup
 // [shared.RBACGroupOwnerAccessUnconfirmedErrorDetails] details.
 const ErrorCodeRBACGroupOwnerAccessUnconfirmed = apierror.ErrorCodeRBACGroupOwnerAccessUnconfirmed
 
+// The request names a region code that the control does not take from this
+// organization. The message names the field.
+//
+// Returned with HTTP status 400 and [shared.BetaRegionNotSupportedErrorDetails]
+// details.
+const ErrorCodeBetaRegionNotSupported = apierror.ErrorCodeBetaRegionNotSupported
+
 // The request body is not valid for its `Content-Encoding`.
 //
 // Returned with HTTP status 400 and
@@ -440,6 +476,14 @@ const ErrorCodeBetaSlackChannelSetUpSettingsRefused = apierror.ErrorCodeBetaSlac
 // Returned with HTTP status 400 and
 // [shared.BetaStorageAttachLimitReachedErrorDetails] details.
 const ErrorCodeBetaStorageAttachLimitReached = apierror.ErrorCodeBetaStorageAttachLimitReached
+
+// Anthropic has not approved keeping data in a customer-owned storage bucket for
+// the organization, project or user profile this request applies to, or has paused
+// or withdrawn its approval. If you did not expect this, contact Anthropic.
+//
+// Returned with HTTP status 400 and [shared.BetaStorageNotApprovedErrorDetails]
+// details.
+const ErrorCodeBetaStorageNotApproved = apierror.ErrorCodeBetaStorageNotApproved
 
 // This External Storage can't be attached to the setting named in `field`. The
 // error's `message` says why.
@@ -760,6 +804,13 @@ const ErrorCodeConcurrentMembershipChange = apierror.ErrorCodeConcurrentMembersh
 // details.
 const ErrorCodeExternalKeyChanged = apierror.ErrorCodeExternalKeyChanged
 
+// Another organization has data controls turned on for this Google Cloud project,
+// or turned them off recently. The message says how long to wait.
+//
+// Returned with HTTP status 409 and
+// [shared.BetaGCPProjectControlledByAnotherOrganizationErrorDetails] details.
+const ErrorCodeBetaGCPProjectControlledByAnotherOrganization = apierror.ErrorCodeBetaGCPProjectControlledByAnotherOrganization
+
 // The marketplace already holds this name. `plugin_id` is the Plugin that holds
 // it, and can be absent.
 //
@@ -816,6 +867,11 @@ const ErrorCodeStorageAttachedDuringArchive = apierror.ErrorCodeStorageAttachedD
 // Returned with HTTP status 409 and
 // [shared.BetaStorageChangedConcurrentlyErrorDetails] details.
 const ErrorCodeBetaStorageChangedConcurrently = apierror.ErrorCodeBetaStorageChangedConcurrently
+
+// The bucket is already in use, or was in use recently. Name a different bucket.
+//
+// Returned with HTTP status 409 and [shared.BetaStorageInUseErrorDetails] details.
+const ErrorCodeBetaStorageInUse = apierror.ErrorCodeBetaStorageInUse
 
 // Another request changed the Workspace, so this request left the setting named in
 // `field` as it is. The error's `message` says which of this request's other
@@ -1699,6 +1755,55 @@ const BetaExternalStorageFailedCheckRoleTranscriptsVerify = shared.BetaExternalS
 
 // Equals "verify"
 const BetaExternalStorageFailedCheckRoleVerify = shared.BetaExternalStorageFailedCheckRoleVerify
+
+// Anthropic has not approved customer-managed encryption keys for the
+// organization, project or user profile this request applies to, or has paused or
+// withdrawn its approval. If you did not expect this, contact Anthropic.
+//
+// This is an alias to an internal type.
+type BetaCMEKNotApprovedErrorDetails = shared.BetaCMEKNotApprovedErrorDetails
+
+// The organization has no active External Key with this ID. The message names the
+// field.
+//
+// This is an alias to an internal type.
+type BetaExternalKeyNotFoundErrorDetails = shared.BetaExternalKeyNotFoundErrorDetails
+
+// The External Key is held by a key management service that this endpoint does not
+// take. The message names the field and the service it takes.
+//
+// This is an alias to an internal type.
+type BetaExternalKeyProviderMismatchErrorDetails = shared.BetaExternalKeyProviderMismatchErrorDetails
+
+// The organization has not proved that it owns the Google Cloud project that holds
+// the key or bucket. The message names the field.
+//
+// This is an alias to an internal type.
+type BetaGCPProjectNotVerifiedErrorDetails = shared.BetaGCPProjectNotVerifiedErrorDetails
+
+// The request names a region code that the control does not take from this
+// organization. The message names the field.
+//
+// This is an alias to an internal type.
+type BetaRegionNotSupportedErrorDetails = shared.BetaRegionNotSupportedErrorDetails
+
+// Anthropic has not approved keeping data in a customer-owned storage bucket for
+// the organization, project or user profile this request applies to, or has paused
+// or withdrawn its approval. If you did not expect this, contact Anthropic.
+//
+// This is an alias to an internal type.
+type BetaStorageNotApprovedErrorDetails = shared.BetaStorageNotApprovedErrorDetails
+
+// Another organization has data controls turned on for this Google Cloud project,
+// or turned them off recently. The message says how long to wait.
+//
+// This is an alias to an internal type.
+type BetaGCPProjectControlledByAnotherOrganizationErrorDetails = shared.BetaGCPProjectControlledByAnotherOrganizationErrorDetails
+
+// The bucket is already in use, or was in use recently. Name a different bucket.
+//
+// This is an alias to an internal type.
+type BetaStorageInUseErrorDetails = shared.BetaStorageInUseErrorDetails
 
 // The member is the organization's primary owner, whom no API key or token can
 // sign out.

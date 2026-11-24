@@ -84,6 +84,7 @@ TEST_PATHS=(
 	betaorganizationserviceaccount_test.go
 	betaorganizationserviceaccountworkspace_test.go
 	betaorganizationexternalstorage_test.go
+	betaorganizationprovidergoogleprojectdatacontrol_test.go
 	betaorganizationuser_test.go
 	betaorganizationworkspace_test.go
 	betaorganizationworkspaceratelimit_test.go

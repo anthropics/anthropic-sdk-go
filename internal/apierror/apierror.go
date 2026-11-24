@@ -254,6 +254,14 @@ const (
 	// details.
 	ErrorCodeCMEKKeyNetworkBlocked ErrorCode = "cmek_key_network_blocked"
 
+	// Anthropic has not approved customer-managed encryption keys for the
+	// organization, project or user profile this request applies to, or has paused or
+	// withdrawn its approval. If you did not expect this, contact Anthropic.
+	//
+	// Returned with HTTP status 400 and [shared.BetaCMEKNotApprovedErrorDetails]
+	// details.
+	ErrorCodeBetaCMEKNotApproved ErrorCode = "cmek_not_approved"
+
 	// `messages` holds more than one `compaction` block with content. Send only the
 	// block the conversation returned last.
 	//
@@ -327,6 +335,20 @@ const (
 	// [shared.ExternalKeyInWorkspacePolicyErrorDetails] details.
 	ErrorCodeExternalKeyInWorkspacePolicy ErrorCode = "external_key_in_workspace_policy"
 
+	// The organization has no active External Key with this ID. The message names the
+	// field.
+	//
+	// Returned with HTTP status 400 and [shared.BetaExternalKeyNotFoundErrorDetails]
+	// details.
+	ErrorCodeBetaExternalKeyNotFound ErrorCode = "external_key_not_found"
+
+	// The External Key is held by a key management service that this endpoint does not
+	// take. The message names the field and the service it takes.
+	//
+	// Returned with HTTP status 400 and
+	// [shared.BetaExternalKeyProviderMismatchErrorDetails] details.
+	ErrorCodeBetaExternalKeyProviderMismatch ErrorCode = "external_key_provider_mismatch"
+
 	// The External Key failed Anthropic's validation, so the request was refused. The
 	// message gives the reason, if there is one.
 	//
@@ -370,6 +392,13 @@ const (
 	// Returned with HTTP status 400 and [shared.FileNotDownloadableErrorDetails]
 	// details.
 	ErrorCodeFileNotDownloadable ErrorCode = "file_not_downloadable"
+
+	// The organization has not proved that it owns the Google Cloud project that holds
+	// the key or bucket. The message names the field.
+	//
+	// Returned with HTTP status 400 and [shared.BetaGCPProjectNotVerifiedErrorDetails]
+	// details.
+	ErrorCodeBetaGCPProjectNotVerified ErrorCode = "gcp_project_not_verified"
 
 	// Anthropic has not approved External Storage for the organization, for the
 	// Workspace or, for storage bound to a user profile, for that user profile.
@@ -523,6 +552,13 @@ const (
 	// [shared.RBACGroupOwnerAccessUnconfirmedErrorDetails] details.
 	ErrorCodeRBACGroupOwnerAccessUnconfirmed ErrorCode = "rbac_group_owner_access_unconfirmed"
 
+	// The request names a region code that the control does not take from this
+	// organization. The message names the field.
+	//
+	// Returned with HTTP status 400 and [shared.BetaRegionNotSupportedErrorDetails]
+	// details.
+	ErrorCodeBetaRegionNotSupported ErrorCode = "region_not_supported"
+
 	// The request body is not valid for its `Content-Encoding`.
 	//
 	// Returned with HTTP status 400 and
@@ -582,6 +618,14 @@ const (
 	// Returned with HTTP status 400 and
 	// [shared.BetaStorageAttachLimitReachedErrorDetails] details.
 	ErrorCodeBetaStorageAttachLimitReached ErrorCode = "storage_attach_limit_reached"
+
+	// Anthropic has not approved keeping data in a customer-owned storage bucket for
+	// the organization, project or user profile this request applies to, or has paused
+	// or withdrawn its approval. If you did not expect this, contact Anthropic.
+	//
+	// Returned with HTTP status 400 and [shared.BetaStorageNotApprovedErrorDetails]
+	// details.
+	ErrorCodeBetaStorageNotApproved ErrorCode = "storage_not_approved"
 
 	// This External Storage can't be attached to the setting named in `field`. The
 	// error's `message` says why.
@@ -902,6 +946,13 @@ const (
 	// details.
 	ErrorCodeExternalKeyChanged ErrorCode = "external_key_changed"
 
+	// Another organization has data controls turned on for this Google Cloud project,
+	// or turned them off recently. The message says how long to wait.
+	//
+	// Returned with HTTP status 409 and
+	// [shared.BetaGCPProjectControlledByAnotherOrganizationErrorDetails] details.
+	ErrorCodeBetaGCPProjectControlledByAnotherOrganization ErrorCode = "gcp_project_controlled_by_another_organization"
+
 	// The marketplace already holds this name. `plugin_id` is the Plugin that holds
 	// it, and can be absent.
 	//
@@ -958,6 +1009,11 @@ const (
 	// Returned with HTTP status 409 and
 	// [shared.BetaStorageChangedConcurrentlyErrorDetails] details.
 	ErrorCodeBetaStorageChangedConcurrently ErrorCode = "storage_changed_concurrently"
+
+	// The bucket is already in use, or was in use recently. Name a different bucket.
+	//
+	// Returned with HTTP status 409 and [shared.BetaStorageInUseErrorDetails] details.
+	ErrorCodeBetaStorageInUse ErrorCode = "storage_in_use"
 
 	// Another request changed the Workspace, so this request left the setting named in
 	// `field` as it is. The error's `message` says which of this request's other

@@ -300,8 +300,13 @@ func (EnforcedSpendLimitReachedErrorDetails) ImplErrorDetailsUnion() {}
 // [BetaAuthorizationCheckUnavailableErrorDetails],
 // [BetaInvalidStorageARNErrorDetails], [BetaExternalStorageInUseErrorDetails],
 // [BetaExternalStorageInWorkspacePolicyErrorDetails],
-// [BetaStorageVerificationFailedErrorDetails],
-// [BetaCannotSignOutPrimaryOwnerErrorDetails],
+// [BetaStorageVerificationFailedErrorDetails], [BetaCMEKNotApprovedErrorDetails],
+// [BetaExternalKeyNotFoundErrorDetails],
+// [BetaExternalKeyProviderMismatchErrorDetails],
+// [BetaGCPProjectNotVerifiedErrorDetails], [BetaRegionNotSupportedErrorDetails],
+// [BetaStorageNotApprovedErrorDetails],
+// [BetaGCPProjectControlledByAnotherOrganizationErrorDetails],
+// [BetaStorageInUseErrorDetails], [BetaCannotSignOutPrimaryOwnerErrorDetails],
 // [BetaCannotSignOutSelfErrorDetails],
 // [BetaOrganizationNotEnrolledInBetaErrorDetails],
 // [BetaCannotSignOutManagedMemberErrorDetails],
@@ -382,6 +387,9 @@ type ErrorDetailsUnion struct {
 	// "storage_already_registered", "authorization_check_unavailable",
 	// "invalid_storage_arn", "external_storage_in_use",
 	// "external_storage_in_workspace_policy", "storage_verification_failed",
+	// "cmek_not_approved", "external_key_not_found", "external_key_provider_mismatch",
+	// "gcp_project_not_verified", "region_not_supported", "storage_not_approved",
+	// "gcp_project_controlled_by_another_organization", "storage_in_use",
 	// "cannot_sign_out_primary_owner", "cannot_sign_out_self",
 	// "organization_not_enrolled_in_beta", "cannot_sign_out_managed_member",
 	// "cannot_sign_out_membership_admin", "cannot_sign_out_owner",
@@ -534,6 +542,14 @@ type anyErrorDetails interface {
 //	case shared.BetaExternalStorageInUseErrorDetails:
 //	case shared.BetaExternalStorageInWorkspacePolicyErrorDetails:
 //	case shared.BetaStorageVerificationFailedErrorDetails:
+//	case shared.BetaCMEKNotApprovedErrorDetails:
+//	case shared.BetaExternalKeyNotFoundErrorDetails:
+//	case shared.BetaExternalKeyProviderMismatchErrorDetails:
+//	case shared.BetaGCPProjectNotVerifiedErrorDetails:
+//	case shared.BetaRegionNotSupportedErrorDetails:
+//	case shared.BetaStorageNotApprovedErrorDetails:
+//	case shared.BetaGCPProjectControlledByAnotherOrganizationErrorDetails:
+//	case shared.BetaStorageInUseErrorDetails:
 //	case shared.BetaCannotSignOutPrimaryOwnerErrorDetails:
 //	case shared.BetaCannotSignOutSelfErrorDetails:
 //	case shared.BetaOrganizationNotEnrolledInBetaErrorDetails:
@@ -748,6 +764,22 @@ func (u ErrorDetailsUnion) AsAny() anyErrorDetails {
 		return u.AsExternalStorageInWorkspacePolicy()
 	case "storage_verification_failed":
 		return u.AsStorageVerificationFailed()
+	case "cmek_not_approved":
+		return u.AsCMEKNotApproved()
+	case "external_key_not_found":
+		return u.AsExternalKeyNotFound()
+	case "external_key_provider_mismatch":
+		return u.AsExternalKeyProviderMismatch()
+	case "gcp_project_not_verified":
+		return u.AsGCPProjectNotVerified()
+	case "region_not_supported":
+		return u.AsRegionNotSupported()
+	case "storage_not_approved":
+		return u.AsStorageNotApproved()
+	case "gcp_project_controlled_by_another_organization":
+		return u.AsGCPProjectControlledByAnotherOrganization()
+	case "storage_in_use":
+		return u.AsStorageInUse()
 	case "cannot_sign_out_primary_owner":
 		return u.AsCannotSignOutPrimaryOwner()
 	case "cannot_sign_out_self":
@@ -1250,6 +1282,46 @@ func (u ErrorDetailsUnion) AsExternalStorageInWorkspacePolicy() (v BetaExternalS
 }
 
 func (u ErrorDetailsUnion) AsStorageVerificationFailed() (v BetaStorageVerificationFailedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsCMEKNotApproved() (v BetaCMEKNotApprovedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsExternalKeyNotFound() (v BetaExternalKeyNotFoundErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsExternalKeyProviderMismatch() (v BetaExternalKeyProviderMismatchErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsGCPProjectNotVerified() (v BetaGCPProjectNotVerifiedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsRegionNotSupported() (v BetaRegionNotSupportedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsStorageNotApproved() (v BetaStorageNotApprovedErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsGCPProjectControlledByAnotherOrganization() (v BetaGCPProjectControlledByAnotherOrganizationErrorDetails) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u ErrorDetailsUnion) AsStorageInUse() (v BetaStorageInUseErrorDetails) {
 	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
 	return
 }
@@ -3488,6 +3560,169 @@ const (
 	BetaExternalStorageFailedCheckRoleTranscriptsVerify BetaExternalStorageFailedCheckRole = "transcripts_verify"
 	BetaExternalStorageFailedCheckRoleVerify            BetaExternalStorageFailedCheckRole = "verify"
 )
+
+// Anthropic has not approved customer-managed encryption keys for the
+// organization, project or user profile this request applies to, or has paused or
+// withdrawn its approval. If you did not expect this, contact Anthropic.
+type BetaCMEKNotApprovedErrorDetails struct {
+	ErrorCode constant.BetaCMEKNotApprovedErrorCode `json:"error_code" default:"cmek_not_approved"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaCMEKNotApprovedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaCMEKNotApprovedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaCMEKNotApprovedErrorDetails) ImplErrorDetailsUnion() {}
+
+// The organization has no active External Key with this ID. The message names the
+// field.
+type BetaExternalKeyNotFoundErrorDetails struct {
+	ErrorCode constant.BetaExternalKeyNotFoundErrorCode `json:"error_code" default:"external_key_not_found"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaExternalKeyNotFoundErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaExternalKeyNotFoundErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaExternalKeyNotFoundErrorDetails) ImplErrorDetailsUnion() {}
+
+// The External Key is held by a key management service that this endpoint does not
+// take. The message names the field and the service it takes.
+type BetaExternalKeyProviderMismatchErrorDetails struct {
+	ErrorCode constant.BetaExternalKeyProviderMismatchErrorCode `json:"error_code" default:"external_key_provider_mismatch"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaExternalKeyProviderMismatchErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaExternalKeyProviderMismatchErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaExternalKeyProviderMismatchErrorDetails) ImplErrorDetailsUnion() {}
+
+// The organization has not proved that it owns the Google Cloud project that holds
+// the key or bucket. The message names the field.
+type BetaGCPProjectNotVerifiedErrorDetails struct {
+	ErrorCode constant.BetaGCPProjectNotVerifiedErrorCode `json:"error_code" default:"gcp_project_not_verified"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaGCPProjectNotVerifiedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaGCPProjectNotVerifiedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaGCPProjectNotVerifiedErrorDetails) ImplErrorDetailsUnion() {}
+
+// The request names a region code that the control does not take from this
+// organization. The message names the field.
+type BetaRegionNotSupportedErrorDetails struct {
+	ErrorCode constant.BetaRegionNotSupportedErrorCode `json:"error_code" default:"region_not_supported"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaRegionNotSupportedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaRegionNotSupportedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaRegionNotSupportedErrorDetails) ImplErrorDetailsUnion() {}
+
+// Anthropic has not approved keeping data in a customer-owned storage bucket for
+// the organization, project or user profile this request applies to, or has paused
+// or withdrawn its approval. If you did not expect this, contact Anthropic.
+type BetaStorageNotApprovedErrorDetails struct {
+	ErrorCode constant.BetaStorageNotApprovedErrorCode `json:"error_code" default:"storage_not_approved"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaStorageNotApprovedErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaStorageNotApprovedErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaStorageNotApprovedErrorDetails) ImplErrorDetailsUnion() {}
+
+// Another organization has data controls turned on for this Google Cloud project,
+// or turned them off recently. The message says how long to wait.
+type BetaGCPProjectControlledByAnotherOrganizationErrorDetails struct {
+	ErrorCode constant.BetaGCPProjectControlledByAnotherOrganizationErrorCode `json:"error_code" default:"gcp_project_controlled_by_another_organization"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaGCPProjectControlledByAnotherOrganizationErrorDetails) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *BetaGCPProjectControlledByAnotherOrganizationErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaGCPProjectControlledByAnotherOrganizationErrorDetails) ImplErrorDetailsUnion() {}
+
+// The bucket is already in use, or was in use recently. Name a different bucket.
+type BetaStorageInUseErrorDetails struct {
+	ErrorCode constant.BetaStorageInUseErrorCode `json:"error_code" default:"storage_in_use"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r BetaStorageInUseErrorDetails) RawJSON() string { return r.JSON.raw }
+func (r *BetaStorageInUseErrorDetails) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (BetaStorageInUseErrorDetails) ImplErrorDetailsUnion() {}
 
 // The member is the organization's primary owner, whom no API key or token can
 // sign out.

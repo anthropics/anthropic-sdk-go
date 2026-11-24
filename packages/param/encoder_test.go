@@ -110,6 +110,7 @@ func TestFieldMarshal(t *testing.T) {
 		"float_zero":  {param.NewOpt(float64(0.0)), "0"},
 		"string_zero": {param.NewOpt(""), `""`},
 		"time_zero":   {param.NewOpt(time.Time{}), `"0001-01-01T00:00:00Z"`},
+		"time_micros": {param.NewOpt(time.Date(2006, time.January, 2, 15, 4, 5, 117_000_999, time.UTC)), `"2006-01-02T15:04:05.117Z"`},
 
 		"string": {param.Opt[string]{Value: "string"}, `"string"`},
 		"int":    {param.Opt[int64]{Value: 123}, "123"},

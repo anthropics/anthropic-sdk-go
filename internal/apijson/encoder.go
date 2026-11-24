@@ -23,12 +23,12 @@ var encoders sync.Map // map[encoderEntry]encoderFunc
 var EscapeSJSONKey = strings.NewReplacer("\\", "\\\\", "|", "\\|", "#", "\\#", "@", "\\@", "*", "\\*", ".", "\\.", ":", "\\:", "?", "\\?").Replace
 
 func Marshal(value any) ([]byte, error) {
-	e := &encoder{dateFormat: time.RFC3339}
+	e := &encoder{dateFormat: shimjson.TimeLayout("date-time")}
 	return e.marshal(value)
 }
 
 func MarshalRoot(value any) ([]byte, error) {
-	e := &encoder{root: true, dateFormat: time.RFC3339}
+	e := &encoder{root: true, dateFormat: shimjson.TimeLayout("date-time")}
 	return e.marshal(value)
 }
 
@@ -250,7 +250,7 @@ func (e *encoder) newStructTypeEncoder(t reflect.Type) encoderFunc {
 			if ok {
 				switch dateFormat {
 				case "date-time":
-					e.dateFormat = time.RFC3339
+					e.dateFormat = shimjson.TimeLayout("date-time")
 				case "date":
 					e.dateFormat = "2006-01-02"
 				}

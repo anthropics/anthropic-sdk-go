@@ -26,6 +26,7 @@ type BetaOrganizationService struct {
 	Invites               BetaOrganizationInviteService
 	ServiceAccounts       BetaOrganizationServiceAccountService
 	ExternalStorage       BetaOrganizationExternalStorageService
+	Providers             BetaOrganizationProviderService
 	Users                 BetaOrganizationUserService
 	Workspaces            BetaOrganizationWorkspaceService
 	RateLimits            BetaOrganizationRateLimitService
@@ -54,6 +55,7 @@ func NewBetaOrganizationService(opts ...option.RequestOption) (r BetaOrganizatio
 	r.Invites = NewBetaOrganizationInviteService(opts...)
 	r.ServiceAccounts = NewBetaOrganizationServiceAccountService(opts...)
 	r.ExternalStorage = NewBetaOrganizationExternalStorageService(opts...)
+	r.Providers = NewBetaOrganizationProviderService(opts...)
 	r.Users = NewBetaOrganizationUserService(opts...)
 	r.Workspaces = NewBetaOrganizationWorkspaceService(opts...)
 	r.RateLimits = NewBetaOrganizationRateLimitService(opts...)

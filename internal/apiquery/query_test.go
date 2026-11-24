@@ -186,6 +186,23 @@ var tests = map[string]struct {
 		QuerySettings{},
 	},
 
+	"datetime_with_fraction": {
+		`date=2006-01-02&date-time=2006-01-02T15:04:05.117Z`,
+		DateTime{
+			Date:     time.Date(2006, time.January, 2, 0, 0, 0, 0, time.UTC),
+			DateTime: time.Date(2006, time.January, 2, 15, 4, 5, 117_000_999, time.UTC),
+		},
+		QuerySettings{},
+	},
+
+	"datetime_without_format_tag": {
+		`at=2006-01-02T15:04:05.117Z`,
+		struct {
+			At time.Time `query:"at"`
+		}{time.Date(2006, time.January, 2, 15, 4, 5, 117_000_999, time.UTC)},
+		QuerySettings{},
+	},
+
 	"datetime_struct": {
 		`date=2006-01-02&date-time=2006-01-02T15:04:05Z`,
 		DateTime{

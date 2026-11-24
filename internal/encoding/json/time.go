@@ -11,10 +11,12 @@ type TimeMarshaler interface {
 	MarshalJSONWithTimeLayout(string) []byte
 }
 
+const rfc3339Micro = "2006-01-02T15:04:05.999999Z07:00"
+
 func TimeLayout(fmt string) string {
 	switch fmt {
 	case "", "date-time":
-		return time.RFC3339
+		return rfc3339Micro
 	case "date":
 		return time.DateOnly
 	default:

@@ -56,7 +56,7 @@ func TestOrganizationFederationRuleWorkspaceAdd(t *testing.T) {
 		context.TODO(),
 		"federation_rule_id",
 		anthropic.OrganizationFederationRuleWorkspaceAddParams{
-			WorkspaceID: "wrkspc_01JwQvzr7rXLA5AGx3HKfFUJ",
+			WorkspaceID: "wrkspc_01AbCdEfGhJkLmNpQrStUvWx",
 		},
 	)
 	if err != nil {

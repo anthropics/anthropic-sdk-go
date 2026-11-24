@@ -3,11 +3,12 @@ package apiquery
 import (
 	"net/url"
 	"reflect"
-	"time"
+
+	shimjson "github.com/anthropics/anthropic-sdk-go/v2/internal/encoding/json"
 )
 
 func MarshalWithSettings(value any, settings QuerySettings) (url.Values, error) {
-	e := encoder{time.RFC3339, true, settings}
+	e := encoder{shimjson.TimeLayout("date-time"), true, settings}
 	kv := url.Values{}
 	val := reflect.ValueOf(value)
 	if !val.IsValid() {

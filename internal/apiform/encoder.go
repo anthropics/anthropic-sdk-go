@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	shimjson "github.com/anthropics/anthropic-sdk-go/v2/internal/encoding/json"
 	"github.com/anthropics/anthropic-sdk-go/v2/packages/param"
 )
 
@@ -20,7 +21,7 @@ var encoders sync.Map // map[encoderEntry]encoderFunc
 
 func Marshal(value any, writer *multipart.Writer) error {
 	e := &encoder{
-		dateFormat: time.RFC3339,
+		dateFormat: shimjson.TimeLayout("date-time"),
 		arrayFmt:   "brackets",
 	}
 	return e.marshal(value, writer)
@@ -29,7 +30,7 @@ func Marshal(value any, writer *multipart.Writer) error {
 func MarshalRoot(value any, writer *multipart.Writer) error {
 	e := &encoder{
 		root:       true,
-		dateFormat: time.RFC3339,
+		dateFormat: shimjson.TimeLayout("date-time"),
 		arrayFmt:   "brackets",
 	}
 	return e.marshal(value, writer)
@@ -38,7 +39,7 @@ func MarshalRoot(value any, writer *multipart.Writer) error {
 func MarshalWithSettings(value any, writer *multipart.Writer, arrayFormat string) error {
 	e := &encoder{
 		arrayFmt:   arrayFormat,
-		dateFormat: time.RFC3339,
+		dateFormat: shimjson.TimeLayout("date-time"),
 	}
 	return e.marshal(value, writer)
 }
@@ -264,7 +265,7 @@ func (e *encoder) newStructTypeEncoder(t reflect.Type) encoderFunc {
 			if ok {
 				switch dateFormat {
 				case "date-time":
-					e.dateFormat = time.RFC3339
+					e.dateFormat = shimjson.TimeLayout("date-time")
 				case "date":
 					e.dateFormat = "2006-01-02"
 				}
